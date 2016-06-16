@@ -1,64 +1,6 @@
 ;; Equivalence predicates
 (define equal?
-  (lambda (obj1 obj2)
-    (if (not (pair? obj1))
-        (if (pair? obj2)
-            #f
-            (if (not (string? obj1))
-                (if (not (string? obj2))
-                    (eqv? obj1 obj2)
-                    #f)
-                (if (not (string? obj2))
-                    #f
-                    ((lambda (len)
-                       (if (not (= len (string-length obj2)))
-                           #f
-                           ((lambda ()
-                              (define iter
-                                (lambda (k)
-                                  (if (= len k)
-                                      #t
-                                      (if (eqv? (string-ref obj1 k)
-                                                (string-ref obj2 k))
-                                          (iter (+ k 1))
-                                          #f))))
-                              (iter 0)))))
-                     (string-length obj1)))))
-        (if (not (pair? obj2))
-            #f
-            ((lambda ()
-               (define iter
-                 (lambda (a a0 b b0)
-                   (if (null? a)
-                       (if (null? b)
-                           #t
-                           #f)
-                       (if (not (pair? a))
-                           (equal? a b)
-                           (if (not (pair? b))
-                               #f
-                               (if (not (equal? (car a) (car b)))
-                                   #f
-                                   (if (eq? a a0)
-                                       (if (eq? b b0)
-                                           #t
-                                           #f)
-                                       (if (eq? b b0)
-                                           #f
-                                           (if (not (pair? a0))
-                                               (iter (cdr a) a0 (cdr b) b0)
-                                               (if (not (pair? b0))
-                                                   #f
-                                                   (if (not (pair? (cdr a0)))
-                                                       (iter (cdr a) a0
-                                                             (cdr b) b0)
-                                                       (if (pair? (cdr b0))
-                                                           #f
-                                                           (iter (cdr a)
-                                                                 (cddr a0)
-                                                                 (cdr b)
-                                                                 (cddr b0))))))))))))))
-               (iter obj1 (cdr obj1) obj2 (cdr obj2))))))))
+  (lambda (x y)))
 
 ;; Numbers
 (define real? (lambda (z)
@@ -76,6 +18,12 @@
                                  #f
                                  (integer? z)))))
 
+(define +
+  (lambda args
+    (if (null? args)
+        0
+        (primitive-+ (car args)
+                     (+ (cdr args))))))
 (define (= x1 x2 . rest)
   (define (iter x1 x2 rest)
     (if (not (number? x1))
@@ -1373,6 +1321,10 @@
     (write obj)
     (newline)
     obj))
+(define error
+  (lambda (message . args)
+    (raise (apply error-implementation-defined-boejct message args))))
+
 ;; Exceptions end
 ;; Environments and evaluation
 ;; Environments and evaluation end
@@ -1467,7 +1419,7 @@
            (define obj (primitive-delete-file filename))
            (if (file-error? obj)
                (raise obj)))))))
-
+   
 (define exit
   (lambda args
     (dynamic-wind

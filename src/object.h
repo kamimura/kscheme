@@ -30,13 +30,15 @@ typedef enum type {
   CONTINUATION,
   PRIMITIVE_PROCEDURE_RAISE,
   PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE,
-  PRIMITIVE_PROCEDURE_ERROR,
   IMPLEMENTATION_DEFINED_OBJECT,
   PORT_INPUT_TEXT,
   PORT_INPUT_BINARY,
   PORT_OUTPUT_TEXT,
   PORT_OUTPUT_BINARY,
   EOF_OBJ,
+  FILE_ERROR,
+  AND,
+  OR,
   NONE,
   UNSPECIFIED,
 } Type;
@@ -60,6 +62,7 @@ typedef struct Object {
     size_t bytevector_length;
     struct Object (*proc)(struct Object);
     FILE *port;
+    char *message;
   };
 } Object;
 

@@ -88,6 +88,7 @@ Object scm_error_implementation_defined_object(Object args);
 Object scm_error_object_p(Object args);
 Object scm_error_object_message(Object args);
 Object scm_error_object_irritants(Object args);
+Object scm_file_error_p(Object args);
 /* Input and output */
 Object scm_input_port_p(Object args);
 Object scm_output_port_p(Object args);
@@ -109,4 +110,6 @@ Object scm_write_shared(Object args);
 Object scm_write_simple(Object args);
 Object scm_display(Object args);
 /* System interface */
+Object scm_file_exists_p(Object args);
+Object scm_primitive_delete_file(Object args);
 Object scm_emergency_exit(Object args);

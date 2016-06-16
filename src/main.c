@@ -111,18 +111,15 @@ int main() {
   expr = env = val = cont = proc = argl = unev = (Object){.type = NONE};
   quote_sym = identifier_new("quote");
   Object lambda_sym = identifier_new("lambda");
-  Object if_sym = identifier_new("if");
-  Object set_sym = identifier_new("set!");
-  Object define_sym = identifier_new("define");
-  Object begin_sym = identifier_new("begin");
   env = cons(cons(empty, empty), empty);
-  define_variable(quote_sym, (Object){.type = QUOTE}, env);
-  define_variable(lambda_sym, (Object){.type = LAMBDA}, env);
-  define_variable(if_sym, (Object){.type = IF}, env);
-  define_variable(set_sym, (Object){.type = SET}, env);
-  define_variable(define_sym, (Object){.type = DEFINE}, env);
-  define_variable(begin_sym, (Object){.type = BEGIN_TYPE}, env);
-
+  define_variable(identifier_new("quote"), (Object){.type = QUOTE}, env);
+  define_variable(identifier_new("lambda"), (Object){.type = LAMBDA}, env);
+  define_variable(identifier_new("if"), (Object){.type = IF}, env);
+  define_variable(identifier_new("set!"), (Object){.type = SET}, env);
+  define_variable(identifier_new("define"), (Object){.type = DEFINE}, env);
+  define_variable(identifier_new("begin"), (Object){.type = BEGIN_TYPE}, env);
+  define_variable(identifier_new("and"), (Object){.type = AND}, env);
+  define_variable(identifier_new("or"), (Object){.type = OR}, env);
   /* primitive-procedures */
   /* Equivalence predicates  */
   define_variable(identifier_new("eqv?"),
@@ -337,8 +334,8 @@ int main() {
                   (Object){.type = PRIMITIVE_PROCEDURE_RAISE}, env);
   define_variable(identifier_new("raise-continuable"),
                   (Object){.type = PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE}, env);
-  define_variable(identifier_new("error"),
-                  (Object){.type = PRIMITIVE_PROCEDURE_ERROR}, env);
+  /* define_variable(identifier_new("error"), */
+  /* (Object){.type = PRIMITIVE_PROCEDURE_ERROR}, env); */
   define_variable(identifier_new("error-implementation-defined-object"),
                   (Object){.type = PRIMITIVE_PROCEDURE,
                            .proc = scm_error_implementation_defined_object},
@@ -354,7 +351,9 @@ int main() {
       identifier_new("error-object-irritants"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_error_object_irritants},
       env);
-
+  define_variable(
+      identifier_new("file-error?"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_file_error_p}, env);
   /* Exceptions end */
   /* Input and output */
   define_variable(
@@ -420,6 +419,13 @@ int main() {
   /* Input and output end */
   /* System interface */
   define_variable(
+      identifier_new("file-exists?"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_file_exists_p}, env);
+  define_variable(
+      identifier_new("primitive-delete-file"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_primitive_delete_file},
+      env);
+  define_variable(
       identifier_new("emergency-exit"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_emergency_exit}, env);
   /* System interface end */
@@ -455,6 +461,8 @@ eval_dispatch:
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -462,13 +470,13 @@ eval_dispatch:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
   case IMPLEMENTATION_DEFINED_OBJECT:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
     goto ev_self_eval;
   case IDENTIFIER:
@@ -491,14 +499,17 @@ eval_dispatch:
         goto ev_definition;
       case BEGIN_TYPE:
         goto ev_begin;
+      case AND:
+        goto ev_and;
+      case OR:
+        goto ev_or;
       case PRIMITIVE_PROCEDURE:
       case PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR: {
+      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE: {
         goto ev_application;
       }
       case EMPTY:
@@ -517,6 +528,7 @@ eval_dispatch:
       case VECTOR:
       case BYTEVECTOR:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -535,7 +547,7 @@ eval_dispatch:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PRIMITIVE_PROCEDURE_ERROR:
+
     case PAIR: {
       goto ev_application;
     }
@@ -553,6 +565,7 @@ eval_dispatch:
     case BYTEVECTOR:
     case IMPLEMENTATION_DEFINED_OBJECT:
     case EOF_OBJ:
+    case FILE_ERROR:
     case PORT_INPUT_TEXT:
     case PORT_INPUT_BINARY:
     case PORT_OUTPUT_TEXT:
@@ -563,6 +576,8 @@ eval_dispatch:
     case SET:
     case DEFINE:
     case BEGIN_TYPE:
+    case AND:
+    case OR:
     case NONE:
     case UNSPECIFIED:
       goto unknown_expression_type;
@@ -685,9 +700,7 @@ apply_dispatch:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE: {
     goto primitive_procedure_raise_continuable;
   }
-  case PRIMITIVE_PROCEDURE_ERROR: {
-    goto primitive_procedure_error;
-  }
+
   case EMPTY:
   case PAIR:
   case IDENTIFIER:
@@ -708,8 +721,11 @@ apply_dispatch:
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case IMPLEMENTATION_DEFINED_OBJECT:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -810,6 +826,74 @@ ev_definition_1:
   restore(&unev);
   val = define_variable(unev, val, env);
   goto *cont.cont;
+ev_and:
+  unev = cdrref(expr);
+  if (unev.type == EMPTY) {
+    object_free(&val);
+    val = true_obj;
+    goto *cont.cont;
+  }
+  save(cont);
+  goto ev_and_loop;
+ev_and_loop:
+  expr = carref(unev);
+  if (cdrref(unev).type == EMPTY) {
+    goto ev_and_loop_last_exp;
+  }
+  save(unev);
+  save(env);
+  cont.cont = &&ev_and_loop_decided;
+  goto eval_dispatch;
+ev_and_loop_decided:
+  if (val.type == FALSE_TYPE) {
+    restore(&env);
+    restore(&unev);
+    restore(&cont);
+    goto *cont.cont;
+  }
+  goto ev_and_loop_continue;
+ev_and_loop_continue:
+  restore(&env);
+  restore(&unev);
+  unev = cdrref(unev);
+  goto ev_and_loop;
+ev_and_loop_last_exp:
+  restore(&cont);
+  goto eval_dispatch;
+ev_or:
+  unev = cdrref(expr);
+  if (unev.type == EMPTY) {
+    object_free(&val);
+    val = false_obj;
+    goto *cont.cont;
+  }
+  save(cont);
+  goto ev_or_loop;
+ev_or_loop:
+  expr = carref(unev);
+  if (cdrref(unev).type == EMPTY) {
+    goto ev_or_loop_last_exp;
+  }
+  save(unev);
+  save(env);
+  cont.cont = &&ev_or_loop_decided;
+  goto eval_dispatch;
+ev_or_loop_decided:
+  if (val.type != FALSE_TYPE) {
+    restore(&env);
+    restore(&unev);
+    restore(&cont);
+    goto *cont.cont;
+  }
+  goto ev_or_loop_continue;
+ev_or_loop_continue:
+  restore(&env);
+  restore(&unev);
+  unev = cdrref(unev);
+  goto ev_or_loop;
+ev_or_loop_last_exp:
+  restore(&cont);
+  goto eval_dispatch;
 print_result:
   printf("=> ");
   object_write(yyout, val);
@@ -829,9 +913,6 @@ unbound_variable:
 primitive_procedure_raise:
   goto signal_error;
 primitive_procedure_raise_continuable:
-  goto signal_error;
-primitive_procedure_error:
-
   goto signal_error;
 signal_error:;
   goto read_eval_print_loop;

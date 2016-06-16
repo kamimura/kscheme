@@ -22,13 +22,15 @@ Object scm_eqv_p(Object args) {
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case QUOTE:
   case LAMBDA:
   case IF:
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EMPTY:
   case STRING_EMPTY:
   case UNSPECIFIED:
@@ -61,15 +63,18 @@ Object scm_eqv_p(Object args) {
     case SET:
     case DEFINE:
     case BEGIN_TYPE:
+    case AND:
+    case OR:
     case PRIMITIVE_PROCEDURE:
     case PRIMITIVE_PROCEDURE_APPLY:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PRIMITIVE_PROCEDURE_ERROR:
+
     case PROCEDURE:
     case EOF_OBJ:
+    case FILE_ERROR:
     case PORT_INPUT_TEXT:
     case PORT_INPUT_BINARY:
     case PORT_OUTPUT_TEXT:
@@ -105,15 +110,17 @@ Object scm_eqv_p(Object args) {
     case SET:
     case DEFINE:
     case BEGIN_TYPE:
+    case AND:
+    case OR:
     case PRIMITIVE_PROCEDURE:
     case PRIMITIVE_PROCEDURE_APPLY:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PRIMITIVE_PROCEDURE_ERROR:
     case PROCEDURE:
     case EOF_OBJ:
+    case FILE_ERROR:
     case PORT_INPUT_TEXT:
     case PORT_INPUT_BINARY:
     case PORT_OUTPUT_TEXT:
@@ -156,15 +163,18 @@ Object scm_eqv_p(Object args) {
     case SET:
     case DEFINE:
     case BEGIN_TYPE:
+    case AND:
+    case OR:
     case PRIMITIVE_PROCEDURE:
     case PRIMITIVE_PROCEDURE_APPLY:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PRIMITIVE_PROCEDURE_ERROR:
+
     case PROCEDURE:
     case EOF_OBJ:
+    case FILE_ERROR:
     case PORT_INPUT_TEXT:
     case PORT_INPUT_BINARY:
     case PORT_OUTPUT_TEXT:
@@ -208,15 +218,18 @@ Object scm_eqv_p(Object args) {
     case SET:
     case DEFINE:
     case BEGIN_TYPE:
+    case AND:
+    case OR:
     case PRIMITIVE_PROCEDURE:
     case PRIMITIVE_PROCEDURE_APPLY:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PRIMITIVE_PROCEDURE_ERROR:
+
     case PROCEDURE:
     case EOF_OBJ:
+    case FILE_ERROR:
     case PORT_INPUT_TEXT:
     case PORT_INPUT_BINARY:
     case PORT_OUTPUT_TEXT:
@@ -252,6 +265,7 @@ Object scm_eqv_p(Object args) {
     return obj1.type == obj2.type && obj1.index == obj2.index ? true_obj
                                                               : false_obj;
   case EOF_OBJ:
+  case FILE_ERROR:
     return false_obj;
   case PAIR:
     return obj2.type == PAIR && obj1.index == obj2.index ? true_obj : false_obj;
@@ -280,13 +294,15 @@ Object scm_eq_p(Object args) {
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case QUOTE:
   case LAMBDA:
   case IF:
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EMPTY:
     return obj1.type == obj2.type ? true_obj : false_obj;
   case IDENTIFIER:
@@ -330,6 +346,7 @@ Object scm_eq_p(Object args) {
     return obj1.type == obj2.type && obj1.index == obj2.index ? true_obj
                                                               : false_obj;
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
     return false_obj;
   case PAIR:
@@ -367,15 +384,18 @@ Object scm_number_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -416,15 +436,18 @@ Object scm_complex_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -490,15 +513,18 @@ Object scm_rational_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -539,15 +565,18 @@ Object scm_exact_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -588,15 +617,18 @@ Object scm_inexact_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -643,15 +675,18 @@ Object scm_finite_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -696,15 +731,18 @@ Object scm_infinite_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -749,15 +787,18 @@ Object scm_nan_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -801,15 +842,18 @@ Object scm_zero_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -855,15 +899,18 @@ Object scm_positive_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -910,15 +957,18 @@ Object scm_negative_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -999,15 +1049,18 @@ Object scm_add(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -1081,15 +1134,18 @@ Object scm_add(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -1160,15 +1216,18 @@ Object scm_add(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -1247,15 +1306,18 @@ Object scm_add(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -1286,15 +1348,18 @@ Object scm_add(Object args) {
     case SET:
     case DEFINE:
     case BEGIN_TYPE:
+    case AND:
+    case OR:
     case PRIMITIVE_PROCEDURE:
     case PRIMITIVE_PROCEDURE_APPLY:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PRIMITIVE_PROCEDURE_ERROR:
+
     case PROCEDURE:
     case EOF_OBJ:
+    case FILE_ERROR:
     case PORT_INPUT_TEXT:
     case PORT_INPUT_BINARY:
     case PORT_OUTPUT_TEXT:
@@ -1387,15 +1452,18 @@ Object scm_mul(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -1487,15 +1555,18 @@ Object scm_mul(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -1566,15 +1637,18 @@ Object scm_mul(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -1653,15 +1727,18 @@ Object scm_mul(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -1692,15 +1769,18 @@ Object scm_mul(Object args) {
     case SET:
     case DEFINE:
     case BEGIN_TYPE:
+    case AND:
+    case OR:
     case PRIMITIVE_PROCEDURE:
     case PRIMITIVE_PROCEDURE_APPLY:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PRIMITIVE_PROCEDURE_ERROR:
+
     case PROCEDURE:
     case EOF_OBJ:
+    case FILE_ERROR:
     case PORT_INPUT_TEXT:
     case PORT_INPUT_BINARY:
     case PORT_OUTPUT_TEXT:
@@ -1769,15 +1849,18 @@ Object scm_sub(Object args) {
     case SET:
     case DEFINE:
     case BEGIN_TYPE:
+    case AND:
+    case OR:
     case PRIMITIVE_PROCEDURE:
     case PRIMITIVE_PROCEDURE_APPLY:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PRIMITIVE_PROCEDURE_ERROR:
+
     case PROCEDURE:
     case EOF_OBJ:
+    case FILE_ERROR:
     case PORT_INPUT_TEXT:
     case PORT_INPUT_BINARY:
     case PORT_OUTPUT_TEXT:
@@ -1853,15 +1936,18 @@ Object scm_sub(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -1942,15 +2028,18 @@ Object scm_sub(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -2019,15 +2108,18 @@ Object scm_sub(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -2105,15 +2197,18 @@ Object scm_sub(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -2143,15 +2238,18 @@ Object scm_sub(Object args) {
     case SET:
     case DEFINE:
     case BEGIN_TYPE:
+    case AND:
+    case OR:
     case PRIMITIVE_PROCEDURE:
     case PRIMITIVE_PROCEDURE_APPLY:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PRIMITIVE_PROCEDURE_ERROR:
+
     case PROCEDURE:
     case EOF_OBJ:
+    case FILE_ERROR:
     case PORT_INPUT_TEXT:
     case PORT_INPUT_BINARY:
     case PORT_OUTPUT_TEXT:
@@ -2227,15 +2325,18 @@ Object scm_div(Object args) {
     case SET:
     case DEFINE:
     case BEGIN_TYPE:
+    case AND:
+    case OR:
     case PRIMITIVE_PROCEDURE:
     case PRIMITIVE_PROCEDURE_APPLY:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PRIMITIVE_PROCEDURE_ERROR:
+
     case PROCEDURE:
     case EOF_OBJ:
+    case FILE_ERROR:
     case PORT_INPUT_TEXT:
     case PORT_INPUT_BINARY:
     case PORT_OUTPUT_TEXT:
@@ -2335,15 +2436,18 @@ Object scm_div(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -2424,15 +2528,18 @@ Object scm_div(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -2502,15 +2609,18 @@ Object scm_div(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -2588,15 +2698,18 @@ Object scm_div(Object args) {
       case SET:
       case DEFINE:
       case BEGIN_TYPE:
+      case AND:
+      case OR:
       case PRIMITIVE_PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-      case PRIMITIVE_PROCEDURE_ERROR:
+
       case PROCEDURE:
       case EOF_OBJ:
+      case FILE_ERROR:
       case PORT_INPUT_TEXT:
       case PORT_INPUT_BINARY:
       case PORT_OUTPUT_TEXT:
@@ -2627,15 +2740,18 @@ Object scm_div(Object args) {
     case SET:
     case DEFINE:
     case BEGIN_TYPE:
+    case AND:
+    case OR:
     case PRIMITIVE_PROCEDURE:
     case PRIMITIVE_PROCEDURE_APPLY:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PRIMITIVE_PROCEDURE_ERROR:
+
     case PROCEDURE:
     case EOF_OBJ:
+    case FILE_ERROR:
     case PORT_INPUT_TEXT:
     case PORT_INPUT_BINARY:
     case PORT_OUTPUT_TEXT:
@@ -2714,15 +2830,18 @@ Object scm_numerator(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -2797,15 +2916,18 @@ Object scm_denominator(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -2866,15 +2988,18 @@ Object scm_floor(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -2935,15 +3060,18 @@ Object scm_ceiling(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3004,15 +3132,18 @@ Object scm_truncate(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3085,15 +3216,18 @@ Object scm_sqrt(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3139,15 +3273,18 @@ Object scm_pair_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3194,15 +3331,18 @@ Object scm_car(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3242,15 +3382,18 @@ Object scm_cdr(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3293,15 +3436,18 @@ Object scm_set_car(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3344,15 +3490,18 @@ Object scm_set_cdr(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3394,15 +3543,18 @@ Object scm_symbol_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3443,15 +3595,18 @@ Object scm_char_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3491,15 +3646,18 @@ Object scm_char_alphabetic_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3538,15 +3696,18 @@ Object scm_char_numeric_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3585,15 +3746,18 @@ Object scm_char_whitespace_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3632,15 +3796,18 @@ Object scm_char_upper_case_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3679,15 +3846,18 @@ Object scm_char_lower_case_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3732,15 +3902,18 @@ Object scm_digit_value(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3782,15 +3955,18 @@ Object scm_char_tointeger(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3830,15 +4006,18 @@ Object scm_integer_tochar(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3879,15 +4058,18 @@ Object scm_char_upcase(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3928,15 +4110,18 @@ Object scm_char_downcase(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -3982,15 +4167,18 @@ Object scm_char_foldcase(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4033,15 +4221,18 @@ Object scm_string_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4160,15 +4351,18 @@ Object scm_vector_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4212,15 +4406,18 @@ Object scm_vector_length(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4265,15 +4462,18 @@ Object scm_vector_ref(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4321,15 +4521,18 @@ Object scm_vector_set(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4371,15 +4574,18 @@ Object scm_bytevector_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4423,15 +4629,18 @@ Object scm_bytevector_length(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4477,15 +4686,18 @@ Object scm_bytevector_ueight_ref(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4533,15 +4745,18 @@ Object scm_bytevector_ueight_set(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4637,15 +4852,18 @@ Object scm_utfeight_string(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4750,15 +4968,18 @@ Object scm_string_utfeight(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case PRIMITIVE_PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PROCEDURE:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4787,7 +5008,6 @@ Object scm_procedure_p(Object args) {
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
 
     return true_obj;
   case STRING_EMPTY:
@@ -4808,7 +5028,10 @@ Object scm_procedure_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4849,7 +5072,7 @@ Object scm_error_object_p(Object args) {
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case STRING_EMPTY:
   case STRING:
   case CHARACTER:
@@ -4868,7 +5091,10 @@ Object scm_error_object_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4892,7 +5118,7 @@ Object scm_error_object_irritants(Object args) {
     return implementation_defined_object_cdrref(obj);
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -4916,7 +5142,10 @@ Object scm_error_object_irritants(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4937,7 +5166,7 @@ Object scm_error_object_message(Object args) {
   switch (obj.type) {
   case IMPLEMENTATION_DEFINED_OBJECT:
     return implementation_defined_object_carref(obj);
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -4963,7 +5192,10 @@ Object scm_error_object_message(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
@@ -4975,6 +5207,12 @@ Object scm_error_object_message(Object args) {
     return none;
   }
   return none;
+}
+Object scm_file_error_p(Object args) {
+  if (args_length(args) != 1) {
+    return none;
+  }
+  return carref(args).type == FILE_ERROR ? true_obj : false_obj;
 }
 /* Exceptions end */
 /* Input and output */
@@ -4988,7 +5226,7 @@ Object scm_input_port_p(Object args) {
   case PORT_INPUT_BINARY:
 
     return true_obj;
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -5017,7 +5255,10 @@ Object scm_input_port_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
   case EMPTY:
   case PAIR:
@@ -5036,7 +5277,7 @@ Object scm_output_port_p(Object args) {
   case PORT_OUTPUT_BINARY:
 
     return true_obj;
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -5065,7 +5306,10 @@ Object scm_output_port_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
   case EMPTY:
   case PAIR:
@@ -5083,7 +5327,7 @@ Object scm_textual_port_p(Object args) {
   case PORT_OUTPUT_TEXT:
   case PORT_INPUT_TEXT:
     return true_obj;
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -5112,7 +5356,10 @@ Object scm_textual_port_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
   case EMPTY:
   case PAIR:
@@ -5130,7 +5377,7 @@ Object scm_binary_port_p(Object args) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_BINARY:
     return true_obj;
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -5160,7 +5407,10 @@ Object scm_binary_port_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
   case EMPTY:
   case PAIR:
@@ -5181,7 +5431,7 @@ Object scm_input_port_open_p(Object args) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
     return false_obj;
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -5208,7 +5458,10 @@ Object scm_input_port_open_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
   case EMPTY:
   case PAIR:
@@ -5229,7 +5482,7 @@ Object scm_output_port_open_p(Object args) {
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
     return false_obj;
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -5256,7 +5509,10 @@ Object scm_output_port_open_p(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
   case EMPTY:
   case PAIR:
@@ -5299,7 +5555,7 @@ Object scm_open_output_file(Object args) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -5324,7 +5580,10 @@ Object scm_open_output_file(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
   case EMPTY:
   case PAIR:
@@ -5367,7 +5626,7 @@ Object scm_open_binary_output_file(Object args) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -5392,7 +5651,10 @@ Object scm_open_binary_output_file(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
   case EMPTY:
   case PAIR:
@@ -5435,7 +5697,7 @@ Object scm_open_input_file(Object args) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -5460,7 +5722,10 @@ Object scm_open_input_file(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
   case EMPTY:
   case PAIR:
@@ -5503,7 +5768,7 @@ Object scm_open_binary_input_file(Object args) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -5528,7 +5793,10 @@ Object scm_open_binary_input_file(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
   case EMPTY:
   case PAIR:
@@ -5551,7 +5819,7 @@ Object scm_close_port(Object args) {
     cars[obj.index].port = NULL;
     return unspecified;
   }
-  case PRIMITIVE_PROCEDURE_ERROR:
+
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_APPLY:
@@ -5578,7 +5846,10 @@ Object scm_close_port(Object args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case AND:
+  case OR:
   case EOF_OBJ:
+  case FILE_ERROR:
   case UNSPECIFIED:
   case EMPTY:
   case PAIR:
@@ -5753,6 +6024,60 @@ Object scm_display(Object args) {
 }
 /* Input and output end */
 /* System interface */
+Object scm_file_exists_p(Object args) {
+  if (args_length(args) != 1) {
+    return none;
+  }
+  Object obj = carref(args);
+  switch (obj.type) {
+  case STRING_EMPTY:
+  case STRING: {
+    size_t len = 0;
+    for (Object o = obj; o.type != STRING_EMPTY; o = string_cdrref(o)) {
+      len++;
+    }
+    gunichar str[len];
+    Object o = obj;
+    for (size_t i = 0; i < len; i++) {
+      str[i] = string_carref(o).character;
+      o = string_cdrref(o);
+    }
+    glong items_read, items_written;
+    GError *error;
+    char *filename =
+        g_ucs4_to_utf8(str, len, &items_read, &items_written, &error);
+    gboolean b = g_file_test(filename, G_FILE_TEST_EXISTS);
+    g_free(filename);
+    return b ? true_obj : false_obj;
+  }
+  default:
+    return none;
+  }
+  return none;
+}
+#include <errno.h>
+#include <string.h>
+Object scm_primitive_delete_file(Object args) {
+  Object obj = carref(args);
+  size_t len = 0;
+  for (Object o = obj; o.type != STRING_EMPTY; o = string_cdrref(o)) {
+    len++;
+  }
+  gunichar str[len];
+  Object o = obj;
+  for (size_t i = 0; i < len; i++) {
+    str[i] = string_carref(o).character;
+    o = string_cdrref(o);
+  }
+  glong items_read, items_written;
+  GError *error;
+  char *filename =
+      g_ucs4_to_utf8(str, len, &items_read, &items_written, &error);
+  int n = remove(filename);
+  g_free(filename);
+  return n == 0 ? unspecified : (Object){.type = FILE_ERROR,
+                                         .message = strdup(strerror(errno))};
+}
 #include <unistd.h>
 extern FILE *yyout;
 Object scm_emergency_exit(Object args) {

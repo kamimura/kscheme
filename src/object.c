@@ -72,6 +72,8 @@ Object object_copy(Object obj) {
 
   case NONE:
     return obj;
+  default:
+    exit(1);
   }
   return none;
 }
@@ -92,45 +94,8 @@ void object_free(Object *obj_ptr) {
   case FILE_ERROR:
     free(obj_ptr->message);
     break;
-  case PORT_INPUT_TEXT:
-  case PORT_OUTPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_BINARY:
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case EMPTY:
-  case PAIR:
-  case IDENTIFIER:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
+  default:
     break;
-  case NONE: {
-    /* fprintf(stderr, "ksi error object_free NONE\n"); */
-    /* exit(1); */
-    break;
-  }
   }
   obj_ptr->type = NONE;
 }
@@ -395,6 +360,8 @@ void object_write(FILE *stream, Object obj) {
     fprintf(stderr, "ksi error ksi object_write NONE VECTOR_NULL\n");
     exit(1);
     break;
+  default:
+    break;
   }
   }
 }
@@ -464,6 +431,9 @@ void object_write_shared(FILE *stream, Object obj) {
   }
   case PAIR:
     pair_write_shared(stream, obj);
+    break;
+  default:
+    exit(1);
     break;
   }
 }
@@ -535,6 +505,8 @@ void object_write_simple(FILE *stream, Object obj) {
   case PAIR:
     pair_write_simple(stream, obj);
     break;
+  default:
+    exit(1);
   }
 }
 

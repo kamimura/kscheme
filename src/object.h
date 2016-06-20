@@ -41,6 +41,8 @@ typedef enum type {
   OR,
   NONE,
   UNSPECIFIED,
+  WRONG_NUMBER_OF_ARGUMENTS,
+  WRONG_TYPE_ARGUMENT,
 } Type;
 
 #include <gmp.h>

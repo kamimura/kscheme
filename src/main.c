@@ -512,31 +512,7 @@ eval_dispatch:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE: {
         goto ev_application;
       }
-      case EMPTY:
-      case PAIR:
-      case IDENTIFIER:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-      case NUMBERZ:
-      case NUMBERQ:
-      case NUMBERR:
-      case NUMBERC:
-
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-
-      case NONE:
+      default:
         goto unknown_expression_type;
       }
     }
@@ -547,47 +523,19 @@ eval_dispatch:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
     case PAIR: {
       goto ev_application;
     }
-    case EMPTY:
-    case TRUE_TYPE:
-    case FALSE_TYPE:
-    case NUMBERZ:
-    case NUMBERQ:
-    case NUMBERR:
-    case NUMBERC:
-    case CHARACTER:
-    case STRING_EMPTY:
-    case STRING:
-    case VECTOR:
-    case BYTEVECTOR:
-    case IMPLEMENTATION_DEFINED_OBJECT:
-    case EOF_OBJ:
-    case FILE_ERROR:
-    case PORT_INPUT_TEXT:
-    case PORT_INPUT_BINARY:
-    case PORT_OUTPUT_TEXT:
-    case PORT_OUTPUT_BINARY:
-    case QUOTE:
-    case LAMBDA:
-    case IF:
-    case SET:
-    case DEFINE:
-    case BEGIN_TYPE:
-    case AND:
-    case OR:
-    case NONE:
-    case UNSPECIFIED:
+    default:
       goto unknown_expression_type;
     }
   }
   case EMPTY:
     goto unknown_expression_type;
-
   case NONE:;
     fprintf(stderr, "ksi error eval_dispatch\n");
+    exit(1);
+  default:
     exit(1);
   }
 ev_self_eval:
@@ -622,14 +570,16 @@ ev_appl_did_operator:
   restore(&env);
   argl = empty;
   proc = val;
-  if (unev.type == EMPTY)
+  if (unev.type == EMPTY) {
     goto apply_dispatch;
+  }
   save(proc);
 ev_appl_operand_loop:
   save(argl);
   expr = car(unev);
-  if (cdrref(unev).type == EMPTY)
+  if (cdrref(unev).type == EMPTY) {
     goto ev_appl_last_arg;
+  }
   save(env);
   save(unev);
   cont.cont = &&ev_appl_accumulate_arg;
@@ -700,43 +650,20 @@ apply_dispatch:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE: {
     goto primitive_procedure_raise_continuable;
   }
-
-  case EMPTY:
-  case PAIR:
-  case IDENTIFIER:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case UNSPECIFIED:
-  case NONE:
+  default:
     goto unknown_procedure_type;
   }
 primitive_apply:
   object_free(&val);
   val = proc.proc(argl);
+  switch (val.type) {
+  case WRONG_NUMBER_OF_ARGUMENTS:
+    goto wrong_number_of_arguments;
+  case WRONG_TYPE_ARGUMENT:
+    goto wrong_type_argument;
+  default:
+    break;
+  }
   restore(&cont);
   goto *cont.cont;
 compound_apply:
@@ -901,18 +828,28 @@ print_result:
   goto read_eval_print_loop;
 
 unknown_expression_type:
-
+  fprintf(yyout, "Error: unknown expression type -- ");
+  object_write(yyout, expr);
+  fprintf(yyout, "\n");
   goto signal_error;
-
 unknown_procedure_type:
   restore(&cont);
+  fprintf(yyout, "Error: unknown procedure type -- ");
+  object_write(yyout, proc);
+  fprintf(yyout, "\n");
   goto signal_error;
 unbound_variable:
-
+  fprintf(yyout, "Error: unbound variable -- ");
+  object_write(yyout, expr);
+  fprintf(yyout, "\n");
   goto signal_error;
 primitive_procedure_raise:
   goto signal_error;
 primitive_procedure_raise_continuable:
+  goto signal_error;
+wrong_number_of_arguments:
+  goto signal_error;
+wrong_type_argument:
   goto signal_error;
 signal_error:;
   goto read_eval_print_loop;

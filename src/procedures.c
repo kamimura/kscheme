@@ -1,6 +1,12 @@
 /** \file  */
 #include "procedures.h"
 
+extern FILE *yyout;
+static Object const ARGUMENTS = {.type = WRONG_NUMBER_OF_ARGUMENTS};
+static Object arguments(char const *s) {
+  fprintf(yyout, "Error: wrong number of arguments -- %s\n", s);
+  return ARGUMENTS;
+}
 static size_t args_length(Object args) {
   size_t len = 0;
   for (Object o = args; o.type != EMPTY; o = cdrref(o)) {
@@ -10,7 +16,7 @@ static size_t args_length(Object args) {
 }
 Object scm_eqv_p(Object args) {
   if (args_length(args) != 2) {
-    return none;
+    return arguments("eqv?");
   }
   Object obj1 = carref(args);
   Object obj2 = carref(cdrref(args));
@@ -22,7 +28,6 @@ Object scm_eqv_p(Object args) {
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
   case QUOTE:
   case LAMBDA:
   case IF:
@@ -85,6 +90,8 @@ Object scm_eqv_p(Object args) {
 
     case NONE:
       return none;
+    default:
+      exit(1);
     }
   case NUMBERQ: {
     switch (obj2.type) {
@@ -131,6 +138,8 @@ Object scm_eqv_p(Object args) {
 
     case NONE:
       return none;
+    default:
+      exit(1);
     }
   }
   case NUMBERR: {
@@ -185,6 +194,8 @@ Object scm_eqv_p(Object args) {
 
     case NONE:
       return none;
+    default:
+      exit(1);
     }
   }
   case NUMBERC: {
@@ -239,6 +250,8 @@ Object scm_eqv_p(Object args) {
       return false_obj;
     case NONE:
       return none;
+    default:
+      exit(1);
     }
   }
   case CHARACTER:
@@ -277,12 +290,14 @@ Object scm_eqv_p(Object args) {
                                                                : false_obj;
   case NONE:
     return none;
+  default:
+    exit(1);
   }
   return false_obj;
 }
 Object scm_eq_p(Object args) {
   if (args_length(args) != 2) {
-    return none;
+    return arguments("eq?");
   }
   Object obj1 = carref(args);
   Object obj2 = carref(cdrref(args));
@@ -354,6 +369,8 @@ Object scm_eq_p(Object args) {
 
   case NONE:
     return none;
+  default:
+    exit(1);
   }
   return none;
 }
@@ -363,7 +380,7 @@ Object scm_eq_p(Object args) {
 /* Numbers */
 Object scm_number_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("number?");
   }
   switch (carref(args).type) {
   case NUMBERZ:
@@ -371,50 +388,16 @@ Object scm_number_p(Object args) {
   case NUMBERR:
   case NUMBERC:
     return true_obj;
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-    return false_obj;
-
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
 Object scm_complex_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("complex?");
   }
   switch (carref(args).type) {
   case NUMBERZ:
@@ -422,51 +405,16 @@ Object scm_complex_p(Object args) {
   case NUMBERR:
   case NUMBERC:
     return true_obj;
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-    return false_obj;
-
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
 Object scm_rational_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("rational?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -500,50 +448,16 @@ Object scm_rational_p(Object args) {
     mpq_clear(opq);
     return out;
   }
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-    return false_obj;
-
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
 Object scm_exact_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("exact?");
   }
   switch (carref(args).type) {
   case NUMBERZ:
@@ -552,49 +466,16 @@ Object scm_exact_p(Object args) {
   case NUMBERR:
   case NUMBERC:
     return false_obj;
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_inexact_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("inexact?");
   }
   switch (carref(args).type) {
   case NUMBERZ:
@@ -603,50 +484,16 @@ Object scm_inexact_p(Object args) {
   case NUMBERR:
   case NUMBERC:
     return true_obj;
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_finite_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("finite?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -661,50 +508,16 @@ Object scm_finite_p(Object args) {
                ? true_obj
                : false_obj;
   }
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_infinite_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("infinite?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -718,48 +531,16 @@ Object scm_infinite_p(Object args) {
                    mpfr_inf_p(mpc_imagref(obj.numberc))
                ? true_obj
                : false_obj;
-  case CHARACTER:
-  case STRING_EMPTY:
-  case VECTOR:
-  case BYTEVECTOR:
-  case STRING:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_nan_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("nan?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -773,50 +554,16 @@ Object scm_nan_p(Object args) {
                    mpfr_nan_p(mpc_imagref(obj.numberc))
                ? true_obj
                : false_obj;
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_zero_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("zero?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -828,49 +575,16 @@ Object scm_zero_p(Object args) {
     return mpfr_zero_p(obj.numberr) ? true_obj : false_obj;
   case NUMBERC:
     return mpc_cmp_si(obj.numberc, 0) == 0 ? true_obj : false_obj;
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_positive_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("posotive?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -885,49 +599,16 @@ Object scm_positive_p(Object args) {
       return none;
     }
     return mpfr_sgn(mpc_realref(obj.numberc)) > 0 ? true_obj : false_obj;
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_negative_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("negative?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -943,42 +624,9 @@ Object scm_negative_p(Object args) {
       return none;
     }
     return mpfr_sgn(mpc_realref(obj.numberc)) < 0 ? true_obj : false_obj;
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
@@ -1035,43 +683,7 @@ Object scm_add(Object args) {
         out.type = NUMBERC;
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -1120,43 +732,7 @@ Object scm_add(Object args) {
         out.type = NUMBERC;
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -1202,43 +778,7 @@ Object scm_add(Object args) {
         out.type = NUMBERC;
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -1292,85 +832,13 @@ Object scm_add(Object args) {
         mpc_clear(op);
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
       break;
     }
-    case CHARACTER:
-    case STRING_EMPTY:
-    case STRING:
-    case VECTOR:
-    case BYTEVECTOR:
-    case TRUE_TYPE:
-    case FALSE_TYPE:
-
-    case QUOTE:
-    case LAMBDA:
-    case IF:
-    case SET:
-    case DEFINE:
-    case BEGIN_TYPE:
-    case AND:
-    case OR:
-    case PRIMITIVE_PROCEDURE:
-    case PRIMITIVE_PROCEDURE_APPLY:
-    case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-    case CONTINUATION:
-    case PRIMITIVE_PROCEDURE_RAISE:
-    case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-    case PROCEDURE:
-    case EOF_OBJ:
-    case FILE_ERROR:
-    case PORT_INPUT_TEXT:
-    case PORT_INPUT_BINARY:
-    case PORT_OUTPUT_TEXT:
-    case PORT_OUTPUT_BINARY:
-    case IMPLEMENTATION_DEFINED_OBJECT:
-    case UNSPECIFIED:
-    case IDENTIFIER:
-    case EMPTY:
-    case PAIR:
-
-    case NONE:
+    default:
       object_free(&out);
       return none;
     }
@@ -1438,43 +906,7 @@ Object scm_mul(Object args) {
         break;
       }
 
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -1541,43 +973,7 @@ Object scm_mul(Object args) {
         out.type = NUMBERC;
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -1623,43 +1019,7 @@ Object scm_mul(Object args) {
         out.type = NUMBERC;
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -1713,85 +1073,13 @@ Object scm_mul(Object args) {
         mpc_clear(op);
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
       break;
     }
-    case CHARACTER:
-    case STRING_EMPTY:
-    case STRING:
-    case VECTOR:
-    case BYTEVECTOR:
-    case TRUE_TYPE:
-    case FALSE_TYPE:
-
-    case QUOTE:
-    case LAMBDA:
-    case IF:
-    case SET:
-    case DEFINE:
-    case BEGIN_TYPE:
-    case AND:
-    case OR:
-    case PRIMITIVE_PROCEDURE:
-    case PRIMITIVE_PROCEDURE_APPLY:
-    case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-    case CONTINUATION:
-    case PRIMITIVE_PROCEDURE_RAISE:
-    case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-    case PROCEDURE:
-    case EOF_OBJ:
-    case FILE_ERROR:
-    case PORT_INPUT_TEXT:
-    case PORT_INPUT_BINARY:
-    case PORT_OUTPUT_TEXT:
-    case PORT_OUTPUT_BINARY:
-    case IMPLEMENTATION_DEFINED_OBJECT:
-    case UNSPECIFIED:
-    case IDENTIFIER:
-    case EMPTY:
-    case PAIR:
-
-    case NONE:
+    default:
       return none;
     }
   }
@@ -1800,7 +1088,7 @@ Object scm_mul(Object args) {
 
 Object scm_sub(Object args) {
   if (args_length(args) == 0) {
-    return none;
+    return arguments("-");
   }
   if (args_length(args) == 1) {
     Object obj = carref(args);
@@ -1836,42 +1124,9 @@ Object scm_sub(Object args) {
       mpc_neg(out.numberc, obj.numberc, MPC_RNDNN);
       return out;
     }
-    case CHARACTER:
-    case STRING_EMPTY:
-    case STRING:
-    case VECTOR:
-    case BYTEVECTOR:
-    case TRUE_TYPE:
-    case FALSE_TYPE:
-    case QUOTE:
-    case LAMBDA:
-    case IF:
-    case SET:
-    case DEFINE:
-    case BEGIN_TYPE:
-    case AND:
-    case OR:
-    case PRIMITIVE_PROCEDURE:
-    case PRIMITIVE_PROCEDURE_APPLY:
-    case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-    case CONTINUATION:
-    case PRIMITIVE_PROCEDURE_RAISE:
-    case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-    case PROCEDURE:
-    case EOF_OBJ:
-    case FILE_ERROR:
-    case PORT_INPUT_TEXT:
-    case PORT_INPUT_BINARY:
-    case PORT_OUTPUT_TEXT:
-    case PORT_OUTPUT_BINARY:
-    case IMPLEMENTATION_DEFINED_OBJECT:
-    case UNSPECIFIED:
-    case IDENTIFIER:
-    case EMPTY:
-    case PAIR:
-
     case NONE:
+      return none;
+    default:
       return none;
     }
   }
@@ -1922,42 +1177,7 @@ Object scm_sub(Object args) {
         out.type = NUMBERC;
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -2014,42 +1234,7 @@ Object scm_sub(Object args) {
         out.type = NUMBERC;
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -2094,42 +1279,7 @@ Object scm_sub(Object args) {
         mpc_clear(op);
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -2183,83 +1333,13 @@ Object scm_sub(Object args) {
         mpc_clear(op);
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
       break;
     }
-    case CHARACTER:
-    case STRING_EMPTY:
-    case STRING:
-    case VECTOR:
-    case BYTEVECTOR:
-    case TRUE_TYPE:
-    case FALSE_TYPE:
-    case QUOTE:
-    case LAMBDA:
-    case IF:
-    case SET:
-    case DEFINE:
-    case BEGIN_TYPE:
-    case AND:
-    case OR:
-    case PRIMITIVE_PROCEDURE:
-    case PRIMITIVE_PROCEDURE_APPLY:
-    case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-    case CONTINUATION:
-    case PRIMITIVE_PROCEDURE_RAISE:
-    case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-    case PROCEDURE:
-    case EOF_OBJ:
-    case FILE_ERROR:
-    case PORT_INPUT_TEXT:
-    case PORT_INPUT_BINARY:
-    case PORT_OUTPUT_TEXT:
-    case PORT_OUTPUT_BINARY:
-    case IMPLEMENTATION_DEFINED_OBJECT:
-    case UNSPECIFIED:
-    case IDENTIFIER:
-    case EMPTY:
-    case PAIR:
-    case NONE:
+    default:
       object_free(&out);
       return none;
     }
@@ -2269,7 +1349,7 @@ Object scm_sub(Object args) {
 }
 Object scm_div(Object args) {
   if (args_length(args) == 0) {
-    return none;
+    return arguments("/");
   }
   if (args_length(args) == 1) {
     Object obj = carref(args);
@@ -2311,42 +1391,9 @@ Object scm_div(Object args) {
       mpc_ui_div(out.numberc, 1, obj.numberc, MPC_RNDNN);
       return out;
     }
-    case CHARACTER:
-    case STRING_EMPTY:
-    case STRING:
-    case VECTOR:
-    case BYTEVECTOR:
-    case TRUE_TYPE:
-    case FALSE_TYPE:
-
-    case QUOTE:
-    case LAMBDA:
-    case IF:
-    case SET:
-    case DEFINE:
-    case BEGIN_TYPE:
-    case AND:
-    case OR:
-    case PRIMITIVE_PROCEDURE:
-    case PRIMITIVE_PROCEDURE_APPLY:
-    case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-    case CONTINUATION:
-    case PRIMITIVE_PROCEDURE_RAISE:
-    case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-    case PROCEDURE:
-    case EOF_OBJ:
-    case FILE_ERROR:
-    case PORT_INPUT_TEXT:
-    case PORT_INPUT_BINARY:
-    case PORT_OUTPUT_TEXT:
-    case PORT_OUTPUT_BINARY:
-    case IMPLEMENTATION_DEFINED_OBJECT:
-    case UNSPECIFIED:
-    case IDENTIFIER:
-    case EMPTY:
-    case PAIR:
     case NONE:
+      return none;
+    default:
       return none;
     }
   }
@@ -2422,42 +1469,7 @@ Object scm_div(Object args) {
         out.type = NUMBERC;
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -2514,42 +1526,7 @@ Object scm_div(Object args) {
         out.type = NUMBERC;
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -2595,42 +1572,7 @@ Object scm_div(Object args) {
         out.type = NUMBERC;
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
@@ -2684,84 +1626,13 @@ Object scm_div(Object args) {
         mpc_clear(op);
         break;
       }
-      case CHARACTER:
-      case STRING_EMPTY:
-      case STRING:
-      case VECTOR:
-      case BYTEVECTOR:
-      case TRUE_TYPE:
-      case FALSE_TYPE:
-
-      case QUOTE:
-      case LAMBDA:
-      case IF:
-      case SET:
-      case DEFINE:
-      case BEGIN_TYPE:
-      case AND:
-      case OR:
-      case PRIMITIVE_PROCEDURE:
-      case PRIMITIVE_PROCEDURE_APPLY:
-      case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-      case CONTINUATION:
-      case PRIMITIVE_PROCEDURE_RAISE:
-      case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-      case PROCEDURE:
-      case EOF_OBJ:
-      case FILE_ERROR:
-      case PORT_INPUT_TEXT:
-      case PORT_INPUT_BINARY:
-      case PORT_OUTPUT_TEXT:
-      case PORT_OUTPUT_BINARY:
-      case IMPLEMENTATION_DEFINED_OBJECT:
-      case UNSPECIFIED:
-      case IDENTIFIER:
-      case EMPTY:
-      case PAIR:
-
-      case NONE:
+      default:
         object_free(&out);
         return none;
       }
       break;
     }
-    case CHARACTER:
-    case STRING_EMPTY:
-    case STRING:
-    case VECTOR:
-    case BYTEVECTOR:
-    case TRUE_TYPE:
-    case FALSE_TYPE:
-
-    case QUOTE:
-    case LAMBDA:
-    case IF:
-    case SET:
-    case DEFINE:
-    case BEGIN_TYPE:
-    case AND:
-    case OR:
-    case PRIMITIVE_PROCEDURE:
-    case PRIMITIVE_PROCEDURE_APPLY:
-    case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-    case CONTINUATION:
-    case PRIMITIVE_PROCEDURE_RAISE:
-    case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-    case PROCEDURE:
-    case EOF_OBJ:
-    case FILE_ERROR:
-    case PORT_INPUT_TEXT:
-    case PORT_INPUT_BINARY:
-    case PORT_OUTPUT_TEXT:
-    case PORT_OUTPUT_BINARY:
-    case IMPLEMENTATION_DEFINED_OBJECT:
-    case UNSPECIFIED:
-    case IDENTIFIER:
-    case EMPTY:
-    case PAIR:
-    case NONE:
+    default:
       object_free(&out);
       return none;
     }
@@ -2770,7 +1641,7 @@ Object scm_div(Object args) {
 }
 Object scm_numerator(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("numerator");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2816,49 +1687,14 @@ Object scm_numerator(Object args) {
     mpq_clear(opq);
     return out;
   }
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_denominator(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("denominator");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2902,49 +1738,14 @@ Object scm_denominator(Object args) {
     mpq_clear(opq);
     return out;
   }
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_floor(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("floor");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2974,49 +1775,14 @@ Object scm_floor(Object args) {
     mpfr_floor(out.numberr, mpc_realref(obj.numberc));
     return out;
   }
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_ceiling(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("ceiling");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -3046,49 +1812,14 @@ Object scm_ceiling(Object args) {
     mpfr_ceil(out.numberr, mpc_realref(obj.numberc));
     return out;
   }
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_truncate(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("truncate");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -3118,42 +1849,7 @@ Object scm_truncate(Object args) {
     mpfr_trunc(out.numberr, mpc_realref(obj.numberc));
     return out;
   }
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
@@ -3161,7 +1857,7 @@ Object scm_truncate(Object args) {
 
 Object scm_sqrt(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("sqrt");
   }
   Object arg = carref(args);
   switch (arg.type) {
@@ -3202,214 +1898,68 @@ Object scm_sqrt(Object args) {
     mpc_sqrt(out.numberc, arg.numberc, MPC_RNDNN);
     return out;
   }
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 
-/* Number end */
+/* Numbers end */
 
 /* Pairs and lists */
 Object scm_pair_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
-  }
-  if (args_length(args) != 1) {
-    return none;
+    return arguments("pair?");
   }
   switch (carref(args).type) {
   case PAIR:
     return true_obj;
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
-    return false_obj;
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_cons(Object args) {
   if (args_length(args) != 2) {
-    return none;
+    return arguments("cons");
   }
   return cons(car(args), car(cdrref(args)));
 }
 Object scm_car(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("car");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case PAIR:
     return car(obj);
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_cdr(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("cdr");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case PAIR:
     return cdr(obj);
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_set_car(Object args) {
   if (args_length(args) != 2) {
-    return none;
+    return arguments("set-car!");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -3418,52 +1968,16 @@ Object scm_set_car(Object args) {
     cars[obj.index] = car(cdrref(args));
     return unspecified;
   }
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_set_cdr(Object args) {
   if (args_length(args) != 2) {
-    return none;
+    return arguments("set-cdr!");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -3472,45 +1986,9 @@ Object scm_set_cdr(Object args) {
     cdrs[obj.index] = car(cdrref(args));
     return unspecified;
   }
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case IDENTIFIER:
-  case EMPTY:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
@@ -3520,52 +1998,15 @@ Object scm_set_cdr(Object args) {
 /* Symbols */
 Object scm_symbol_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("symbol?");
   }
   switch (carref(args).type) {
   case IDENTIFIER:
     return true_obj;
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-    return false_obj;
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
@@ -3573,307 +2014,86 @@ Object scm_symbol_p(Object args) {
 /* Characters */
 Object scm_char_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("char?");
   }
   switch (carref(args).type) {
   case CHARACTER:
     return true_obj;
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-    return false_obj;
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
 Object scm_char_alphabetic_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("char-alphabetic?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case CHARACTER:
     return g_unichar_isalpha(obj.character) ? true_obj : false_obj;
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_char_numeric_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("char-numeric?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case CHARACTER:
     return g_unichar_isdigit(obj.character) ? true_obj : false_obj;
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_char_whitespace_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("char-whitespace?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case CHARACTER:
     return g_unichar_isspace(obj.character) ? true_obj : false_obj;
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_char_upper_case_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("char-upper-case?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case CHARACTER:
     return g_unichar_isupper(obj.character) ? true_obj : false_obj;
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_char_lower_case_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("char-lower-case?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case CHARACTER:
     return g_unichar_islower(obj.character) ? true_obj : false_obj;
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_digit_value(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("digit-value");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -3885,51 +2105,14 @@ Object scm_digit_value(Object args) {
     mpz_init_set_si(out.numberz, n);
     return out;
   }
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_char_tointeger(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("char->integer");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -3938,51 +2121,14 @@ Object scm_char_tointeger(Object args) {
     mpz_init_set_si(out.numberz, obj.character);
     return out;
   }
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_integer_tochar(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("integer->char");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -4028,12 +2174,14 @@ Object scm_integer_tochar(Object args) {
   case PAIR:
   case NONE:
     return none;
+  default:
+    exit(1);
   }
   return none;
 }
 Object scm_char_upcase(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("char-upcase");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -4041,51 +2189,14 @@ Object scm_char_upcase(Object args) {
     return (Object){.type = CHARACTER,
                     .character = g_unichar_toupper(obj.character)};
   }
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_char_downcase(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("char-downcase");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -4093,51 +2204,14 @@ Object scm_char_downcase(Object args) {
     return (Object){.type = CHARACTER,
                     .character = g_unichar_tolower(obj.character)};
   }
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
 }
 Object scm_char_foldcase(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("char-foldcase");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -4150,44 +2224,7 @@ Object scm_char_foldcase(Object args) {
     free(s);
     return out;
   }
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-  case NONE:
+  default:
     return none;
   }
   return none;
@@ -4198,52 +2235,17 @@ Object scm_char_foldcase(Object args) {
 /* Strings */
 Object scm_string_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("string?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case STRING_EMPTY:
   case STRING:
     return true_obj;
-  case CHARACTER:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case VECTOR:
-  case BYTEVECTOR:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-    return false_obj;
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
@@ -4267,7 +2269,7 @@ Object scm_make_string(Object args) {
     }
     return out;
   }
-  return none;
+  return arguments("make-string");
 }
 static Object string_reverse(Object obj) {
   Object out = string_empty;
@@ -4286,7 +2288,7 @@ Object scm_string(Object args) {
 }
 Object scm_string_length(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("string-length");
   }
   size_t len = 0;
   for (Object obj = carref(args); obj.type != STRING_EMPTY;
@@ -4299,7 +2301,7 @@ Object scm_string_length(Object args) {
 }
 Object scm_string_ref(Object args) {
   if (args_length(args) != 2) {
-    return none;
+    return arguments("string-ref");
   }
   Object s = carref(args);
   Object k = carref(cdrref(args));
@@ -4312,7 +2314,7 @@ Object scm_string_ref(Object args) {
 }
 Object scm_string_set(Object args) {
   if (args_length(args) != 3) {
-    return none;
+    return arguments("string-set!");
   }
   Object s = carref(args);
   Object k = carref(cdrref(args));
@@ -4328,51 +2330,15 @@ Object scm_string_set(Object args) {
 /* Vectors */
 Object scm_vector_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("vector?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case VECTOR:
     return true_obj;
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-    return false_obj;
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
@@ -4380,7 +2346,7 @@ Object scm_vector_p(Object args) {
 Object scm_vector(Object args) { return list2vector(args); }
 Object scm_vector_length(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("vector-length");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -4389,51 +2355,16 @@ Object scm_vector_length(Object args) {
     mpz_init_set_ui(out.numberz, cdrs[obj.index].vector_length);
     return out;
   }
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_vector_ref(Object args) {
   if (args_length(args) != 2) {
-    return none;
+    return arguments("vector-ref");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -4445,51 +2376,16 @@ Object scm_vector_ref(Object args) {
     }
     return object_copy(cars[obj.index + i]);
   }
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_vector_set(Object args) {
   if (args_length(args) != 3) {
-    return none;
+    return arguments("vector-set!");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -4504,44 +2400,9 @@ Object scm_vector_set(Object args) {
     cars[obj.index + i] = obj0;
     return unspecified;
   }
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
@@ -4551,59 +2412,23 @@ Object scm_vector_set(Object args) {
 /* Bytevectors */
 Object scm_bytevector_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("bytevector?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case BYTEVECTOR:
     return true_obj;
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-    return false_obj;
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
 Object scm_bytevector(Object args) { return list2bytevector(args); }
 Object scm_bytevector_length(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("bytevector-length");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -4612,44 +2437,9 @@ Object scm_bytevector_length(Object args) {
     mpz_init_set_ui(out.numberz, cdrs[obj.index].vector_length);
     return out;
   }
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
@@ -4657,7 +2447,7 @@ Object scm_bytevector_length(Object args) {
 
 Object scm_bytevector_ueight_ref(Object args) {
   if (args_length(args) != 2) {
-    return none;
+    return arguments("bytevector-u8-ref");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -4669,51 +2459,16 @@ Object scm_bytevector_ueight_ref(Object args) {
     }
     return object_copy(cars[obj.index + i]);
   }
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_bytevector_ueight_set(Object args) {
   if (args_length(args) != 3) {
-    return none;
+    return arguments("bytevector-u8-set!");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -4728,44 +2483,9 @@ Object scm_bytevector_ueight_set(Object args) {
     cars[obj.index + i] = obj0;
     return unspecified;
   }
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
@@ -4803,7 +2523,7 @@ Object scm_utfeight_string(Object args) {
     break;
   }
   default:
-    return none;
+    return arguments("utf8->string");
   }
   if (end <= start) {
     return none;
@@ -4835,44 +2555,9 @@ Object scm_utfeight_string(Object args) {
     g_free(unichars);
     return out;
   }
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
@@ -4885,7 +2570,7 @@ Object scm_string_utfeight(Object args) {
   case 1: {
     obj = carref(args);
     start = 0;
-    if (obj.type != STRING) {
+    if (obj.type != STRING && obj.type != STRING_EMPTY) {
       return none;
     }
     end = 0;
@@ -4900,7 +2585,7 @@ Object scm_string_utfeight(Object args) {
       return none;
     }
     start = mpz_get_ui(carref(cdrref(args)).numberz);
-    if (obj.type != STRING) {
+    if (obj.type != STRING && obj.type != STRING_EMPTY) {
       return none;
     }
     end = 0;
@@ -4922,13 +2607,14 @@ Object scm_string_utfeight(Object args) {
     break;
   }
   default:
-    return none;
+    return arguments("string->utf8");
   }
   if (end <= start) {
     return list2bytevector(empty);
   }
   switch (obj.type) {
-  case STRING: {
+  case STRING:
+  case STRING_EMPTY: {
     size_t len = end - start;
     gunichar str[len];
     for (size_t i = 0; i < start; i++) {
@@ -4951,44 +2637,9 @@ Object scm_string_utfeight(Object args) {
     Object out = list2bytevector(t);
     return out;
   }
-  case STRING_EMPTY:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
@@ -4997,7 +2648,7 @@ Object scm_string_utfeight(Object args) {
 /* Control features */
 Object scm_procedure_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("procedure?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -5008,41 +2659,12 @@ Object scm_procedure_p(Object args) {
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
     return true_obj;
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-    return false_obj;
+
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
@@ -5050,7 +2672,7 @@ Object scm_procedure_p(Object args) {
 /* Exceptions */
 Object scm_error_implementation_defined_object(Object args) {
   if (args_length(args) < 1) {
-    return none;
+    return arguments("error-implementation-defined-object");
   }
   Object out = args;
   out.type = IMPLEMENTATION_DEFINED_OBJECT;
@@ -5058,159 +2680,53 @@ Object scm_error_implementation_defined_object(Object args) {
 }
 Object scm_error_object_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("error-object?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case IMPLEMENTATION_DEFINED_OBJECT: {
     return true_obj;
   }
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
-    return false_obj;
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
 Object scm_error_object_irritants(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("error-object-irrtants");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case IMPLEMENTATION_DEFINED_OBJECT:
     return implementation_defined_object_cdrref(obj);
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_error_object_message(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("error-object-message");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case IMPLEMENTATION_DEFINED_OBJECT:
     return implementation_defined_object_carref(obj);
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_file_error_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("file-error?");
   }
   return carref(args).type == FILE_ERROR ? true_obj : false_obj;
 }
@@ -5218,210 +2734,71 @@ Object scm_file_error_p(Object args) {
 /* Input and output */
 Object scm_input_port_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("input-port?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
-
     return true_obj;
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
 Object scm_output_port_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("output-port?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
-
     return true_obj;
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
 Object scm_textual_port_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("textual-port?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case PORT_OUTPUT_TEXT:
   case PORT_INPUT_TEXT:
     return true_obj;
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case PORT_OUTPUT_BINARY:
-  case PORT_INPUT_BINARY:
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
 Object scm_binary_port_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("binary-port?");
   }
   Object obj = carref(args);
   switch (obj.type) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_BINARY:
     return true_obj;
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case PORT_OUTPUT_TEXT:
-  case PORT_INPUT_TEXT:
-
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
     return none;
+  default:
+    return false_obj;
   }
   return none;
 }
 Object scm_input_port_open_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("input-port-open?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -5431,48 +2808,16 @@ Object scm_input_port_open_p(Object args) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
     return false_obj;
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_output_port_open_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("output-port-open?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -5482,48 +2827,16 @@ Object scm_output_port_open_p(Object args) {
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
     return false_obj;
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_open_output_file(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("open-output-file");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -5551,50 +2864,16 @@ Object scm_open_output_file(Object args) {
     out.type = PORT_OUTPUT_TEXT;
     return out;
   }
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_open_binary_output_file(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("open-binary-output-file");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -5622,50 +2901,16 @@ Object scm_open_binary_output_file(Object args) {
     out.type = PORT_OUTPUT_BINARY;
     return out;
   }
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_open_input_file(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("open-input-file");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -5693,50 +2938,16 @@ Object scm_open_input_file(Object args) {
     out.type = PORT_INPUT_TEXT;
     return out;
   }
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_open_binary_input_file(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("open-binary-input-file");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -5764,50 +2975,16 @@ Object scm_open_binary_input_file(Object args) {
     out.type = PORT_INPUT_BINARY;
     return out;
   }
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
 }
 Object scm_close_port(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("close-port");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -5819,41 +2996,9 @@ Object scm_close_port(Object args) {
     cars[obj.index].port = NULL;
     return unspecified;
   }
-
-  case PRIMITIVE_PROCEDURE:
-  case PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case STRING_EMPTY:
-  case STRING:
-  case CHARACTER:
-  case VECTOR:
-  case BYTEVECTOR:
-  case IDENTIFIER:
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case EMPTY:
-  case PAIR:
   case NONE:
+    return none;
+  default:
     return none;
   }
   return none;
@@ -5887,7 +3032,7 @@ Object scm_read(Object args) {
     return out;
   }
   default:
-    return none;
+    return arguments("read");
   }
   return none;
 }
@@ -5929,19 +3074,19 @@ Object scm_read_char(Object args) {
     return none;
   }
   default:
-    return none;
+    return arguments("read-char");
   }
   return none;
 }
 Object scm_eof_object_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("eof-object?");
   }
   return carref(args).type == EOF_OBJ ? true_obj : false_obj;
 }
 Object scm_eof_object(Object args) {
   if (args_length(args) != 0) {
-    return none;
+    return arguments("eof-object");
   }
   return (Object){.type = EOF_OBJ};
 }
@@ -5961,7 +3106,7 @@ Object scm_write(Object args) {
     return unspecified;
   }
   default:
-    return none;
+    return arguments("write");
   }
   return none;
 }
@@ -5980,7 +3125,7 @@ Object scm_write_shared(Object args) {
     return unspecified;
   }
   default:
-    return none;
+    return arguments("write-shared");
   }
   return none;
 }
@@ -5999,7 +3144,7 @@ Object scm_write_simple(Object args) {
     return unspecified;
   }
   default:
-    return none;
+    return arguments("write-simple");
   }
   return none;
 }
@@ -6018,7 +3163,7 @@ Object scm_display(Object args) {
     return unspecified;
   }
   default:
-    return none;
+    return arguments("display");
   }
   return none;
 }
@@ -6026,7 +3171,7 @@ Object scm_display(Object args) {
 /* System interface */
 Object scm_file_exists_p(Object args) {
   if (args_length(args) != 1) {
-    return none;
+    return arguments("file-exists?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -6093,5 +3238,5 @@ Object scm_emergency_exit(Object args) {
     fprintf(yyout, "\n");
     _exit(1);
   }
-  return none;
+  return arguments("emergency-exit");
 }

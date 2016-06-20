@@ -300,11 +300,10 @@ void object_write(FILE *stream, Object obj) {
     fprintf(stream, ">");
     break;
   case IMPLEMENTATION_DEFINED_OBJECT: {
-    fprintf(stream, "#<error ");
-    object_write(stream, carref(obj));
-    fprintf(stream, " ");
-    object_write(stream, cdrref(obj));
-    fprintf(stream, ">");
+    for (Object t = obj; t.type != EMPTY; t = cdrref(t)) {
+      object_display(stream, carref(t));
+      fprintf(stream, " ");
+    }
     break;
   }
   case PORT_INPUT_TEXT: {

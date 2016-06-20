@@ -1384,7 +1384,7 @@
     obj))
 (define error
   (lambda (message . args)
-    (raise (apply error-implementation-defined-boejct message args))))
+    (raise (apply error-implementation-defined-object message args))))
 
 ;; Exceptions end
 ;; Environments and evaluation

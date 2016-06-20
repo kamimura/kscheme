@@ -846,6 +846,9 @@ unbound_variable:
   fprintf(yyout, "\n");
   goto signal_error;
 primitive_procedure_raise:
+  fprintf(yyout, "Error: ");
+  object_display(yyout, carref(argl));
+  fprintf(yyout, "\n");
   goto signal_error;
 primitive_procedure_raise_continuable:
   goto signal_error;

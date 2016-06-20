@@ -2,8 +2,10 @@
 #include "procedures.h"
 
 extern FILE *yyout;
-static Object arguments(char const *s) {
-  fprintf(yyout, "Error: wrong number of arguments -- %s\n", s);
+static Object arguments(Object obj, char const *s) {
+  fprintf(yyout, "Error: ");
+  object_write(yyout, obj);
+  fprintf(yyout, " wrong number of arguments -- %s\n", s);
   return (Object){.type = WRONG_NUMBER_OF_ARGUMENTS};
 }
 static size_t args_length(Object args) {
@@ -15,7 +17,7 @@ static size_t args_length(Object args) {
 }
 Object scm_eqv_p(Object args) {
   if (args_length(args) != 2) {
-    return arguments("eqv?");
+    return arguments(args, "eqv?");
   }
   Object obj1 = carref(args);
   Object obj2 = carref(cdrref(args));
@@ -296,7 +298,7 @@ Object scm_eqv_p(Object args) {
 }
 Object scm_eq_p(Object args) {
   if (args_length(args) != 2) {
-    return arguments("eq?");
+    return arguments(args, "eq?");
   }
   Object obj1 = carref(args);
   Object obj2 = carref(cdrref(args));
@@ -379,7 +381,7 @@ Object scm_eq_p(Object args) {
 /* Numbers */
 Object scm_number_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("number?");
+    return arguments(args, "number?");
   }
   switch (carref(args).type) {
   case NUMBERZ:
@@ -394,7 +396,7 @@ Object scm_number_p(Object args) {
 }
 Object scm_complex_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("complex?");
+    return arguments(args, "complex?");
   }
   switch (carref(args).type) {
   case NUMBERZ:
@@ -411,7 +413,7 @@ Object scm_complex_p(Object args) {
 }
 Object scm_rational_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("rational?");
+    return arguments(args, "rational?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -460,7 +462,7 @@ static Object wrong_type(char const *prog_name, Object obj) {
 }
 Object scm_exact_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("exact?");
+    return arguments(args, "exact?");
   }
   switch (carref(args).type) {
   case NUMBERZ:
@@ -478,7 +480,7 @@ Object scm_exact_p(Object args) {
 }
 Object scm_inexact_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("inexact?");
+    return arguments(args, "inexact?");
   }
   switch (carref(args).type) {
   case NUMBERZ:
@@ -496,7 +498,7 @@ Object scm_inexact_p(Object args) {
 }
 Object scm_finite_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("finite?");
+    return arguments(args, "finite?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -520,7 +522,7 @@ Object scm_finite_p(Object args) {
 }
 Object scm_infinite_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("infinite?");
+    return arguments(args, "infinite?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -543,7 +545,7 @@ Object scm_infinite_p(Object args) {
 }
 Object scm_nan_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("nan?");
+    return arguments(args, "nan?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -566,7 +568,7 @@ Object scm_nan_p(Object args) {
 }
 Object scm_zero_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("zero?");
+    return arguments(args, "zero?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -587,7 +589,7 @@ Object scm_zero_p(Object args) {
 }
 Object scm_positive_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("posotive?");
+    return arguments(args, "posotive?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -611,7 +613,7 @@ Object scm_positive_p(Object args) {
 }
 Object scm_negative_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("negative?");
+    return arguments(args, "negative?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -1092,7 +1094,7 @@ Object scm_mul(Object args) {
 
 Object scm_sub(Object args) {
   if (args_length(args) == 0) {
-    return arguments("-");
+    return arguments(args, "-");
   }
   if (args_length(args) == 1) {
     Object obj = carref(args);
@@ -1352,7 +1354,7 @@ Object scm_sub(Object args) {
 }
 Object scm_div(Object args) {
   if (args_length(args) == 0) {
-    return arguments("/");
+    return arguments(args, "/");
   }
   if (args_length(args) == 1) {
     Object obj = carref(args);
@@ -1644,7 +1646,7 @@ Object scm_div(Object args) {
 }
 Object scm_numerator(Object args) {
   if (args_length(args) != 1) {
-    return arguments("numerator");
+    return arguments(args, "numerator");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -1697,7 +1699,7 @@ Object scm_numerator(Object args) {
 }
 Object scm_denominator(Object args) {
   if (args_length(args) != 1) {
-    return arguments("denominator");
+    return arguments(args, "denominator");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -1748,7 +1750,7 @@ Object scm_denominator(Object args) {
 }
 Object scm_floor(Object args) {
   if (args_length(args) != 1) {
-    return arguments("floor");
+    return arguments(args, "floor");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -1785,7 +1787,7 @@ Object scm_floor(Object args) {
 }
 Object scm_ceiling(Object args) {
   if (args_length(args) != 1) {
-    return arguments("ceiling");
+    return arguments(args, "ceiling");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -1822,7 +1824,7 @@ Object scm_ceiling(Object args) {
 }
 Object scm_truncate(Object args) {
   if (args_length(args) != 1) {
-    return arguments("truncate");
+    return arguments(args, "truncate");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -1860,7 +1862,7 @@ Object scm_truncate(Object args) {
 
 Object scm_sqrt(Object args) {
   if (args_length(args) != 1) {
-    return arguments("sqrt");
+    return arguments(args, "sqrt");
   }
   Object arg = carref(args);
   switch (arg.type) {
@@ -1912,7 +1914,7 @@ Object scm_sqrt(Object args) {
 /* Pairs and lists */
 Object scm_pair_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("pair?");
+    return arguments(args, "pair?");
   }
   switch (carref(args).type) {
   case PAIR:
@@ -1926,13 +1928,13 @@ Object scm_pair_p(Object args) {
 }
 Object scm_cons(Object args) {
   if (args_length(args) != 2) {
-    return arguments("cons");
+    return arguments(args, "cons");
   }
   return cons(car(args), car(cdrref(args)));
 }
 Object scm_car(Object args) {
   if (args_length(args) != 1) {
-    return arguments("car");
+    return arguments(args, "car");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -1947,7 +1949,7 @@ Object scm_car(Object args) {
 }
 Object scm_cdr(Object args) {
   if (args_length(args) != 1) {
-    return arguments("cdr");
+    return arguments(args, "cdr");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -1962,7 +1964,7 @@ Object scm_cdr(Object args) {
 }
 Object scm_set_car(Object args) {
   if (args_length(args) != 2) {
-    return arguments("set-car!");
+    return arguments(args, "set-car!");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -1980,7 +1982,7 @@ Object scm_set_car(Object args) {
 }
 Object scm_set_cdr(Object args) {
   if (args_length(args) != 2) {
-    return arguments("set-cdr!");
+    return arguments(args, "set-cdr!");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2001,7 +2003,7 @@ Object scm_set_cdr(Object args) {
 /* Symbols */
 Object scm_symbol_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("symbol?");
+    return arguments(args, "symbol?");
   }
   switch (carref(args).type) {
   case IDENTIFIER:
@@ -2017,7 +2019,7 @@ Object scm_symbol_p(Object args) {
 /* Characters */
 Object scm_char_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("char?");
+    return arguments(args, "char?");
   }
   switch (carref(args).type) {
   case CHARACTER:
@@ -2031,7 +2033,7 @@ Object scm_char_p(Object args) {
 }
 Object scm_char_alphabetic_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("char-alphabetic?");
+    return arguments(args, "char-alphabetic?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2044,7 +2046,7 @@ Object scm_char_alphabetic_p(Object args) {
 }
 Object scm_char_numeric_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("char-numeric?");
+    return arguments(args, "char-numeric?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2057,7 +2059,7 @@ Object scm_char_numeric_p(Object args) {
 }
 Object scm_char_whitespace_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("char-whitespace?");
+    return arguments(args, "char-whitespace?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2070,7 +2072,7 @@ Object scm_char_whitespace_p(Object args) {
 }
 Object scm_char_upper_case_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("char-upper-case?");
+    return arguments(args, "char-upper-case?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2085,7 +2087,7 @@ Object scm_char_upper_case_p(Object args) {
 }
 Object scm_char_lower_case_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("char-lower-case?");
+    return arguments(args, "char-lower-case?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2100,7 +2102,7 @@ Object scm_char_lower_case_p(Object args) {
 }
 Object scm_digit_value(Object args) {
   if (args_length(args) != 1) {
-    return arguments("digit-value");
+    return arguments(args, "digit-value");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2119,7 +2121,7 @@ Object scm_digit_value(Object args) {
 }
 Object scm_char_tointeger(Object args) {
   if (args_length(args) != 1) {
-    return arguments("char->integer");
+    return arguments(args, "char->integer");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2135,7 +2137,7 @@ Object scm_char_tointeger(Object args) {
 }
 Object scm_integer_tochar(Object args) {
   if (args_length(args) != 1) {
-    return arguments("integer->char");
+    return arguments(args, "integer->char");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2169,7 +2171,7 @@ Object scm_integer_tochar(Object args) {
 }
 Object scm_char_upcase(Object args) {
   if (args_length(args) != 1) {
-    return arguments("char-upcase");
+    return arguments(args, "char-upcase");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2184,7 +2186,7 @@ Object scm_char_upcase(Object args) {
 }
 Object scm_char_downcase(Object args) {
   if (args_length(args) != 1) {
-    return arguments("char-downcase");
+    return arguments(args, "char-downcase");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2199,7 +2201,7 @@ Object scm_char_downcase(Object args) {
 }
 Object scm_char_foldcase(Object args) {
   if (args_length(args) != 1) {
-    return arguments("char-foldcase");
+    return arguments(args, "char-foldcase");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2223,7 +2225,7 @@ Object scm_char_foldcase(Object args) {
 /* Strings */
 Object scm_string_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("string?");
+    return arguments(args, "string?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2264,7 +2266,7 @@ Object scm_make_string(Object args) {
     return out;
   }
   default:
-    return arguments("make-string");
+    return arguments(args, "make-string");
   }
 }
 static Object string_reverse(Object obj) {
@@ -2287,7 +2289,7 @@ Object scm_string(Object args) {
 }
 Object scm_string_length(Object args) {
   if (args_length(args) != 1) {
-    return arguments("string-length");
+    return arguments(args, "string-length");
   }
   size_t len = 0;
   switch (carref(args).type) {
@@ -2308,7 +2310,7 @@ Object scm_string_length(Object args) {
 }
 Object scm_string_ref(Object args) {
   if (args_length(args) != 2) {
-    return arguments("string-ref");
+    return arguments(args, "string-ref");
   }
   Object s = carref(args);
   Object k = carref(cdrref(args));
@@ -2324,7 +2326,7 @@ Object scm_string_ref(Object args) {
 }
 Object scm_string_set(Object args) {
   if (args_length(args) != 3) {
-    return arguments("string-set!");
+    return arguments(args, "string-set!");
   }
   Object s = carref(args);
   Object k = carref(cdrref(args));
@@ -2343,7 +2345,7 @@ Object scm_string_set(Object args) {
 /* Vectors */
 Object scm_vector_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("vector?");
+    return arguments(args, "vector?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2359,7 +2361,7 @@ Object scm_vector_p(Object args) {
 Object scm_vector(Object args) { return list2vector(args); }
 Object scm_vector_length(Object args) {
   if (args_length(args) != 1) {
-    return arguments("vector-length");
+    return arguments(args, "vector-length");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2377,7 +2379,7 @@ Object scm_vector_length(Object args) {
 }
 Object scm_vector_ref(Object args) {
   if (args_length(args) != 2) {
-    return arguments("vector-ref");
+    return arguments(args, "vector-ref");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2401,7 +2403,7 @@ Object scm_vector_ref(Object args) {
 }
 Object scm_vector_set(Object args) {
   if (args_length(args) != 3) {
-    return arguments("vector-set!");
+    return arguments(args, "vector-set!");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2431,7 +2433,7 @@ Object scm_vector_set(Object args) {
 /* Bytevectors */
 Object scm_bytevector_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("bytevector?");
+    return arguments(args, "bytevector?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2447,7 +2449,7 @@ Object scm_bytevector_p(Object args) {
 Object scm_bytevector(Object args) { return list2bytevector(args); }
 Object scm_bytevector_length(Object args) {
   if (args_length(args) != 1) {
-    return arguments("bytevector-length");
+    return arguments(args, "bytevector-length");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2466,7 +2468,7 @@ Object scm_bytevector_length(Object args) {
 
 Object scm_bytevector_ueight_ref(Object args) {
   if (args_length(args) != 2) {
-    return arguments("bytevector-u8-ref");
+    return arguments(args, "bytevector-u8-ref");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2490,7 +2492,7 @@ Object scm_bytevector_ueight_ref(Object args) {
 }
 Object scm_bytevector_ueight_set(Object args) {
   if (args_length(args) != 3) {
-    return arguments("bytevector-u8-set!");
+    return arguments(args, "bytevector-u8-set!");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2549,7 +2551,7 @@ Object scm_utfeight_tostring(Object args) {
     break;
   }
   default:
-    return arguments("utf8->string");
+    return arguments(args, "utf8->string");
   }
   if (end <= start) {
     return none;
@@ -2633,7 +2635,7 @@ Object scm_string_toutfeight(Object args) {
     break;
   }
   default:
-    return arguments("string->utf8");
+    return arguments(args, "string->utf8");
   }
   if (end <= start) {
     return list2bytevector(empty);
@@ -2674,7 +2676,7 @@ Object scm_string_toutfeight(Object args) {
 /* Control features */
 Object scm_procedure_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("procedure?");
+    return arguments(args, "procedure?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2698,7 +2700,7 @@ Object scm_procedure_p(Object args) {
 /* Exceptions */
 Object scm_error_implementation_defined_object(Object args) {
   if (args_length(args) < 1) {
-    return arguments("error-implementation-defined-object");
+    return arguments(args, "error-implementation-defined-object");
   }
   Object out = args;
   out.type = IMPLEMENTATION_DEFINED_OBJECT;
@@ -2706,7 +2708,7 @@ Object scm_error_implementation_defined_object(Object args) {
 }
 Object scm_error_object_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("error-object?");
+    return arguments(args, "error-object?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2722,7 +2724,7 @@ Object scm_error_object_p(Object args) {
 }
 Object scm_error_object_irritants(Object args) {
   if (args_length(args) != 1) {
-    return arguments("error-object-irrtants");
+    return arguments(args, "error-object-irrtants");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2737,7 +2739,7 @@ Object scm_error_object_irritants(Object args) {
 }
 Object scm_error_object_message(Object args) {
   if (args_length(args) != 1) {
-    return arguments("error-object-message");
+    return arguments(args, "error-object-message");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2752,7 +2754,7 @@ Object scm_error_object_message(Object args) {
 }
 Object scm_file_error_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("file-error?");
+    return arguments(args, "file-error?");
   }
   return carref(args).type == FILE_ERROR ? true_obj : false_obj;
 }
@@ -2760,7 +2762,7 @@ Object scm_file_error_p(Object args) {
 /* Input and output */
 Object scm_input_port_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("input-port?");
+    return arguments(args, "input-port?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2776,7 +2778,7 @@ Object scm_input_port_p(Object args) {
 }
 Object scm_output_port_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("output-port?");
+    return arguments(args, "output-port?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2792,7 +2794,7 @@ Object scm_output_port_p(Object args) {
 }
 Object scm_textual_port_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("textual-port?");
+    return arguments(args, "textual-port?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2808,7 +2810,7 @@ Object scm_textual_port_p(Object args) {
 }
 Object scm_binary_port_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("binary-port?");
+    return arguments(args, "binary-port?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2824,7 +2826,7 @@ Object scm_binary_port_p(Object args) {
 }
 Object scm_input_port_open_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("input-port-open?");
+    return arguments(args, "input-port-open?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2843,7 +2845,7 @@ Object scm_input_port_open_p(Object args) {
 }
 Object scm_output_port_open_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("output-port-open?");
+    return arguments(args, "output-port-open?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2862,7 +2864,7 @@ Object scm_output_port_open_p(Object args) {
 }
 Object scm_open_output_file(Object args) {
   if (args_length(args) != 1) {
-    return arguments("open-output-file");
+    return arguments(args, "open-output-file");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2899,7 +2901,7 @@ Object scm_open_output_file(Object args) {
 }
 Object scm_open_binary_output_file(Object args) {
   if (args_length(args) != 1) {
-    return arguments("open-binary-output-file");
+    return arguments(args, "open-binary-output-file");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2936,7 +2938,7 @@ Object scm_open_binary_output_file(Object args) {
 }
 Object scm_open_input_file(Object args) {
   if (args_length(args) != 1) {
-    return arguments("open-input-file");
+    return arguments(args, "open-input-file");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -2973,7 +2975,7 @@ Object scm_open_input_file(Object args) {
 }
 Object scm_open_binary_input_file(Object args) {
   if (args_length(args) != 1) {
-    return arguments("open-binary-input-file");
+    return arguments(args, "open-binary-input-file");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -3010,7 +3012,7 @@ Object scm_open_binary_input_file(Object args) {
 }
 Object scm_close_port(Object args) {
   if (args_length(args) != 1) {
-    return arguments("close-port");
+    return arguments(args, "close-port");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -3058,7 +3060,7 @@ Object scm_read(Object args) {
     return out;
   }
   default:
-    return arguments("read");
+    return arguments(args, "read");
   }
   return none;
 }
@@ -3100,19 +3102,19 @@ Object scm_read_char(Object args) {
     return none;
   }
   default:
-    return arguments("read-char");
+    return arguments(args, "read-char");
   }
   return none;
 }
 Object scm_eof_object_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("eof-object?");
+    return arguments(args, "eof-object?");
   }
   return carref(args).type == EOF_OBJ ? true_obj : false_obj;
 }
 Object scm_eof_object(Object args) {
   if (args_length(args) != 0) {
-    return arguments("eof-object");
+    return arguments(args, "eof-object");
   }
   return (Object){.type = EOF_OBJ};
 }
@@ -3132,7 +3134,7 @@ Object scm_write(Object args) {
     return unspecified;
   }
   default:
-    return arguments("write");
+    return arguments(args, "write");
   }
   return none;
 }
@@ -3151,7 +3153,7 @@ Object scm_write_shared(Object args) {
     return unspecified;
   }
   default:
-    return arguments("write-shared");
+    return arguments(args, "write-shared");
   }
   return none;
 }
@@ -3170,7 +3172,7 @@ Object scm_write_simple(Object args) {
     return unspecified;
   }
   default:
-    return arguments("write-simple");
+    return arguments(args, "write-simple");
   }
   return none;
 }
@@ -3189,7 +3191,7 @@ Object scm_display(Object args) {
     return unspecified;
   }
   default:
-    return arguments("display");
+    return arguments(args, "display");
   }
   return none;
 }
@@ -3197,7 +3199,7 @@ Object scm_display(Object args) {
 /* System interface */
 Object scm_file_exists_p(Object args) {
   if (args_length(args) != 1) {
-    return arguments("file-exists?");
+    return arguments(args, "file-exists?");
   }
   Object obj = carref(args);
   switch (obj.type) {
@@ -3264,5 +3266,5 @@ Object scm_emergency_exit(Object args) {
     fprintf(yyout, "\n");
     _exit(1);
   }
-  return arguments("emergency-exit");
+  return arguments(args, "emergency-exit");
 }

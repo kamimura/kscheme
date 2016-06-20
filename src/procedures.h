@@ -79,8 +79,8 @@ Object scm_bytevector(Object args);
 Object scm_bytevector_length(Object args);
 Object scm_bytevector_ueight_ref(Object args);
 Object scm_bytevector_ueight_set(Object args);
-Object scm_utfeight_string(Object args);
-Object scm_string_utfeight(Object args);
+Object scm_utfeight_tostring(Object args);
+Object scm_string_toutfeight(Object args);
 /* Control features */
 Object scm_procedure_p(Object args);
 /* Exceptions */

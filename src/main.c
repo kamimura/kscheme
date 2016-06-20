@@ -313,10 +313,12 @@ int main() {
       env);
   define_variable(
       identifier_new("utf8->string"),
-      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_utfeight_string}, env);
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_utfeight_tostring},
+      env);
   define_variable(
       identifier_new("string->utf8"),
-      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_string_utfeight}, env);
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_string_toutfeight},
+      env);
   /* Bytevectors end */
   /* Control features */
   define_variable(

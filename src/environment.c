@@ -6,20 +6,29 @@ Object make_frame(Object params, Object args) {
   }
   Object vars = empty;
   Object vals = empty;
-  for (Object p = params, a = args; p.type != EMPTY;
-       p = cdrref(p), a = cdrref(a)) {
+  Object p, a;
+  for (p = params, a = args; p.type != EMPTY; p = cdrref(p), a = cdrref(a)) {
     if (p.type == IDENTIFIER) {
       vars = cons(p, vars);
       vals = cons(a, vals);
-      break;
+      return cons(vars, vals);
+    }
+    if (a.type == EMPTY) {
+      return (Object){.type = WRONG_NUMBER_OF_ARGUMENTS};
     }
     vars = cons(carref(p), vars);
     vals = cons(car(a), vals);
   }
+  if (a.type != EMPTY) {
+    return (Object){.type = WRONG_NUMBER_OF_ARGUMENTS};
+  }
   return cons(vars, vals);
+  ;
 }
 Object extend_environment(Object vars, Object vals, Object base_env) {
-  return cons(make_frame(vars, vals), base_env);
+  Object frame = make_frame(vars, vals);
+  return frame.type == WRONG_NUMBER_OF_ARGUMENTS ? frame
+                                                 : cons(frame, base_env);
 }
 
 Object lookup_variable_valueref(Object var, Object env) {

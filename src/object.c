@@ -68,6 +68,8 @@ Object object_copy(Object obj) {
 
   case EOF_OBJ:
   case UNSPECIFIED:
+  case MULTIPLE_ZERO:
+  case MULTIPLE:
     return obj;
 
   case NONE:
@@ -75,7 +77,7 @@ Object object_copy(Object obj) {
   default:
     exit(1);
   }
-  return none;
+  exit(1);
 }
 void object_free(Object *obj_ptr) {
   switch (obj_ptr->type) {
@@ -355,13 +357,24 @@ void object_write(FILE *stream, Object obj) {
   case UNSPECIFIED:
     fprintf(stream, "#<unspecified>");
     break;
-  case NONE: {
-    fprintf(stderr, "ksi error ksi object_write NONE VECTOR_NULL\n");
-    exit(1);
-    break;
-  default:
+  case MULTIPLE: {
+    bool flag = false;
+    for (Object o = obj; o.type != EMPTY; o = cdrref(o)) {
+      if (flag) {
+        fprintf(stream, " ");
+      } else {
+        flag = true;
+      }
+      object_write(stream, carref(o));
+    }
     break;
   }
+  case MULTIPLE_ZERO:
+    break;
+  case NONE:
+    exit(1);
+  default:
+    break;
   }
 }
 void object_write_shared(FILE *stream, Object obj) {

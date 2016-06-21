@@ -39,6 +39,8 @@ typedef enum type {
   FILE_ERROR,
   AND,
   OR,
+  MULTIPLE,
+  MULTIPLE_ZERO,
   NONE,
   UNSPECIFIED,
   WRONG_NUMBER_OF_ARGUMENTS,

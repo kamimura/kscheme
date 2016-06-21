@@ -489,22 +489,59 @@ eval_dispatch:
     case IDENTIFIER: {
       Object t1 = lookup_variable_valueref(t, env);
       switch (t1.type) {
-      case QUOTE:
+      case NONE: {
+        expr = t;
+        goto unbound_variable;
+      }
+      case QUOTE: {
+        if (!list_p(expr) || list_length(expr) != 2) {
+          goto syntax_error;
+        }
         goto ev_quoted;
-      case LAMBDA:
+      }
+      case LAMBDA: {
+        if (!list_p(expr) || list_length(expr) < 3) {
+          goto syntax_error;
+        }
         goto ev_lambda;
-      case IF:
+      }
+      case IF: {
+        if (!list_p(expr) ||
+            (list_length(expr) != 3 && list_length(expr) != 4)) {
+          goto syntax_error;
+        }
         goto ev_if;
-      case SET:
+      }
+      case SET: {
+        if (!list_p(expr) || list_length(expr) != 3) {
+          goto syntax_error;
+        }
         goto ev_assignment;
-      case DEFINE:
+      }
+      case DEFINE: {
+        if (!list_p(expr) || list_length(expr) != 3) {
+          goto syntax_error;
+        }
         goto ev_definition;
-      case BEGIN_TYPE:
+      }
+      case BEGIN_TYPE: {
+        if (!list_p(expr) || list_length(expr) == 1) {
+          goto syntax_error;
+        }
         goto ev_begin;
-      case AND:
+      }
+      case AND: {
+        if (!list_p(expr)) {
+          goto syntax_error;
+        }
         goto ev_and;
-      case OR:
+      }
+      case OR: {
+        if (!list_p(expr)) {
+          goto syntax_error;
+        }
         goto ev_or;
+      }
       case PRIMITIVE_PROCEDURE:
       case PROCEDURE:
       case PRIMITIVE_PROCEDURE_APPLY:
@@ -512,6 +549,9 @@ eval_dispatch:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
       case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE: {
+        if (!list_p(expr)) {
+          goto syntax_error;
+        }
         goto ev_application;
       }
       default:
@@ -526,6 +566,9 @@ eval_dispatch:
     case PRIMITIVE_PROCEDURE_RAISE:
     case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
     case PAIR: {
+      if (!list_p(expr)) {
+        goto syntax_error;
+      }
       goto ev_application;
     }
     default:
@@ -643,7 +686,14 @@ apply_dispatch:
     cont = continuation_carref(proc);
     stack = continuation_cdrref(proc);
     object_free(&val);
-    val = car(argl);
+    if (argl.type == EMPTY) {
+      val.type = MULTIPLE_ZERO;
+    } else if (cdrref(argl).type != EMPTY) {
+      val = argl;
+      val.type = MULTIPLE;
+    } else {
+      val = car(argl);
+    }
     goto *cont.cont;
   }
   case PRIMITIVE_PROCEDURE_RAISE: {
@@ -672,6 +722,14 @@ compound_apply:
   env = carref(proc);
   unev = carref(cdrref(proc));
   env = extend_environment(unev, argl, env);
+  if (env.type == WRONG_NUMBER_OF_ARGUMENTS) {
+    fprintf(yyout, "Error: ");
+    object_write(yyout, argl);
+    fprintf(yyout, " wrong number of arguments -- ");
+    object_write(yyout, proc);
+    fprintf(yyout, "\n");
+    goto wrong_number_of_arguments;
+  }
   unev = cdrref(cdrref(proc));
   goto ev_sequence;
 ev_begin:
@@ -716,7 +774,7 @@ ev_if_alternative:
 ev_if_consequence:
   expr = car(cdrref(cdrref(expr)));
   goto eval_dispatch;
-ev_assignment:
+ev_assignment : {
   unev = carref(cdrref(expr));
   save(unev);
   expr = car(cdrref(cdrref(expr)));
@@ -724,13 +782,14 @@ ev_assignment:
   save(cont);
   cont.cont = &&ev_assignment_1;
   goto eval_dispatch;
+}
 ev_assignment_1:
   restore(&cont);
   restore(&env);
   restore(&unev);
   val = set_variable_value(unev, val, env);
   if (val.type == NONE) {
-
+    expr = unev;
     goto unbound_variable;
   }
   goto *cont.cont;
@@ -855,6 +914,11 @@ primitive_procedure_raise_continuable:
 wrong_number_of_arguments:
   goto signal_error;
 wrong_type_argument:
+  goto signal_error;
+syntax_error:
+  fprintf(yyout, "Error: syntax error - ");
+  object_write(yyout, expr);
+  fprintf(yyout, "\n");
   goto signal_error;
 signal_error:;
   goto read_eval_print_loop;

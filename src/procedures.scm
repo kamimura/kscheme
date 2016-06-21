@@ -162,115 +162,101 @@
                         (iter x2 (car rest) (cdr rest))))))))
     (iter x1 x2 rest)))
 
-;; (define odd? (lambda (n)))
-;; (define even? (lambda (n) (not (odd? n))))
+(define odd?
+  (lambda (n)
+    (if (integer? n)
+        (= (floor-remainder n 2) 1)
+        (error "(odd?) wrong type of argument --" n))))
+(define even?
+  (lambda (n)
+    (if (integer? n)
+        (= (floor-remainder n 2) 0)
+        (error "(even?) wrong type of argument --" n))))
 (define max
   (lambda (x . rest)
+    (define gt
+      (lambda (n1 n2)
+        (define convert (if (or (inexact? n1)
+                                (inexact? n2))
+                            inexact
+                            exact))
+        (if (> n1 n2)
+            (convert n1)
+            (convert n2))))
     (define iter
       (lambda (x rest)
-        (if (not (real? x))
-            #f
-            (if (nan? x)
-                x
-                (if (null? rest)
-                    x
-                    (if (> x (car rest))
-                        (if (exact? x)
-                            (if (exact? (car rest))
-                                (iter x (cdr rest))
-                                (iter (inexact x) (cdr rest)))
-                            (iter x (cdr rest)))
-                        (if (exact? (car rest))
-                            (if (exact? x)
-                                (iter (car rest) (cdr rest))
-                                (iter (inexact (car rest)) (cdr rest)))
-                            (iter (car rest) (cdr rest)))))))))
-    (iter x rest)))
-
+        (if (null? rest)
+            x
+            (if (not (real? (car rest)))
+                (error "(max) wrong type argument --" (car rest))
+                (iter (gt x (car rest)) (cdr rest))))))
+    (if (real? x)        
+        (iter x rest)
+        (error "(max) wrong type argument --" x))))
 (define min
   (lambda (x . rest)
+    (define lt
+      (lambda (n1 n2)
+        (define convert (if (or (inexact? n1)
+                                (inexact? n2))
+                            inexact
+                            exact))
+        (if (< n1 n2)
+            (convert n1)
+            (convert n2))))
     (define iter
       (lambda (x rest)
-        (if (not (real? x))
-            #f
-            (if (nan? x)
-                x
-                (if (null? rest)
-                    x
-                    (if (< x (car rest))
-                        (if (exact? x)
-                            (if (exact? (car rest))
-                                (iter x (cdr rest))
-                                (iter (inexact x) (cdr rest)))
-                            (iter x (cdr rest)))
-                        (if (exact? (car rest))
-                            (if (exact? x)
-                                (iter (car rest) (cdr rest))
-                                (iter (inexact (car rest)) (cdr rest)))
-                            (iter (car rest) (cdr rest)))))))))
-    (iter x rest)))
+        (if (null? rest)
+            x
+            (if (not (real? (car rest)))
+                (error "(min) wrong type argument --" (car rest))
+                (iter (lt x (car rest)) (cdr rest))))))
+    (if (real? x)        
+        (iter x rest)
+        (error "(min) wrong type argument --" x))))
 
-(define abs (lambda (x) (if (< x 0) (- x) x)))
+(define abs
+  (lambda (x)
+    (if (real? x)
+        (if (< x 0) (- x) x)
+        (error "(abs) wrong type argument --" x))))
 
-(define floor
+(define floor/
   (lambda (n1 n2)
-    (values (floor-quotient n1 n2) (floor-remainder n1 n2))))
+    (if (and (integer? n1) (integer? n2))
+        (values (floor-quotient n1 n2) (floor-remainder n1 n2))
+        (error "(floor/) wrong type argument -- " (list n1 n2)))))
+
 (define floor-quotient  
   (lambda (n1 n2)
-    (define iter1
-      (lambda (n1 n2)
-        (if (< n1 n2)
-            0
-            (+ 1 (iter1 (- n1 n2) n2)))))
-    (define iter2
-      (lambda (n1 n2)
-        (if (< n1 n2)
-            -1
-            (+ -1 (iter2 (- n1 n2) n2)))))
-    (if (not (integer? n1))
-        #f
-        (if (not (integer? n2))
-            #f
-            (if (> n1 0)
-                (if (> n2 0)
-                    (iter1 n1 n2)
-                    (iter2 n1 (- n2)))
-                (if (> n2 0)
-                    (iter2 (- n1) n2)
-                    (iter1 (- n1) (- n2))))))))
+    (if (and (integer? n1) (integer? n2))
+        (floor (/ n1 n2))
+        (error "(floor-quotient) wrong type argument --" (list n1 n2)))))
 
-(define floor-remainder (lambda (n1 n2) (- n1 (* n2 (floor-quotient n1 n2)))))
+(define floor-remainder
+  (lambda (n1 n2)
+    (if (and (integer? n1) (integer? n2))
+        (- n1 (* n2 (floor (/ n1 n2))))
+        (error "(floor-remainder) wrong type argument --" (list n1 n2)))))
+  
 
 (define truncate/
   (lambda (n1 n2)
-    (values (truncate-quotient n1 n2) (truncate-remainder n1 n2))))
+    (if (and (integer? n1) (integer? n2))
+        (values (truncate-quotient n1 n2) (truncate-remainder n1 n2))
+        (error "(truncate/) wrong type argument --" (list n1 n2)))))
 
 (define truncate-quotient
   (lambda (n1 n2)
-    (define iter1
-      (lambda (n1 n2)
-        (if (< n1 n2)
-            0
-            (+ 1 (iter1 (- n1 n2) n2)))))
-    (define iter2
-      (lambda (n1 n2)
-        (if (< n1 n2)
-            0
-            (+ -1 (iter2 (- n1 n2) n2)))))
-    (if (not (integer? n1))
-        #f
-        (if (not (integer? n2))
-            #f
-            (if (> n1 0)
-                (if (> n2 0)
-                    (iter1 n1 n2)
-                    (iter2 n1 (- n2)))
-                (if (> n2 0)
-                    (iter2 (- n1) n2)
-                    (iter1 (- n1) (- n2))))))))
+    (if (and (integer? n1) (integer? n2))
+        (truncate (/ n1 n2))
+        (error "(trundate-quotient/) wrong type argument --" (list n1 n2)))))
 
 (define truncate-remainder
-  (lambda (n1 n2)(- n1 (* n2 (truncate-quotient n1 n2)))))
+  (lambda (n1 n2)
+    (if (and (integer? n1) (integer? n2))
+        (- n1 (* n2 (truncate (/ n1 n2))))
+        (error "(truncate-remainder) wrong type argument --" (list n1 n2)))))
 
 (define quotient truncate-quotient)
 (define remainder truncate-remainder)
@@ -290,18 +276,18 @@
                     n2
                     (euclidean n2 r))))))
     (define iter
-      (lambda (n args)
-        (if (null? args)
+      (lambda (n rest)
+        (if (null? rest)
             n
-            (if (integer? (car args))
-                (iter (euclidean n (abs (car args)))
-                      (cdr args))
-                #f))))
+            (if (integer? (car rest))
+                (iter (euclidean n (abs (car rest)))
+                      (cdr rest))
+                (error "(gcd) wrong type argument --" args)))))
     (if (null? args)
         0
         (if (integer? (car args))
             (iter (abs (car args)) (cdr args))
-            #f))))
+            (error "(gcd) wrong type argument --" args)))))
 (define lcm
   (lambda args
     (define iter
@@ -1283,6 +1269,14 @@
   (lambda (proc vect . args)
     (apply for-each proc (map vector->list (cons vect args)))))
 
+;; (define values
+;;   (lambda things (call-with-current-continuation
+;;                   (lambda (cont) (apply cont things)))))
+(define values
+  ((lambda ()
+     (define c/c call-with-current-continuation)
+     (lambda things (c/c (lambda (cont) (apply cont things)))))))
+
 (define call/cc call-with-current-continuation)
 (define dynamic-wind #f)
 ((lambda ()
@@ -1321,13 +1315,21 @@
    (set! call/cc
          ((lambda (c/c)
             (lambda (proc)
-              (c/c (lambda (cont)
-                     (proc ((lambda (wind0)
-                              (lambda (obj)
-                                (if (not (eq? wind0 wind))
-                                    (unwind wind0))
-                                (cont obj)))
-                            wind))))))
+              (c/c (values (lambda (cont)
+                             (proc ((lambda (wind0)
+                                      (lambda (obj)
+                                        (if (not (eq? wind0 wind))
+                                            (unwind wind0))
+                                        (cont obj)))
+                                    wind)))))))
+            ;; (lambda (proc)
+            ;;   (c/c (lambda (cont)
+            ;;          (proc ((lambda (wind0)
+            ;;                   (lambda (obj)
+            ;;                     (if (not (eq? wind0 wind))
+            ;;                         (unwind wind0))
+            ;;                     (cont obj)))
+            ;;                 wind))))))
           call/cc))
    (set! call-with-current-continuation call/cc)
    (set! dynamic-wind
@@ -1340,9 +1342,6 @@
               result)
             (thunk))))))
 
-(define values
-  (lambda things (call-with-current-continuation
-                  (lambda (cont) (apply cont things)))))
 ;; Control features end
 ;; Exceptions
 (define with-exception-handler
@@ -1370,12 +1369,12 @@
           (set! raise raise-primitive)
           (set! raise-continuable raise-continuable-primitive)))))
 
-(define raise
-  (lambda (obj)
-    (display "Exception: ")
-    (write obj)
-    (newline)
-    obj))
+;; (define raise
+;;   (lambda (obj)
+;;     (display "Exception: ")
+;;     (write obj)
+;;     (newline)
+;;     obj))
 (define raise-continuable
   (lambda (obj)
     (display "Exception: ")

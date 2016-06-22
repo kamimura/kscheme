@@ -15,13 +15,21 @@ static size_t args_length(Object args) {
   }
   return len;
 }
-
+static Object value(Object const obj) {
+  if (obj.type != MULTIPLE) {
+    return obj;
+  }
+  Object o;
+  for (o = carref(obj); o.type != MULTIPLE; o = carref(o)) {
+  }
+  return o;
+}
 Object scm_eqv_p(Object args) {
   if (args_length(args) != 2) {
     return arguments(args, "eqv?");
   }
-  Object obj1 = carref(args);
-  Object obj2 = carref(cdrref(args));
+  Object obj1 = value(carref(args));
+  Object obj2 = value(carref(cdrref(args)));
   switch (obj1.type) {
   case TRUE_TYPE:
   case FALSE_TYPE:
@@ -41,6 +49,7 @@ Object scm_eqv_p(Object args) {
   case EMPTY:
   case STRING_EMPTY:
   case UNSPECIFIED:
+  case MULTIPLE_ZERO:
     return obj1.type == obj2.type ? true_obj : false_obj;
   case IDENTIFIER:
     return obj2.type == IDENTIFIER && obj1.identifier == obj2.identifier
@@ -87,6 +96,7 @@ Object scm_eqv_p(Object args) {
     case PORT_OUTPUT_BINARY:
     case IMPLEMENTATION_DEFINED_OBJECT:
     case UNSPECIFIED:
+    case MULTIPLE_ZERO:
       return false_obj;
     default:
       exit(1);
@@ -132,6 +142,7 @@ Object scm_eqv_p(Object args) {
     case PORT_OUTPUT_BINARY:
     case IMPLEMENTATION_DEFINED_OBJECT:
     case UNSPECIFIED:
+    case MULTIPLE_ZERO:
       return false_obj;
     default:
       exit(1);
@@ -184,6 +195,7 @@ Object scm_eqv_p(Object args) {
     case PORT_OUTPUT_BINARY:
     case IMPLEMENTATION_DEFINED_OBJECT:
     case UNSPECIFIED:
+    case MULTIPLE_ZERO:
       return false_obj;
     default:
       exit(1);
@@ -237,6 +249,7 @@ Object scm_eqv_p(Object args) {
     case PORT_OUTPUT_BINARY:
     case IMPLEMENTATION_DEFINED_OBJECT:
     case UNSPECIFIED:
+    case MULTIPLE_ZERO:
       return false_obj;
     default:
       exit(1);
@@ -285,8 +298,8 @@ Object scm_eq_p(Object args) {
   if (args_length(args) != 2) {
     return arguments(args, "eq?");
   }
-  Object obj1 = carref(args);
-  Object obj2 = carref(cdrref(args));
+  Object obj1 = value(carref(args));
+  Object obj2 = value(carref(cdrref(args)));
   switch (obj1.type) {
   case TRUE_TYPE:
   case FALSE_TYPE:
@@ -295,7 +308,6 @@ Object scm_eq_p(Object args) {
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
   case QUOTE:
   case LAMBDA:
   case IF:
@@ -305,6 +317,7 @@ Object scm_eq_p(Object args) {
   case AND:
   case OR:
   case EMPTY:
+  case MULTIPLE_ZERO:
     return obj1.type == obj2.type ? true_obj : false_obj;
   case IDENTIFIER:
     return obj2.type == IDENTIFIER && obj1.identifier == obj2.identifier
@@ -365,7 +378,7 @@ Object scm_number_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "number?");
   }
-  Object arg = carref(args);
+  Object arg = value(carref(args));
   switch (arg.type) {
   case NUMBERZ:
   case NUMBERQ:
@@ -381,7 +394,7 @@ Object scm_complex_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "complex?");
   }
-  Object arg = carref(args);
+  Object arg = value(carref(args));
   switch (arg.type) {
   case NUMBERZ:
   case NUMBERQ:
@@ -399,7 +412,7 @@ Object scm_rational_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "rational?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ:
   case NUMBERQ:
@@ -448,7 +461,7 @@ Object scm_exact_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "exact?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ:
   case NUMBERQ:
@@ -467,7 +480,7 @@ Object scm_inexact_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "inexact?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ:
   case NUMBERQ:
@@ -486,7 +499,7 @@ Object scm_finite_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "finite?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ:
   case NUMBERQ:
@@ -510,7 +523,7 @@ Object scm_infinite_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "infinite?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ:
   case NUMBERQ:
@@ -533,7 +546,7 @@ Object scm_nan_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "nan?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ:
   case NUMBERQ:
@@ -556,7 +569,7 @@ Object scm_zero_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "zero?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ:
     return mpz_sgn(obj.numberz) == 0 ? true_obj : false_obj;
@@ -577,7 +590,7 @@ Object scm_positive_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "posotive?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ:
     return mpz_sgn(obj.numberz) > 0 ? true_obj : false_obj;
@@ -601,7 +614,7 @@ Object scm_negative_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "negative?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ:
     return mpz_sgn(obj.numberz) < 0 ? true_obj : false_obj;
@@ -629,7 +642,7 @@ Object scm_add(Object args) {
     return out;
   }
   for (Object a = args; a.type != EMPTY; a = cdrref(a)) {
-    Object arg = carref(a);
+    Object arg = value(carref(a));
     switch (out.type) {
     case NUMBERZ:
       switch (arg.type) {
@@ -843,7 +856,7 @@ Object scm_mul(Object args) {
     return out;
   }
   for (Object a = args; a.type != EMPTY; a = cdrref(a)) {
-    Object arg = carref(a);
+    Object arg = value(carref(a));
     switch (out.type) {
     case NUMBERZ: {
       switch (arg.type) {
@@ -1083,7 +1096,7 @@ Object scm_sub(Object args) {
     return arguments(args, "-");
   }
   if (args_length(args) == 1) {
-    Object obj = carref(args);
+    Object obj = value(carref(args));
     switch (obj.type) {
     case NUMBERZ: {
       mpz_t op;
@@ -1124,7 +1137,7 @@ Object scm_sub(Object args) {
   }
   Object out = car(args);
   for (Object a = cdrref(args); a.type != EMPTY; a = cdrref(a)) {
-    Object arg = carref(a);
+    Object arg = value(carref(a));
     switch (out.type) {
     case NUMBERZ:
       switch (arg.type) {
@@ -1343,7 +1356,7 @@ Object scm_div(Object args) {
     return arguments(args, "/");
   }
   if (args_length(args) == 1) {
-    Object obj = carref(args);
+    Object obj = value(carref(args));
     switch (obj.type) {
     case NUMBERZ: {
       mpz_t op;
@@ -1393,7 +1406,7 @@ Object scm_div(Object args) {
     return out;
   }
   for (Object a = cdrref(args); a.type != EMPTY; a = cdrref(a)) {
-    Object arg = carref(a);
+    Object arg = value(carref(a));
     switch (out.type) {
     case NUMBERZ:
       switch (arg.type) {
@@ -1634,7 +1647,7 @@ Object scm_numerator(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "numerator");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ: {
     Object out = {.type = NUMBERZ};
@@ -1687,7 +1700,7 @@ Object scm_denominator(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "denominator");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ: {
     return numberz_new("1", 10);
@@ -1738,7 +1751,7 @@ Object scm_floor(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "floor");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ: {
     Object out = {.type = NUMBERZ};
@@ -1775,7 +1788,7 @@ Object scm_ceiling(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "ceiling");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ: {
     Object out = {.type = NUMBERZ};
@@ -1812,7 +1825,7 @@ Object scm_truncate(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "truncate");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ: {
     Object out = {.type = NUMBERZ};
@@ -1850,7 +1863,7 @@ Object scm_sqrt(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "sqrt");
   }
-  Object arg = carref(args);
+  Object arg = value(carref(args));
   switch (arg.type) {
   case NUMBERZ: {
     if (mpz_perfect_square_p(arg.numberz)) {
@@ -1902,7 +1915,7 @@ Object scm_pair_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "pair?");
   }
-  switch (carref(args).type) {
+  switch (value(carref(args)).type) {
   case PAIR:
     return true_obj;
   case NONE:
@@ -1922,7 +1935,7 @@ Object scm_car(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "car");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PAIR:
     return car(obj);
@@ -1937,7 +1950,7 @@ Object scm_cdr(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "cdr");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PAIR:
     return cdr(obj);
@@ -1952,7 +1965,7 @@ Object scm_set_car(Object args) {
   if (args_length(args) != 2) {
     return arguments(args, "set-car!");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PAIR: {
     object_free(&cars[obj.index]);
@@ -1970,7 +1983,7 @@ Object scm_set_cdr(Object args) {
   if (args_length(args) != 2) {
     return arguments(args, "set-cdr!");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PAIR: {
     object_free(&cdrs[obj.index]);
@@ -1991,7 +2004,7 @@ Object scm_symbol_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "symbol?");
   }
-  switch (carref(args).type) {
+  switch (value(carref(args)).type) {
   case IDENTIFIER:
     return true_obj;
   case NONE:
@@ -2007,7 +2020,7 @@ Object scm_char_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "char?");
   }
-  switch (carref(args).type) {
+  switch (value(carref(args)).type) {
   case CHARACTER:
     return true_obj;
   case NONE:
@@ -2021,7 +2034,7 @@ Object scm_char_alphabetic_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "char-alphabetic?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case CHARACTER:
     return g_unichar_isalpha(obj.character) ? true_obj : false_obj;
@@ -2034,7 +2047,7 @@ Object scm_char_numeric_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "char-numeric?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case CHARACTER:
     return g_unichar_isdigit(obj.character) ? true_obj : false_obj;
@@ -2047,7 +2060,7 @@ Object scm_char_whitespace_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "char-whitespace?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case CHARACTER:
     return g_unichar_isspace(obj.character) ? true_obj : false_obj;
@@ -2060,7 +2073,7 @@ Object scm_char_upper_case_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "char-upper-case?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case CHARACTER:
     return !g_unichar_isalpha(obj.character)
@@ -2075,7 +2088,7 @@ Object scm_char_lower_case_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "char-lower-case?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case CHARACTER:
     return !g_unichar_isalpha(obj.character)
@@ -2090,7 +2103,7 @@ Object scm_digit_value(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "digit-value");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case CHARACTER: {
     gint n = g_unichar_digit_value(obj.character);
@@ -2109,7 +2122,7 @@ Object scm_char_tointeger(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "char->integer");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case CHARACTER: {
     Object out = {.type = NUMBERZ};
@@ -2125,7 +2138,7 @@ Object scm_integer_tochar(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "integer->char");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ: {
     return (Object){.type = CHARACTER, .character = mpz_get_ui(obj.numberz)};
@@ -2159,7 +2172,7 @@ Object scm_char_upcase(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "char-upcase");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case CHARACTER: {
     return (Object){.type = CHARACTER,
@@ -2174,7 +2187,7 @@ Object scm_char_downcase(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "char-downcase");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case CHARACTER: {
     return (Object){.type = CHARACTER,
@@ -2189,7 +2202,7 @@ Object scm_char_foldcase(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "char-foldcase");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case CHARACTER: {
     char outbuf[7];
@@ -2213,7 +2226,7 @@ Object scm_string_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "string?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case STRING_EMPTY:
   case STRING:
@@ -2228,7 +2241,7 @@ Object scm_string_p(Object args) {
 Object scm_make_string(Object args) {
   switch (args_length(args)) {
   case 1: {
-    Object k = carref(args);
+    Object k = value(carref(args));
     if (k.type != NUMBERZ) {
       return wrong_type("make-string", args);
     }
@@ -2240,7 +2253,7 @@ Object scm_make_string(Object args) {
     return out;
   }
   case 2: {
-    Object k = carref(args);
+    Object k = value(carref(args));
     Object c = carref(cdrref(args));
     if (k.type != NUMBERZ || c.type != CHARACTER) {
       return wrong_type("make-string", args);
@@ -2265,7 +2278,7 @@ static Object string_reverse(Object obj) {
 Object scm_string(Object args) {
   Object out = string_empty;
   for (Object t = args; t.type != EMPTY; t = cdrref(t)) {
-    Object c = carref(t);
+    Object c = value(carref(t));
     if (c.type != CHARACTER) {
       return wrong_type("string", args);
     }
@@ -2278,7 +2291,7 @@ Object scm_string_length(Object args) {
     return arguments(args, "string-length");
   }
   size_t len = 0;
-  switch (carref(args).type) {
+  switch (value(carref(args)).type) {
   case STRING_EMPTY:
   case STRING: {
     for (Object obj = carref(args); obj.type != STRING_EMPTY;
@@ -2298,8 +2311,8 @@ Object scm_string_ref(Object args) {
   if (args_length(args) != 2) {
     return arguments(args, "string-ref");
   }
-  Object s = carref(args);
-  Object k = carref(cdrref(args));
+  Object s = value(carref(args));
+  Object k = value(carref(cdrref(args)));
   if ((s.type != STRING_EMPTY && s.type != STRING) || k.type != NUMBERZ) {
     return wrong_type("string-ref", args);
   }
@@ -2314,12 +2327,12 @@ Object scm_string_set(Object args) {
   if (args_length(args) != 3) {
     return arguments(args, "string-set!");
   }
-  Object s = carref(args);
-  Object k = carref(cdrref(args));
+  Object s = value(carref(args));
+  Object k = value(carref(cdrref(args)));
   if ((s.type != STRING_EMPTY && s.type != STRING) || k.type != NUMBERZ) {
     return wrong_type("string-set!", args);
   }
-  Object c = carref(cdrref(cdrref(args)));
+  Object c = value(carref(cdrref(cdrref(args))));
   size_t i = mpz_get_ui(k.numberz);
   for (; i > 0; i--) {
     s = string_cdrref(s);
@@ -2333,7 +2346,7 @@ Object scm_vector_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "vector?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case VECTOR:
     return true_obj;
@@ -2349,7 +2362,7 @@ Object scm_vector_length(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "vector-length");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case VECTOR: {
     Object out = {.type = NUMBERZ};
@@ -2367,10 +2380,10 @@ Object scm_vector_ref(Object args) {
   if (args_length(args) != 2) {
     return arguments(args, "vector-ref");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case VECTOR: {
-    Object k = carref(cdrref(args));
+    Object k = value(carref(cdrref(args)));
     if (k.type != NUMBERZ) {
       return wrong_type("vector-ref", args);
     }
@@ -2391,10 +2404,10 @@ Object scm_vector_set(Object args) {
   if (args_length(args) != 3) {
     return arguments(args, "vector-set!");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case VECTOR: {
-    Object k = carref(cdrref(args));
+    Object k = value(carref(cdrref(args)));
     if (k.type != NUMBERZ) {
       return wrong_type("vector-set!", args);
     }
@@ -2421,7 +2434,7 @@ Object scm_bytevector_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "bytevector?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case BYTEVECTOR:
     return true_obj;
@@ -2437,7 +2450,7 @@ Object scm_bytevector_length(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "bytevector-length");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case BYTEVECTOR: {
     Object out = {.type = NUMBERZ};
@@ -2456,10 +2469,10 @@ Object scm_bytevector_ueight_ref(Object args) {
   if (args_length(args) != 2) {
     return arguments(args, "bytevector-u8-ref");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case BYTEVECTOR: {
-    Object k = carref(cdrref(args));
+    Object k = value(carref(cdrref(args)));
     if (k.type != NUMBERZ) {
       wrong_type("bytevetor-u8-ref", args);
     }
@@ -2480,10 +2493,10 @@ Object scm_bytevector_ueight_set(Object args) {
   if (args_length(args) != 3) {
     return arguments(args, "bytevector-u8-set!");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case BYTEVECTOR: {
-    Object k = carref(cdrref(args));
+    Object k = value(carref(cdrref(args)));
     if (k.type != NUMBERZ) {
       return wrong_type("bytevetor-u8-set!", args);
     }
@@ -2509,7 +2522,7 @@ Object scm_utfeight_tostring(Object args) {
   size_t end;
   switch (args_length(args)) {
   case 1: {
-    obj = carref(args);
+    obj = value(carref(args));
     if (obj.type != BYTEVECTOR) {
       return wrong_type("utf8->bytevetor", args);
     }
@@ -2518,7 +2531,7 @@ Object scm_utfeight_tostring(Object args) {
     break;
   }
   case 2: {
-    obj = carref(args);
+    obj = value(carref(args));
     if (obj.type != BYTEVECTOR || carref(cdrref(args)).type != NUMBERZ) {
       return wrong_type("utf8->string", args);
     }
@@ -2527,7 +2540,7 @@ Object scm_utfeight_tostring(Object args) {
     break;
   }
   case 3: {
-    obj = carref(args);
+    obj = value(carref(args));
     if (obj.type != BYTEVECTOR || carref(cdrref(args)).type != NUMBERZ ||
         carref(cdrref(cdrref(args))).type != NUMBERZ) {
       return wrong_type("utf8->string", args);
@@ -2582,7 +2595,7 @@ Object scm_string_toutfeight(Object args) {
   size_t end;
   switch (args_length(args)) {
   case 1: {
-    obj = carref(args);
+    obj = value(carref(args));
     start = 0;
     if (obj.type != STRING && obj.type != STRING_EMPTY) {
       return wrong_type("string->utf8", args);
@@ -2594,11 +2607,11 @@ Object scm_string_toutfeight(Object args) {
     break;
   }
   case 2: {
-    obj = carref(args);
-    if (carref(cdrref(args)).type != NUMBERZ) {
+    obj = value(carref(args));
+    if (value(carref(cdrref(args))).type != NUMBERZ) {
       return wrong_type("string->utf8", args);
     }
-    start = mpz_get_ui(carref(cdrref(args)).numberz);
+    start = mpz_get_ui(value(carref(cdrref(args))).numberz);
     if (obj.type != STRING && obj.type != STRING_EMPTY) {
       return wrong_type("string->utf8", args);
     }
@@ -2609,11 +2622,11 @@ Object scm_string_toutfeight(Object args) {
     break;
   }
   case 3: {
-    obj = carref(args);
-    if (carref(cdrref(args)).type != NUMBERZ) {
+    obj = value(carref(args));
+    if (value(carref(cdrref(args))).type != NUMBERZ) {
       return wrong_type("string->utf8", args);
     }
-    start = mpz_get_ui(carref(cdrref(args)).numberz);
+    start = mpz_get_ui(value(carref(cdrref(args))).numberz);
     if (carref(cdrref(cdrref(args))).type != NUMBERZ) {
       return wrong_type("string->utf8", args);
     }
@@ -2664,7 +2677,7 @@ Object scm_procedure_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "procedure?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
@@ -2696,7 +2709,7 @@ Object scm_error_object_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "error-object?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case IMPLEMENTATION_DEFINED_OBJECT: {
     return true_obj;
@@ -2712,7 +2725,7 @@ Object scm_error_object_irritants(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "error-object-irrtants");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case IMPLEMENTATION_DEFINED_OBJECT:
     return implementation_defined_object_cdrref(obj);
@@ -2727,7 +2740,7 @@ Object scm_error_object_message(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "error-object-message");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case IMPLEMENTATION_DEFINED_OBJECT:
     return implementation_defined_object_carref(obj);
@@ -2742,7 +2755,7 @@ Object scm_file_error_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "file-error?");
   }
-  return carref(args).type == FILE_ERROR ? true_obj : false_obj;
+  return value(carref(args)).type == FILE_ERROR ? true_obj : false_obj;
 }
 /* Exceptions end */
 /* Input and output */
@@ -2750,7 +2763,7 @@ Object scm_input_port_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "input-port?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
@@ -2766,7 +2779,7 @@ Object scm_output_port_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "output-port?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
@@ -2782,7 +2795,7 @@ Object scm_textual_port_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "textual-port?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PORT_OUTPUT_TEXT:
   case PORT_INPUT_TEXT:
@@ -2798,7 +2811,7 @@ Object scm_binary_port_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "binary-port?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_BINARY:
@@ -2814,7 +2827,7 @@ Object scm_input_port_open_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "input-port-open?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
@@ -2833,7 +2846,7 @@ Object scm_output_port_open_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "output-port-open?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
@@ -2852,7 +2865,7 @@ Object scm_open_output_file(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "open-output-file");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case STRING_EMPTY:
   case STRING: {
@@ -2889,7 +2902,7 @@ Object scm_open_binary_output_file(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "open-binary-output-file");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case STRING_EMPTY:
   case STRING: {
@@ -2926,7 +2939,7 @@ Object scm_open_input_file(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "open-input-file");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case STRING_EMPTY:
   case STRING: {
@@ -2963,7 +2976,7 @@ Object scm_open_binary_input_file(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "open-binary-input-file");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case STRING_EMPTY:
   case STRING: {
@@ -3000,7 +3013,7 @@ Object scm_close_port(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "close-port");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
@@ -3030,7 +3043,7 @@ Object scm_read(Object args) {
     return out;
   }
   case 1: {
-    Object obj = carref(args);
+    Object obj = value(carref(args));
     if (obj.type != PORT_INPUT_TEXT) {
       return wrong_type("read", args);
     }
@@ -3068,7 +3081,7 @@ Object scm_read_char(Object args) {
     exit(1);
   }
   case 1: {
-    Object obj = carref(args);
+    Object obj = value(carref(args));
     if (obj.type != PORT_INPUT_TEXT) {
       return wrong_type("read-char", args);
     }
@@ -3096,7 +3109,7 @@ Object scm_eof_object_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "eof-object?");
   }
-  return carref(args).type == EOF_OBJ ? true_obj : false_obj;
+  return value(carref(args)).type == EOF_OBJ ? true_obj : false_obj;
 }
 Object scm_eof_object(Object args) {
   if (args_length(args) != 0) {
@@ -3112,11 +3125,11 @@ Object scm_write(Object args) {
     return unspecified;
   }
   case 2: {
-    Object obj = carref(args);
+    Object obj = value(carref(args));
     if (obj.type != PORT_OUTPUT_TEXT) {
       exit(1);
     }
-    object_write(port_carref(obj).port, carref(cdrref(args)));
+    object_write(port_carref(obj).port, value(carref(cdrref(args))));
     return unspecified;
   }
   default:
@@ -3131,11 +3144,11 @@ Object scm_write_shared(Object args) {
     return unspecified;
   }
   case 2: {
-    Object obj = carref(args);
+    Object obj = value(carref(args));
     if (obj.type != PORT_OUTPUT_TEXT) {
       return wrong_type("write-shared", args);
     }
-    object_write_shared(port_carref(obj).port, carref(cdrref(args)));
+    object_write_shared(port_carref(obj).port, value(carref(cdrref(args))));
     return unspecified;
   }
   default:
@@ -3150,11 +3163,11 @@ Object scm_write_simple(Object args) {
     return unspecified;
   }
   case 2: {
-    Object obj = carref(args);
+    Object obj = value(carref(args));
     if (obj.type != PORT_OUTPUT_TEXT) {
       return wrong_type("write-simple", args);
     }
-    object_write_simple(port_carref(obj).port, carref(cdrref(args)));
+    object_write_simple(port_carref(obj).port, value(carref(cdrref(args))));
     return unspecified;
   }
   default:
@@ -3169,7 +3182,7 @@ Object scm_display(Object args) {
     return unspecified;
   }
   case 2: {
-    Object obj = carref(args);
+    Object obj = value(carref(args));
     if (obj.type != PORT_OUTPUT_TEXT) {
       return wrong_type("display", args);
     }
@@ -3187,7 +3200,7 @@ Object scm_file_exists_p(Object args) {
   if (args_length(args) != 1) {
     return arguments(args, "file-exists?");
   }
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   switch (obj.type) {
   case STRING_EMPTY:
   case STRING: {
@@ -3217,7 +3230,7 @@ Object scm_file_exists_p(Object args) {
 #include <errno.h>
 #include <string.h>
 Object scm_primitive_delete_file(Object args) {
-  Object obj = carref(args);
+  Object obj = value(carref(args));
   size_t len = 0;
   for (Object o = obj; o.type != STRING_EMPTY; o = string_cdrref(o)) {
     len++;
@@ -3244,7 +3257,7 @@ Object scm_emergency_exit(Object args) {
     _exit(0);
   }
   if (args_length(args) == 1) {
-    if (carref(args).type == TRUE_TYPE) {
+    if (value(carref(args)).type == TRUE_TYPE) {
       _exit(0);
     }
     fprintf(yyout, "emergency-exit value ");

@@ -79,12 +79,6 @@
                                  #f
                                  (integer? z)))))
 
-(define +
-  (lambda args
-    (if (null? args)
-        0
-        (primitive-+ (car args)
-                     (+ (cdr args))))))
 (define (= x1 x2 . rest)
   (define (iter x1 x2 rest)
     (if (not (number? x1))

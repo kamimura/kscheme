@@ -519,7 +519,7 @@ eval_dispatch:
         goto ev_assignment;
       }
       case DEFINE: {
-        if (!list_p(expr) || list_length(expr) != 3) {
+        if (!list_p(expr) || list_length(expr) < 3) {
           goto syntax_error;
         }
         goto ev_definition;
@@ -795,11 +795,17 @@ ev_assignment_1:
   goto *cont.cont;
 ev_definition:
   if (carref(cdrref(expr)).type == PAIR) {
+    if (list_length(expr) < 3) {
+      goto syntax_error;
+    }
     unev = carref(carref(cdrref(expr)));
     save(unev);
     expr = cons(lambda_sym,
                 cons(cdrref(carref(cdrref(expr))), cdrref(cdrref(expr))));
   } else {
+    if (list_length(expr) != 3) {
+      goto syntax_error;
+    }
     unev = carref(cdrref(expr));
     save(unev);
     expr = car(cdrref(cdrref(expr)));

@@ -2144,21 +2144,11 @@ Object scm_integer_tochar(Object args) {
     return (Object){.type = CHARACTER, .character = mpz_get_ui(obj.numberz)};
   }
   case NUMBERQ: {
-    /* if (integer?) { */
-
-    /* } */
-    return wrong_type("integer->char", args);
-  }
-  case NUMBERR: {
-    /* if (integer?) { */
-
-    /* } */
-    return wrong_type("integer->char", args);
-  }
-  case NUMBERC: {
-    /* if (integer?) { */
-
-    /* } */
+    mpq_canonicalize(obj.numberq);
+    if (mpz_cmp_ui(mpq_denref(obj.numberq), 1) == 0) {
+      return (Object){.type = CHARACTER,
+                      .character = mpz_get_ui(mpq_numref(obj.numberq))};
+    }
     return wrong_type("integer->char", args);
   }
   case NONE:

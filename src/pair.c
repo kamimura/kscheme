@@ -5,7 +5,7 @@ gint cmp_func(gconstpointer a_ptr, gconstpointer b_ptr) {
   size_t b = (size_t)b_ptr;
   return a < b ? -1 : a_ptr == b_ptr ? 0 : 1;
 }
-int tree_value = 1;
+static int tree_value = 1;
 gboolean traverse_func(gpointer key, gpointer value, gpointer tree) {
   g_tree_insert(tree, key, &tree_value);
   return FALSE;
@@ -15,29 +15,52 @@ GTree *tree_copy(GTree *tree) {
   g_tree_foreach(tree, traverse_func, out);
   return out;
 }
-void pair_get_cycles(Object obj, GTree *tree, uint8_t *cycles) {
-  if (obj.type != PAIR) {
-    return;
-  }
-  if (cycles[obj.index] == 1) {
-    return;
-  }
-  gpointer *p = g_tree_lookup(tree, (gpointer)(obj.index));
-  if (p != NULL) {
-    cycles[obj.index] = 1;
-    return;
-  }
-  g_tree_insert(tree, (gpointer)(obj.index), &tree_value);
+typedef struct {
+  Object o;
+  GTree *t;
+} ObjTree;
+
+void pair_get_cycles(Object const obj, uint8_t *cycles) {
+  GTree *tree = g_tree_new(cmp_func);
+  g_tree_insert(tree, (gpointer)obj.index, &tree_value);
+  GQueue *queue = g_queue_new();
   Object o1 = carref(obj);
+  ObjTree ot1 = {.o = o1, .t = tree};
+  GTree *tree2 = tree_copy(tree);
   Object o2 = cdrref(obj);
-  GTree *new_tree = tree_copy(tree);
-  pair_get_cycles(o1, tree, cycles);
-  g_tree_destroy(tree);
-  pair_get_cycles(o2, new_tree, cycles);
-  g_tree_destroy(new_tree);
+  ObjTree ot2 = {.o = o2, .t = tree2};
+  g_queue_push_head(queue, &ot2);
+  ObjTree *ot_ptr = &ot1;
+  while (ot_ptr != NULL) {
+    if (ot_ptr->o.type == PAIR) {
+      if (cycles[ot_ptr->o.index] != 1) {
+        gpointer *p = g_tree_lookup(ot_ptr->t, (gpointer)(ot_ptr->o.index));
+        if (p != NULL) {
+          cycles[ot_ptr->o.index] = 1;
+          g_tree_destroy(ot_ptr->t);
+          ot_ptr = g_queue_pop_tail(queue);
+        } else {
+          g_tree_insert(ot_ptr->t, (gpointer)obj.index, &tree_value);
+          Object o1 = carref(ot_ptr->o);
+          Object o2 = cdrref(ot_ptr->o);
+          GTree *tree2 = tree_copy(ot_ptr->t);
+          ObjTree ot = {.o = o1, .t = ot_ptr->t};
+          ot_ptr = &ot;
+          ObjTree ot2 = {.o = o2, .t = tree2};
+          g_queue_push_head(queue, &ot2);
+        }
+      } else {
+        g_tree_destroy(ot_ptr->t);
+        ot_ptr = g_queue_pop_tail(queue);
+      }
+    } else {
+      g_tree_destroy(ot_ptr->t);
+      ot_ptr = g_queue_pop_tail(queue);
+    }
+  }
 }
-void pair_write_cycle(FILE *stream, Object obj, uint8_t *cycles,
-                      size_t *labels_no, size_t *label_no_ptr) {
+static void pair_write_cycle(FILE *stream, Object obj, uint8_t *cycles,
+                             size_t *labels_no, size_t *label_no_ptr) {
   if (obj.type != PAIR) {
     object_write(stream, obj);
     return;
@@ -75,12 +98,20 @@ void pair_write_cycle(FILE *stream, Object obj, uint8_t *cycles,
   }
   fprintf(stream, ")");
 }
+#include <errno.h>
+#include <string.h>
 void pair_write(FILE *stream, Object const obj) {
   uint8_t *cycles = calloc(MEMORY_SIZE, sizeof(uint8_t));
-  GTree *tree = g_tree_new(cmp_func);
-  pair_get_cycles(obj, tree, cycles);
-  g_tree_destroy(tree);
+  if (cycles == NULL) {
+    fprintf(stderr, "%s\n", strerror(errno));
+    exit(1);
+  }
+  pair_get_cycles(obj, cycles);
   size_t *labels_no = calloc(MEMORY_SIZE, sizeof(size_t));
+  if (labels_no == NULL) {
+    fprintf(stderr, "%s\n", strerror(errno));
+    exit(1);
+  }
   size_t label_no = 0;
   pair_write_cycle(stream, obj, cycles, labels_no, &label_no);
   free(cycles);
@@ -149,8 +180,16 @@ void pair_shared_write(FILE *stream, Object obj, uint8_t *shared,
 
 void pair_write_shared(FILE *stream, Object const obj) {
   uint8_t *shared = calloc(MEMORY_SIZE, sizeof(uint8_t));
+  if (shared == NULL) {
+    fprintf(stderr, "%s\n", strerror(errno));
+    exit(1);
+  }
   pair_get_shared(obj, shared);
   size_t *labels_no = calloc(MEMORY_SIZE, sizeof(size_t));
+  if (labels_no == NULL) {
+    fprintf(stderr, "%s\n", strerror(errno));
+    exit(1);
+  }
   size_t label_no = 0;
   pair_shared_write(stream, obj, shared, labels_no, &label_no);
   free(shared);

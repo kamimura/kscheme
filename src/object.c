@@ -108,6 +108,7 @@ void object_write(FILE *stream, Object obj) {
     mpz_out_str(stream, 10, obj.numberz);
     break;
   case NUMBERQ:
+    mpq_canonicalize(obj.numberq);
     mpq_out_str(stream, 10, obj.numberq);
     break;
   case NUMBERR: {
@@ -165,6 +166,10 @@ void object_write(FILE *stream, Object obj) {
       fprintf(stream, "tab");
       break;
     default: {
+      if (!g_unichar_isprint(obj.character)) {
+        fprintf(stream, "x%x", obj.character);
+        break;
+      }
       char outbuf[7];
       gint len = g_unichar_to_utf8(obj.character, outbuf);
       outbuf[len] = '\0';
@@ -207,6 +212,10 @@ void object_write(FILE *stream, Object obj) {
         fprintf(stream, "\\|");
         break;
       default: {
+        if (!g_unichar_isprint(c)) {
+          fprintf(stream, "\\x%x;", c);
+          break;
+        }
         char outbuf[7];
         gint len = g_unichar_to_utf8(c, outbuf);
         outbuf[len] = '\0';

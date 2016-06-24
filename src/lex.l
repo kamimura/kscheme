@@ -627,6 +627,7 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 }
 %%
 
-void yyerror(char *s) {
-  printf("%d: %s\n", yylineno, s);
+void yyerror(char const *msg) {
+printf("%d: %s at '%s'\n", yylineno, msg, yytext);
+yylineno = 0;
 }

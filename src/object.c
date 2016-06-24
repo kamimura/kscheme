@@ -34,48 +34,8 @@ Object object_copy(Object obj) {
     Object out = {.type = obj.type, .message = strdup(obj.message)};
     return out;
   }
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case VECTOR:
-  case BYTEVECTOR:
-  case EMPTY:
-  case PAIR:
-  case IDENTIFIER:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case CONTINUATION:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-
-  case PROCEDURE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-
-  case EOF_OBJ:
-  case UNSPECIFIED:
-  case MULTIPLE_ZERO:
-  case MULTIPLE:
-    return obj;
-
-  case NONE:
-    return obj;
   default:
-    exit(1);
+    return obj;
   }
   exit(1);
 }
@@ -99,7 +59,7 @@ void object_free(Object *obj_ptr) {
   default:
     break;
   }
-  obj_ptr->type = NONE;
+  *obj_ptr = none;
 }
 #include <stdbool.h>
 void object_write(FILE *stream, Object obj) {
@@ -388,43 +348,6 @@ void object_write(FILE *stream, Object obj) {
 }
 void object_write_shared(FILE *stream, Object obj) {
   switch (obj.type) {
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case IDENTIFIER:
-  case EMPTY:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case CONTINUATION:
-  case PROCEDURE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case NONE:
-    object_write(stream, obj);
-    break;
   case VECTOR: {
     fprintf(stream, "#(");
     size_t len = cdrs[obj.index].vector_length;
@@ -453,51 +376,16 @@ void object_write_shared(FILE *stream, Object obj) {
   case PAIR:
     pair_write_shared(stream, obj);
     break;
-  default:
+  case NONE:
     exit(1);
+  default:
+    object_write(stream, obj);
     break;
   }
 }
 
 void object_write_simple(FILE *stream, Object obj) {
   switch (obj.type) {
-  case NUMBERZ:
-  case NUMBERQ:
-  case NUMBERR:
-  case NUMBERC:
-  case CHARACTER:
-  case STRING_EMPTY:
-  case STRING:
-  case IDENTIFIER:
-  case EMPTY:
-  case TRUE_TYPE:
-  case FALSE_TYPE:
-  case QUOTE:
-  case LAMBDA:
-  case IF:
-  case SET:
-  case DEFINE:
-  case BEGIN_TYPE:
-  case AND:
-  case OR:
-  case PRIMITIVE_PROCEDURE:
-  case PRIMITIVE_PROCEDURE_APPLY:
-  case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-  case PRIMITIVE_PROCEDURE_RAISE:
-  case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-  case CONTINUATION:
-  case PROCEDURE:
-  case IMPLEMENTATION_DEFINED_OBJECT:
-  case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY:
-  case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY:
-  case EOF_OBJ:
-  case FILE_ERROR:
-  case UNSPECIFIED:
-  case NONE:
-    object_write(stream, obj);
-    break;
   case VECTOR: {
     fprintf(stream, "#(");
     size_t len = cdrs[obj.index].vector_length;
@@ -526,8 +414,10 @@ void object_write_simple(FILE *stream, Object obj) {
   case PAIR:
     pair_write_simple(stream, obj);
     break;
-  default:
+  case NONE:
     exit(1);
+  default:
+    object_write(stream, obj);
   }
 }
 
@@ -565,11 +455,10 @@ void object_display(FILE *stream, Object obj) {
     }
     break;
   }
-  case NONE: {
-    fprintf(stderr, "ksi error ksi object_write NONE VECTOR_NULL\n");
+  case NONE:
     exit(1);
+  default:
+    object_write(stream, obj);
     break;
-  }
-  default: { object_write(stream, obj); }
   }
 }

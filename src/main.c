@@ -4,7 +4,6 @@
 #include "environment.h"
 #include "procedures.h"
 
-Object stack;
 void save(Object obj) { stack = cons(obj, stack); }
 void restore(Object *ptr) {
   *ptr = car(stack);
@@ -107,7 +106,14 @@ int main() {
   stack = empty;
   cars = memory_from[0];
   cdrs = memory_from[1];
-  Object expr, env, val, cont, proc, argl, unev;
+  new_cars = memory_to[0];
+  new_cdrs = memory_to[1];
+  for (size_t i = 0; i < MEMORY_SIZE; i++) {
+    cars[i] = none;
+    cdrs[i] = none;
+    new_cars[i] = none;
+    new_cdrs[i] = none;
+  }
   expr = env = val = cont = proc = argl = unev = (Object){.type = NONE};
   quote_sym = identifier_new("quote");
   Object lambda_sym = identifier_new("lambda");
@@ -431,7 +437,7 @@ int main() {
       identifier_new("emergency-exit"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_emergency_exit}, env);
   /* System interface end */
-  Object global = env;
+  global = env;
   /* yyin = stdin; */
   yyrestart(stdin);
   yyout = stdout;
@@ -584,7 +590,9 @@ eval_dispatch:
     exit(1);
   }
 ev_self_eval:
-  assign(&val, &expr);
+  object_free(&val);
+  val = expr;
+  expr.type = NONE;
   goto *cont.cont;
 ev_variable:;
   object_free(&val);

@@ -45,6 +45,7 @@ typedef enum type {
   UNSPECIFIED,
   WRONG_NUMBER_OF_ARGUMENTS,
   WRONG_TYPE_ARGUMENT,
+  MOVED,
 } Type;
 
 #include <gmp.h>

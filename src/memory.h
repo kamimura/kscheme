@@ -2,20 +2,27 @@
 
 #include "object.h"
 
-#define MEMORY_SIZE 1000000000
+#define MEMORY_SIZE 10000
 
 extern Object memory_from[2][MEMORY_SIZE];
 extern Object memory_to[2][MEMORY_SIZE];
 extern Object *cars;
 extern Object *cdrs;
+extern Object *new_cars;
+extern Object *new_cdrs;
+
+#define REGISTER_COUNT 10
+extern Object root;
+extern Object expr, env, val, cont, proc, argl, unev;
+extern Object global;
+extern Object stack;
+;
 
 Object cons(Object obj1, Object obj2);
 Object car(Object obj);
 Object cdr(Object obj);
 Object carref(Object obj);
 Object cdrref(Object obj);
-
-void assign(Object *ptr1, Object *ptr2);
 
 Object string_cons(Object obj1, Object obj2);
 Object string_carref(Object obj);

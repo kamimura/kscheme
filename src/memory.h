@@ -2,7 +2,7 @@
 
 #include "object.h"
 
-#define MEMORY_SIZE 10000
+#define MEMORY_SIZE 1000000
 
 extern Object memory_from[2][MEMORY_SIZE];
 extern Object memory_to[2][MEMORY_SIZE];

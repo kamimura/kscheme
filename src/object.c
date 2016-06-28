@@ -75,7 +75,8 @@ void object_write(FILE *stream, Object obj) {
     if (mpfr_zero_p(obj.numberr)) {
       fprintf(stream, "0.0");
     } else {
-      mpfr_out_str(stream, 10, 0, obj.numberr, MPFR_RNDN);
+      /* mpfr_out_str(stream, 10, 0, obj.numberr, MPFR_RNDN); */
+      mpfr_fprintf(stream, "%.16Rf", obj.numberr);
     }
     break;
   }
@@ -83,7 +84,8 @@ void object_write(FILE *stream, Object obj) {
     if (mpfr_zero_p(mpc_realref(obj.numberc))) {
       fprintf(stream, "0.0");
     } else {
-      mpfr_out_str(stream, 10, 0, mpc_realref(obj.numberc), MPFR_RNDN);
+      /* mpfr_out_str(stream, 10, 0, mpc_realref(obj.numberc), MPFR_RNDN); */
+      mpfr_fprintf(stream, "%.16Rf", mpc_realref(obj.numberc));
     }
     if (mpfr_zero_p(mpc_imagref(obj.numberc))) {
       break;
@@ -91,8 +93,9 @@ void object_write(FILE *stream, Object obj) {
     if (mpfr_sgn(mpc_imagref(obj.numberc)) >= 0) {
       fprintf(stream, "+");
     }
-    mpfr_out_str(stream, 10, 0, mpc_imagref(obj.numberc), MPFR_RNDN);
-    fprintf(stream, "i");
+    /* mpfr_out_str(stream, 10, 0, mpc_imagref(obj.numberc), MPFR_RNDN); */
+    /* fprintf(stream, "i"); */
+    mpfr_fprintf(stream, "%.16Rfi", mpc_imagref(obj.numberc));
     break;
   }
   case CHARACTER: {

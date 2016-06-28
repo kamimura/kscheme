@@ -18,6 +18,7 @@ Object stack;
 Object global;
 
 static void gc_before(Object obj) {
+  puts("GC");
   root = empty;
   root = cons(unev, root);
   root = cons(argl, root);
@@ -29,6 +30,7 @@ static void gc_before(Object obj) {
   root = cons(stack, root);
   root = cons(global, root);
   root = cons(obj, root);
+  puts("gc_before");
 }
 static void gc_after(Object *ptr) {
   *ptr = car(root);
@@ -50,6 +52,7 @@ static void gc_after(Object *ptr) {
   argl = carref(root);
   root = cdrref(root);
   unev = car(root);
+  puts("gc_after");
 }
 
 void gc() {
@@ -87,7 +90,8 @@ relocate_old_result_in_new:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
-  case PORT_OUTPUT_BINARY: {
+  case PORT_OUTPUT_BINARY:
+  case MULTIPLE: {
     goto pair;
   }
   case VECTOR:
@@ -104,7 +108,7 @@ pair:
     goto already_moved;
   }
   cars[old_obj.index].type = MOVED;
-  new_obj = (Object){.type = PAIR, .index = free_index};
+  new_obj = (Object){.type = old_obj.type, .index = free_index};
   free_index++;
   object_free(&new_cars[new_obj.index]);
   new_cars[new_obj.index] = oldcr;
@@ -118,6 +122,10 @@ already_moved:
   goto *relocate_continue;
 
 gc_flip:;
+  if (free_index == (MEMORY_SIZE - REGISTER_COUNT)) {
+    fprintf(stderr, "Insufficient memory.\n");
+    exit(1);
+  }
   Object *temp = cdrs;
   cdrs = new_cdrs;
   new_cdrs = temp;
@@ -139,10 +147,82 @@ Object cons(Object obj1, Object obj2) {
   }
   return out;
 }
-Object car(Object obj) { return object_copy(cars[obj.index]); }
-Object cdr(Object obj) { return object_copy(cdrs[obj.index]); }
-Object carref(Object obj) { return cars[obj.index]; }
-Object cdrref(Object obj) { return cdrs[obj.index]; }
+Object car(Object obj) {
+  switch (obj.type) {
+  case PAIR:
+  case STRING:
+  case PROCEDURE:
+  case CONTINUATION:
+  case IMPLEMENTATION_DEFINED_OBJECT:
+  case PORT_INPUT_TEXT:
+  case PORT_INPUT_BINARY:
+  case PORT_OUTPUT_TEXT:
+  case PORT_OUTPUT_BINARY:
+  case MULTIPLE: {
+    return object_copy(cars[obj.index]);
+  }
+  default:
+    fprintf(stderr, "kscheme error: memory car -- %d", obj.type);
+    exit(1);
+  }
+}
+Object cdr(Object obj) {
+  switch (obj.type) {
+  case PAIR:
+  case STRING:
+  case PROCEDURE:
+  case CONTINUATION:
+  case IMPLEMENTATION_DEFINED_OBJECT:
+  case PORT_INPUT_TEXT:
+  case PORT_INPUT_BINARY:
+  case PORT_OUTPUT_TEXT:
+  case PORT_OUTPUT_BINARY:
+  case MULTIPLE: {
+    return object_copy(cdrs[obj.index]);
+  }
+  default:
+    fprintf(stderr, "kscheme error: memory cdr -- %d", obj.type);
+    exit(1);
+  }
+}
+Object carref(Object obj) {
+  switch (obj.type) {
+  case PAIR:
+  case STRING:
+  case PROCEDURE:
+  case CONTINUATION:
+  case IMPLEMENTATION_DEFINED_OBJECT:
+  case PORT_INPUT_TEXT:
+  case PORT_INPUT_BINARY:
+  case PORT_OUTPUT_TEXT:
+  case PORT_OUTPUT_BINARY:
+  case MULTIPLE: {
+    return cars[obj.index];
+  }
+  default:
+    fprintf(stderr, "kscheme error: memory arref -- type(%d)", obj.type);
+    exit(1);
+  }
+}
+Object cdrref(Object obj) {
+  switch (obj.type) {
+  case PAIR:
+  case STRING:
+  case PROCEDURE:
+  case CONTINUATION:
+  case IMPLEMENTATION_DEFINED_OBJECT:
+  case PORT_INPUT_TEXT:
+  case PORT_INPUT_BINARY:
+  case PORT_OUTPUT_TEXT:
+  case PORT_OUTPUT_BINARY:
+  case MULTIPLE: {
+    return cdrs[obj.index];
+  }
+  default:
+    fprintf(stderr, "kscheme error: memory arref -- type(%d)", obj.type);
+    exit(1);
+  }
+}
 
 Object string_cons(Object obj1, Object obj2) {
   Object out = {.type = STRING, .index = free_index};

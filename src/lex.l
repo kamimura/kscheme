@@ -118,27 +118,27 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 (#[dD]#[iI]|#[iI]#[dD])[-+][iI][nN][fF]"."0
 (#[dD]#[iI]|#[iI]#[dD])[-+][nN][aA][nN]"."0
 [-+]?"."[0-9]+ {
-  if (*yytext == '-') yytext++;
+  if (*yytext == '+') yytext++;
   yylval.obj = numberr_new(yytext, 10);
   return TOKEN_NUMBERR;
 }
 [-+]?"."[0-9]+(e|E)[-+]?[0-9]+ {
-  if (*yytext == '-') yytext++;
+  if (*yytext == '+') yytext++;
   yylval.obj = numberr_new(yytext, 10);
   return TOKEN_NUMBERR;
 }
 [-+]?[0-9]+"."[0-9]* {
-  if (*yytext == '-') yytext++;
+  if (*yytext == '+') yytext++;
   yylval.obj = numberr_new(yytext, 10);
   return TOKEN_NUMBERR;
 }
 [-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+ {
-  if (*yytext == '-') yytext++;
+  if (*yytext == '+') yytext++;
   yylval.obj = numberr_new(yytext, 10);
   return TOKEN_NUMBERR;
 }
 [-+]?[0-9]+(e|E)[-+]?[0-9]+ {
-  if (*yytext == '-') yytext++;
+  if (*yytext == '+') yytext++;
   yylval.obj = numberr_new(yytext, 10);
   return TOKEN_NUMBERR;
 }
@@ -174,9 +174,12 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   if (sign_imag == '+') {    
     yylval.obj = numberc_new_r_istr(real, yytext);
   } else {
-    char str[2] = {'-', '\0'};
-    strcat(str, yytext);
+    char *str = malloc(sizeof(char) * yyleng);
+    str[0] = '-';
+    str[1] = '\0';
+    strcat(str, yytext);    
     yylval.obj = numberc_new_r_istr(real, str);
+    free(str);
   }
   mpfr_clear(real);
   return TOKEN_NUMBERC;

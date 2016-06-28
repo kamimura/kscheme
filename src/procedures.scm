@@ -1,39 +1,5 @@
 ;; Equivalence predicates
 
-;; (define equal?
-;;   (lambda (obj1 obj2)
-;;     (define pair-equal?
-;;       (lambda (obj1 obj2 n)
-;;         (if (> n 1000000)               ; とりあえずの数値
-;;             #t
-;;             (if (and (pair? obj1) (pair? obj2))
-;;                 (and (pair-equal? (car obj1) (car obj2) (+ n 1))
-;;                      (pair-equal? (cdr obj1) (cdr obj2) (+ n 1)))
-;;                 (equal? obj1 obj2)))))
-;;     (if (or (boolean? obj1)
-;;             (symbol? obj1)
-;;             (number? obj1)
-;;             (char? obj1)
-;;             (port? obj1)
-;;             (procedure? obj1)
-;;             (null? obj1))
-;;         (eqv? obj1 obj2)
-;;         (if (and (pair? obj1) (pair? obj2))
-;;             (or (eqv? obj1 obj2) (pair-equal? obj1 obj2 0))
-;;             (if (and (vector? obj1)
-;;                      (vector? obj2))
-;;                 (equal? (vector->list obj1)
-;;                         (vector->list obj2))
-;;                 (if (and (string? obj1)
-;;                          (string? obj2))
-;;                     (equal? (string->list obj1)
-;;                             (string->list obj2))
-;;                     (if (and (bytevector? obj1)
-;;                              (bytevector? obj2))
-;;                         (equal? (utf8->string obj1)
-;;                                 (utf8->string obj2))
-;;                         (eqv? obj1 obj2))))))))
-
 ;; 循環する場合、終了しない
 (define equal?
   (lambda (obj1 obj2)
@@ -64,96 +30,56 @@
                         (eqv? obj1 obj2))))))))
 
 ;; Numbers
-(define real? (lambda (z)
-                (if (not (complex? z))
-                    #f
-                    (= (imag-part z) 0))))
-(define integer? (lambda (z)
-                   (if (not (real? z))
-                       #f
-                       (= z (round z)))))
-(define exact-integer? (lambda (z)
-                         (if (not (number? z))
-                             #f
-                             (if (not (exact? z))
-                                 #f
-                                 (integer? z)))))
-
-(define (= x1 x2 . rest)
-  (define (iter x1 x2 rest)
-    (if (not (number? x1))
-        #f
-        (if (nan? x1)
-            #f
-            (if (not (number? x2))
-                #f
-                (if (nan? x2)
-                    #f
-                    (if (not (zero? (- x1 x2)))
-                        #f
-                        (if (null? rest)
-                            #t
-                            (iter x2 (car rest) (cdr rest)))))))))
-  (iter x1 x2 rest))
-
 (define <
   (lambda (x1 x2 . rest)
     (define iter
-      (lambda (x1 x2 rest)
-        (if (not (real? x1))
-            #f
-            (if (not (real? x2))
+      (lambda (y1 y2 rest0)
+        (if (not (and (real? y1) (real? y2)))
+            (error "(<) wrong type argument --" (cons x1 (cons x2 rest)))
+            (if (not (negative? (- y1 y2)))
                 #f
-                (if (not (negative? (- x1 x2)))
-                    #f
-                    (if (null? rest)
-                        #t
-                        (iter x2 (car rest) (cdr rest))))))))
+                (if (null? rest0)
+                    #t
+                    (iter y2 (car rest0) (cdr rest0)))))))
     (iter x1 x2 rest)))
 
 (define >
   (lambda (x1 x2 . rest)
     (define iter
-      (lambda (x1 x2 rest)
-        (if (not (real? x1))
-            #f
-            (if (not (real? x2))
+      (lambda (y1 y2 rest0)
+        (if (not (and (real? y1) (real? y2)))
+            (error "(>) wrong type argument --" (cons x1 (cons x2 rest)))
+            (if (not (positive? (- y1 y2)))
                 #f
-                (if (not (positive? (- x1 x2)))
-                    #f
-                    (if (null? rest)
-                        #t
-                        (iter x2 (car rest) (cdr rest))))))))
+                (if (null? rest0)
+                    #t
+                    (iter y2 (car rest0) (cdr rest0)))))))
     (iter x1 x2 rest)))
 
 (define <=
   (lambda (x1 x2 . rest)
     (define iter
-      (lambda (x1 x2 rest)
-        (if (not (real? x1))
-            #f
-            (if (not (real? x2))
+      (lambda (y1 y2 rest0)
+        (if (not (and (real? y1) (real? y2)))
+            (error "(<=) wrong type argument --" (cons x1 (cons x2 rest)))
+            (if (positive? (- y1 y2))
                 #f
-                (if (positive? (- x1 x2))
-                    #f
-                    (if (null? rest)
-                        #t
-                        (iter x2 (car rest) (cdr rest))))))))
+                (if (null? rest0)
+                    #t
+                    (iter y2 (car rest0) (cdr rest0)))))))
     (iter x1 x2 rest)))
 
 (define >=
   (lambda (x1 x2 . rest)
     (define iter
-      (lambda (x1 x2 rest)
-        (if (not (real? x1))
-            #f
-            (if (not (real? x2))
+      (lambda (y1 y2 rest0)
+        (if (not (and (real? y1) (real? y2)))
+            (error "(>=) wrong type argument --" (cons x1 (cons x2 rest)))
+            (if (negative? (- y1 y2))
                 #f
-                (if (negative? (- x1 x2))
-                    #f
-                    (if (null? rest)
-                        #t
-                        (iter x2 (car rest) (cdr rest))))))))
+                (if (null? rest0)
+                    #t
+                    (iter y2 (car rest0) (cdr rest0)))))))
     (iter x1 x2 rest)))
 
 (define odd?
@@ -232,7 +158,7 @@
     (if (and (integer? n1) (integer? n2))
         (- n1 (* n2 (floor (/ n1 n2))))
         (error "(floor-remainder) wrong type argument --" (list n1 n2)))))
-  
+
 
 (define truncate/
   (lambda (n1 n2)
@@ -312,18 +238,39 @@
         (- x n)))
      (floor x))))
 
+(define rationalize
+  (lambda (x y)
+    (if (not (and (real? x) (real? y)))
+        (error "(rationalize) wrong type argument -- " (list x y))
+        ((lambda ()
+           (define diff (abs y))
+           (define high (+ x diff))
+           (define low (- x diff))
+           (define sign (if (> x 0) 1 -1))
+           (define q (abs (exact x)))      
+           (define between? (lambda (q) (and (<= low q) (<= q high))))
+           (define proc (if (and (exact? x) (exact? y)) exact inexact))
+           (define iter
+             (lambda (q)
+               (if (= q 0)
+                   (proc 0)
+                   ((lambda ()
+                      (define num (numerator q))
+                      (define den (denominator q))
+                      (if (between? (/ (- num 1) den))
+                          (iter (/ (- num 1) den))
+                          (if (= den 1)
+                              q
+                              (if (between? (/ num (- den 1)))
+                                  (iter (/ num (- den 1)))
+                                  q))))))))           
+           (* sign  (proc (if (<= (* high low) 0) 0 (iter q)))))))))
+
 (define squre (lambda (z) (* z z)))
+
 ;; Numbers end
 
 ;; Booleans
-(define not (lambda (obj) (eq? obj #f)))
-(define boolean?
-  (lambda (obj)
-    (if (eq? obj #t)
-        #t
-        (if (eq? obj #f)
-            #t
-            #f))))
 ;; Booleans endx
 ;; Pairs and lists
 (define caar (lambda (pair) (car (car pair))))
@@ -357,7 +304,6 @@
 (define cdddar (lambda (pair) (cdr (cdr (cdr (car pair))))))
 (define cddddr (lambda (pair) (cdr (cdr (cdr (cdr pair))))))
 
-(define null? (lambda (obj) (eq? '() obj)))
 (define list?
   (lambda (obj)
     (define iter
@@ -390,7 +336,6 @@
         (iter k '() '())
         (iter k (car fill) '()))))
 
-(define list (lambda args args))
 (define length
   (lambda (items)
     (define iter
@@ -1316,14 +1261,14 @@
                                             (unwind wind0))
                                         (cont obj)))
                                     wind)))))))
-            ;; (lambda (proc)
-            ;;   (c/c (lambda (cont)
-            ;;          (proc ((lambda (wind0)
-            ;;                   (lambda (obj)
-            ;;                     (if (not (eq? wind0 wind))
-            ;;                         (unwind wind0))
-            ;;                     (cont obj)))
-            ;;                 wind))))))
+          ;; (lambda (proc)
+          ;;   (c/c (lambda (cont)
+          ;;          (proc ((lambda (wind0)
+          ;;                   (lambda (obj)
+          ;;                     (if (not (eq? wind0 wind))
+          ;;                         (unwind wind0))
+          ;;                     (cont obj)))
+          ;;                 wind))))))
           call/cc))
    (set! call-with-current-continuation call/cc)
    (set! dynamic-wind
@@ -1398,9 +1343,9 @@
 
 (define port?
   (lambda (obj)
-    (if (input-port? port)
+    (if (input-port? obj)
         #t
-        (if (output-port? port)
+        (if (output-port? obj)
             #t
             #f))))
 (define close-input-port
@@ -1473,7 +1418,7 @@
            (define obj (primitive-delete-file filename))
            (if (file-error? obj)
                (raise obj)))))))
-   
+
 (define exit
   (lambda args
     (dynamic-wind

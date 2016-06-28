@@ -46,6 +46,8 @@ typedef enum type {
   WRONG_NUMBER_OF_ARGUMENTS,
   WRONG_TYPE_ARGUMENT,
   MOVED,
+  EXPT_ERROR,
+  EXACT_ERROR,
 } Type;
 
 #include <gmp.h>

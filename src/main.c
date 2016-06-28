@@ -100,6 +100,7 @@ bool list_last_list_p(Object obj) {
   return false;
 }
 
+extern int yylineno;
 extern FILE *yyin;
 extern FILE *yyout;
 int main() {
@@ -140,8 +141,14 @@ int main() {
   define_variable(identifier_new("complex?"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_complex_p},
                   env);
+  define_variable(identifier_new("real?"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_real_p},
+                  env);
   define_variable(identifier_new("rational?"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_rational_p},
+                  env);
+  define_variable(identifier_new("integer?"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_integer_p},
                   env);
   define_variable(identifier_new("exact?"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_exact_p},
@@ -149,6 +156,9 @@ int main() {
   define_variable(identifier_new("inexact?"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_inexact_p},
                   env);
+  define_variable(
+      identifier_new("exact-integer?"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_exact_integer_p}, env);
   define_variable(identifier_new("finite?"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_finite_p},
                   env);
@@ -158,6 +168,9 @@ int main() {
   define_variable(identifier_new("nan?"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_nan_p},
                   env);
+  define_variable(
+      identifier_new("="),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_math_equal_p}, env);
   define_variable(identifier_new("zero?"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_zero_p},
                   env);
@@ -192,10 +205,47 @@ int main() {
                   env);
   define_variable(identifier_new("sqrt"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_sqrt}, env);
+  define_variable(
+      identifier_new("exact-integer-sqrt"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_exact_integer_sqrt},
+      env);
+  define_variable(identifier_new("expt"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_expt}, env);
+  define_variable(
+      identifier_new("make-rectangular"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_make_rectangular}, env);
+  define_variable(identifier_new("make-polar"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_make_polar},
+                  env);
+  define_variable(identifier_new("real-part"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_real_part},
+                  env);
+  define_variable(identifier_new("imag-part"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_imag_part},
+                  env);
+  define_variable(identifier_new("magnitude"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_magnitude},
+                  env);
+  define_variable(identifier_new("angle"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_angle},
+                  env);
+  define_variable(identifier_new("inexact"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_inexact},
+                  env);
+  define_variable(identifier_new("exact"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_exact},
+                  env);
   /* Numbers end */
 
   /* Booleans */
-
+  define_variable(identifier_new("not"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_not}, env);
+  define_variable(identifier_new("boolean?"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_boolean_p},
+                  env);
+  define_variable(
+      identifier_new("boolean=?"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_boolean_eq_p}, env);
   /* Booleans end */
   /* Pairs and lists */
   define_variable(identifier_new("pair?"),
@@ -213,6 +263,11 @@ int main() {
   define_variable(identifier_new("set-cdr!"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_set_cdr},
                   env);
+  define_variable(identifier_new("null?"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_null_p},
+                  env);
+  define_variable(identifier_new("list"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_list}, env);
   /* Pairs and lists end */
   /* Symbols */
   define_variable(identifier_new("symbol?"),
@@ -442,7 +497,9 @@ int main() {
   yyrestart(stdin);
   yyout = stdout;
   char *prompt = "ksi>";
+  Object tmp;
 read_eval_print_loop:
+  yylineno = 0;
   stack = empty;
   fprintf(yyout, "%s ", prompt);
   ungetc(' ', yyin);
@@ -721,6 +778,10 @@ primitive_apply:
     goto wrong_number_of_arguments;
   case WRONG_TYPE_ARGUMENT:
     goto wrong_type_argument;
+  case EXPT_ERROR:
+    goto expt_error;
+  case EXACT_ERROR:
+    goto exact_error;
   default:
     break;
   }
@@ -732,9 +793,9 @@ compound_apply:
   env = extend_environment(unev, argl, env);
   if (env.type == WRONG_NUMBER_OF_ARGUMENTS) {
     fprintf(yyout, "Error: ");
-    object_write(yyout, argl);
-    fprintf(yyout, " wrong number of arguments -- ");
     object_write(yyout, proc);
+    fprintf(yyout, " wrong number of arguments -- ");
+    object_write(yyout, argl);
     fprintf(yyout, "\n");
     goto wrong_number_of_arguments;
   }
@@ -746,8 +807,9 @@ ev_begin:
   goto ev_sequence;
 ev_sequence:
   expr = car(unev);
-  if (cdrref(unev).type == EMPTY)
+  if (cdrref(unev).type == EMPTY) {
     goto ev_sequence_last_exp;
+  }
   save(unev);
   save(env);
   cont.cont = &&ev_sequence_continue;
@@ -771,26 +833,26 @@ ev_if_decide:
   restore(&cont);
   restore(&env);
   restore(&expr);
-  if (val.type != FALSE_TYPE)
+  if (val.type != FALSE_TYPE) {
     goto ev_if_consequence;
+  }
   goto ev_if_alternative;
 ev_if_alternative:
-  expr = cdrref(cdrref(cdrref(expr))).type == EMPTY
-             ? (Object){.type = UNSPECIFIED}
-             : car(cdrref(cdrref(cdrref(expr))));
+  tmp = cdrref(cdrref(cdrref(expr)));
+  expr = tmp.type == EMPTY ? (Object){.type = UNSPECIFIED} : car(tmp);
   goto eval_dispatch;
 ev_if_consequence:
   expr = car(cdrref(cdrref(expr)));
   goto eval_dispatch;
-ev_assignment : {
-  unev = carref(cdrref(expr));
+ev_assignment:
+  tmp = cdrref(expr);
+  unev = carref(tmp);
   save(unev);
-  expr = car(cdrref(cdrref(expr)));
+  expr = car(cdrref(tmp));
   save(env);
   save(cont);
   cont.cont = &&ev_assignment_1;
   goto eval_dispatch;
-}
 ev_assignment_1:
   restore(&cont);
   restore(&env);
@@ -802,21 +864,21 @@ ev_assignment_1:
   }
   goto *cont.cont;
 ev_definition:
-  if (carref(cdrref(expr)).type == PAIR) {
+  tmp = cdrref(expr);
+  if (carref(tmp).type == PAIR) {
     if (list_length(expr) < 3) {
       goto syntax_error;
     }
-    unev = carref(carref(cdrref(expr)));
+    unev = carref(carref(tmp));
     save(unev);
-    expr = cons(lambda_sym,
-                cons(cdrref(carref(cdrref(expr))), cdrref(cdrref(expr))));
+    expr = cons(lambda_sym, cons(cdrref(carref(tmp)), cdrref(tmp)));
   } else {
     if (list_length(expr) != 3) {
       goto syntax_error;
     }
-    unev = carref(cdrref(expr));
+    unev = carref(tmp);
     save(unev);
-    expr = car(cdrref(cdrref(expr)));
+    expr = car(cdrref(tmp));
   }
   save(env);
   save(cont);
@@ -933,6 +995,10 @@ syntax_error:
   fprintf(yyout, "Error: syntax error - ");
   object_write(yyout, expr);
   fprintf(yyout, "\n");
+  goto signal_error;
+expt_error:
+  goto signal_error;
+exact_error:
   goto signal_error;
 signal_error:;
   goto read_eval_print_loop;

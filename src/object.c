@@ -37,7 +37,6 @@ Object object_copy(Object obj) {
   default:
     return obj;
   }
-  exit(1);
 }
 void object_free(Object *obj_ptr) {
   switch (obj_ptr->type) {
@@ -62,6 +61,10 @@ void object_free(Object *obj_ptr) {
   *obj_ptr = none;
 }
 #include <stdbool.h>
+static void error(char const *msg) {
+  fprintf(stderr, "kscheme error: %s\n", msg);
+  exit(1);
+}
 void object_write(FILE *stream, Object obj) {
   switch (obj.type) {
   case NUMBERZ:
@@ -74,6 +77,13 @@ void object_write(FILE *stream, Object obj) {
   case NUMBERR: {
     if (mpfr_zero_p(obj.numberr)) {
       fprintf(stream, "0.0");
+    } else if (mpfr_inf_p(obj.numberr)) {
+      if (mpfr_sgn(obj.numberr) >= 0) {
+        fprintf(stream, "+");
+      } else {
+        fprintf(stream, "-");
+      }
+      fprintf(stream, "inf.0");
     } else {
       /* mpfr_out_str(stream, 10, 0, obj.numberr, MPFR_RNDN); */
       mpfr_fprintf(stream, "%.16Rf", obj.numberr);
@@ -83,6 +93,13 @@ void object_write(FILE *stream, Object obj) {
   case NUMBERC: {
     if (mpfr_zero_p(mpc_realref(obj.numberc))) {
       fprintf(stream, "0.0");
+    } else if (mpfr_inf_p(mpc_realref(obj.numberc))) {
+      if (mpfr_sgn(mpc_realref(obj.numberc)) >= 0) {
+        fprintf(stream, "+");
+      } else {
+        fprintf(stream, "-");
+      }
+      fprintf(stream, "inf.0");
     } else {
       /* mpfr_out_str(stream, 10, 0, mpc_realref(obj.numberc), MPFR_RNDN); */
       mpfr_fprintf(stream, "%.16Rf", mpc_realref(obj.numberc));
@@ -96,6 +113,9 @@ void object_write(FILE *stream, Object obj) {
     /* mpfr_out_str(stream, 10, 0, mpc_imagref(obj.numberc), MPFR_RNDN); */
     /* fprintf(stream, "i"); */
     mpfr_fprintf(stream, "%.16Rfi", mpc_imagref(obj.numberc));
+    if (mpfr_inf_p(mpc_imagref(obj.numberc))) {
+      fprintf(stream, ".0");
+    }
     break;
   }
   case CHARACTER: {
@@ -344,7 +364,7 @@ void object_write(FILE *stream, Object obj) {
   case MULTIPLE_ZERO:
     break;
   case NONE:
-    exit(1);
+    error("object_write");
   default:
     break;
   }
@@ -380,7 +400,7 @@ void object_write_shared(FILE *stream, Object obj) {
     pair_write_shared(stream, obj);
     break;
   case NONE:
-    exit(1);
+    error("object_write_shared");
   default:
     object_write(stream, obj);
     break;
@@ -418,7 +438,7 @@ void object_write_simple(FILE *stream, Object obj) {
     pair_write_simple(stream, obj);
     break;
   case NONE:
-    exit(1);
+    error("object_write_simple");
   default:
     object_write(stream, obj);
   }

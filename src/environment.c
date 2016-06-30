@@ -1,34 +1,33 @@
 #include "environment.h"
 
-Object make_frame(Object params, Object args) {
-  if (params.type == EMPTY && args.type == EMPTY) {
-    return cons(params, args);
+static Object make_frame() {
+  if (unev.type == EMPTY && argl.type == EMPTY) {
+    return cons(unev, argl);
   }
   Object vars = empty;
   Object vals = empty;
-  Object p, a;
-  for (p = params, a = args; p.type != EMPTY; p = cdrref(p), a = cdrref(a)) {
-    if (p.type == IDENTIFIER) {
-      vars = cons(p, vars);
-      vals = cons(a, vals);
+  for (; unev.type != EMPTY; unev = cdrref(unev), argl = cdrref(argl)) {
+    if (unev.type == IDENTIFIER) {
+      vars = cons(unev, vars);
+      vals = cons(argl, vals);
       return cons(vars, vals);
     }
-    if (a.type == EMPTY) {
+    if (argl.type == EMPTY) {
       return (Object){.type = WRONG_NUMBER_OF_ARGUMENTS};
     }
-    vars = cons(carref(p), vars);
-    vals = cons(car(a), vals);
+    save(vals);
+    vars = cons(carref(unev), vars);
+    restore(&vals);
+    vals = cons(car(argl), vals);
   }
-  if (a.type != EMPTY) {
+  if (argl.type != EMPTY) {
     return (Object){.type = WRONG_NUMBER_OF_ARGUMENTS};
   }
   return cons(vars, vals);
-  ;
 }
-Object extend_environment(Object vars, Object vals, Object base_env) {
-  Object frame = make_frame(vars, vals);
-  return frame.type == WRONG_NUMBER_OF_ARGUMENTS ? frame
-                                                 : cons(frame, base_env);
+Object extend_environment() {
+  Object frame = make_frame();
+  return frame.type == WRONG_NUMBER_OF_ARGUMENTS ? frame : cons(frame, env);
 }
 
 Object lookup_variable_valueref(Object var, Object env) {
@@ -83,7 +82,13 @@ Object define_variable(Object var, Object val, Object env) {
       return unspecified;
     }
   }
-  cars[frame.index] = cons(var, cars[frame.index]);
-  cdrs[frame.index] = cons(val, cdrs[frame.index]);
+  save(frame);
+  Object t = cons(var, cars[frame.index]);
+  restore(&frame);
+  cars[frame.index] = t;
+  save(frame);
+  t = cons(val, cdrs[frame.index]);
+  restore(&frame);
+  cdrs[frame.index] = t;
   return unspecified;
 }

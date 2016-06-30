@@ -24,6 +24,9 @@ Object cdr(Object obj);
 Object carref(Object obj);
 Object cdrref(Object obj);
 
+void save(Object obj);
+void restore(Object *ptr);
+
 Object string_cons(Object obj1, Object obj2);
 Object string_carref(Object obj);
 Object string_cdrref(Object obj);

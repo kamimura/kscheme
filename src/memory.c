@@ -162,7 +162,7 @@ Object car(Object obj) {
     return object_copy(cars[obj.index]);
   }
   default:
-    fprintf(stderr, "kscheme error: memory car -- %d", obj.type);
+    fprintf(stderr, "kscheme error: memory car -- %d\n", obj.type);
     exit(1);
   }
 }
@@ -181,7 +181,7 @@ Object cdr(Object obj) {
     return object_copy(cdrs[obj.index]);
   }
   default:
-    fprintf(stderr, "kscheme error: memory cdr -- %d", obj.type);
+    fprintf(stderr, "kscheme error: memory cdr -- %d\n", obj.type);
     exit(1);
   }
 }
@@ -200,7 +200,7 @@ Object carref(Object obj) {
     return cars[obj.index];
   }
   default:
-    fprintf(stderr, "kscheme error: memory arref -- type(%d)", obj.type);
+    fprintf(stderr, "kscheme error: memory carref -- type(%d)", obj.type);
     exit(1);
   }
 }
@@ -219,9 +219,14 @@ Object cdrref(Object obj) {
     return cdrs[obj.index];
   }
   default:
-    fprintf(stderr, "kscheme error: memory arref -- type(%d)", obj.type);
+    fprintf(stderr, "kscheme error: memory carref -- type(%d)", obj.type);
     exit(1);
   }
+}
+void save(Object obj) { stack = cons(obj, stack); }
+void restore(Object *ptr) {
+  *ptr = car(stack);
+  stack = cdrref(stack);
 }
 
 Object string_cons(Object obj1, Object obj2) {

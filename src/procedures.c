@@ -421,7 +421,7 @@ Object scm_complex_p(Object const args) {
 }
 Object scm_real_p(Object const args) {
   if (args_length(args) != 1) {
-    return arguments(args, "complex?");
+    return arguments(args, "real?");
   }
   Object obj = value(carref(args));
   switch (obj.type) {
@@ -904,107 +904,76 @@ Object scm_negative_p(Object const args) {
 }
 
 Object scm_add(Object const args) {
-  Object out = numberz_new("0", 10);
-  if (args.type == EMPTY) {
-    return out;
-  }
+  mpz_t opz;
+  mpq_t opq, opq1;
+  mpfr_t opfr;
+  mpc_t opc;
+  mpz_init_set_ui(opz, 0);
+  mpq_inits(opq, opq1, NULL);
+  mpfr_init(opfr);
+  mpc_init2(opc, MPC_PREC);
+  Type type = NUMBERZ;
   for (Object a = args; a.type != EMPTY; a = cdrref(a)) {
     Object arg = value(carref(a));
-    switch (out.type) {
+    switch (type) {
     case NUMBERZ:
       switch (arg.type) {
       case NUMBERZ: {
-        mpz_t op;
-        mpz_init(op);
-        mpz_add(op, out.numberz, arg.numberz);
-        mpz_clear(out.numberz);
-        mpz_init_set(out.numberz, op);
-        mpz_clear(op);
+        mpz_add(opz, opz, arg.numberz);
         break;
       }
       case NUMBERQ: {
-        mpq_t op;
-        mpq_init(op);
-        mpq_set_z(op, out.numberz);
-        mpz_clear(out.numberz);
-        mpq_init(out.numberq);
-        mpq_add(out.numberq, op, arg.numberq);
-        mpq_clear(op);
-        out.type = NUMBERQ;
+        type = NUMBERQ;
+        mpq_set_z(opq, opz);
+        mpq_add(opq, opq, arg.numberq);
         break;
       }
       case NUMBERR: {
-        mpfr_t op;
-        mpfr_init_set_z(op, out.numberz, MPFR_RNDN);
-        mpz_clear(out.numberz);
-        mpfr_init(out.numberr);
-        mpfr_add(out.numberr, op, arg.numberr, MPFR_RNDN);
-        mpfr_clear(op);
-        out.type = NUMBERR;
+        type = NUMBERR;
+        mpfr_add_z(opfr, arg.numberr, opz, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_z(op, out.numberz, MPC_RNDNN);
-        mpz_clear(out.numberz);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_add(out.numberc, op, arg.numberc, MPC_RNDNN);
-        mpc_clear(op);
-        out.type = NUMBERC;
+        type = NUMBERC;
+        mpfr_set_z(opfr, opz, MPFR_RNDN);
+        mpc_add_fr(opc, arg.numberc, opfr, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("+", args);
       }
       break;
     case NUMBERQ: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpq_t op1, op2;
-        mpq_inits(op1, op2, NULL);
-        mpq_set(op1, out.numberq);
-        mpq_set_z(op2, arg.numberz);
-        mpq_clear(out.numberq);
-        mpq_init(out.numberq);
-        mpq_add(out.numberq, op1, op2);
-        mpq_clears(op1, op2, NULL);
+        mpq_set_z(opq1, arg.numberz);
+        mpq_add(opq, opq, opq1);
         break;
       }
       case NUMBERQ: {
-        mpq_t op;
-        mpq_init(op);
-        mpq_set(op, out.numberq);
-        mpq_clear(out.numberq);
-        mpq_init(out.numberq);
-        mpq_add(out.numberq, op, arg.numberq);
-        mpq_clear(op);
+        mpq_add(opq, opq, arg.numberq);
         break;
       }
       case NUMBERR: {
-        mpfr_t op;
-        mpfr_init(op);
-        mpfr_set_q(op, out.numberq, MPFR_RNDN);
-        mpq_clear(out.numberq);
-        mpfr_init(out.numberr);
-        mpfr_add(out.numberr, op, arg.numberr, MPFR_RNDN);
-        out.type = NUMBERR;
+        type = NUMBERR;
+        mpfr_add_q(opfr, arg.numberr, opq, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_q(op, out.numberq, MPC_RNDNN);
-        mpq_clear(out.numberq);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_add(out.numberc, op, arg.numberc, MPC_RNDNN);
-        mpc_clear(op);
-        out.type = NUMBERC;
+        type = NUMBERC;
+        mpfr_set_q(opfr, opq, MPFR_RNDN);
+        mpc_add_fr(opc, arg.numberc, opfr, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("+", args);
       }
       break;
@@ -1012,45 +981,27 @@ Object scm_add(Object const args) {
     case NUMBERR: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpfr_t op;
-        mpfr_init_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_add_z(out.numberr, op, arg.numberz, MPFR_RNDN);
-        mpfr_clear(op);
+        mpfr_add_z(opfr, opfr, arg.numberz, MPFR_RNDN);
         break;
       }
       case NUMBERQ: {
-        mpfr_t op;
-        mpfr_init_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_add_q(out.numberr, op, arg.numberq, MPFR_RNDN);
-        mpfr_clear(op);
+        mpfr_add_q(opfr, opfr, arg.numberq, MPFR_RNDN);
         break;
       }
       case NUMBERR: {
-        mpfr_t op;
-        mpfr_init(op);
-        mpfr_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_add(out.numberr, op, arg.numberr, MPFR_RNDN);
+        mpfr_add(opfr, opfr, arg.numberr, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_fr(op, out.numberr, MPC_RNDNN);
-        mpfr_clear(out.numberr);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_add(out.numberc, op, arg.numberc, MPC_RNDNN);
-        mpc_clear(op);
-        out.type = NUMBERC;
+        type = NUMBERC;
+        mpc_add_fr(opc, arg.numberc, opfr, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("+", args);
       }
       break;
@@ -1058,194 +1009,147 @@ Object scm_add(Object const args) {
     case NUMBERC: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_z(op1, arg.numberz, MPFR_RNDN);
-        mpc_add_fr(out.numberc, op, op1, MPC_RNDNN);
-        mpc_clear(op);
-        mpfr_clear(op1);
+        mpfr_set_z(opfr, arg.numberz, MPFR_RNDN);
+        mpc_add_fr(opc, opc, opfr, MPC_RNDNN);
         break;
       }
       case NUMBERQ: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_q(op1, arg.numberq, MPFR_RNDN);
-        mpc_add_fr(out.numberc, op, op1, MPC_RNDNN);
-        mpc_clear(op);
-        mpfr_clear(op1);
+        mpfr_set_q(opfr, arg.numberq, MPFR_RNDN);
+        mpc_add_fr(opc, opc, opfr, MPC_RNDNN);
         break;
       }
       case NUMBERR: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_add_fr(out.numberc, op, arg.numberr, MPC_RNDNN);
-        mpc_clear(op);
+        mpc_add_fr(opc, opc, arg.numberr, MPC_RNDNN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_add(out.numberc, op, arg.numberc, MPC_RNDNN);
-        mpc_clear(op);
+        mpc_add(opc, opc, arg.numberc, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("+", args);
       }
       break;
     }
     default:
-      object_free(&out);
+      mpz_clear(opz);
+      mpq_clears(opq, opq1, NULL);
+      mpfr_clear(opfr);
+      mpc_clear(opc);
       return wrong_type("+", args);
     }
   }
+  Object out = none;
+  switch (type) {
+  case NUMBERZ: {
+    out.type = NUMBERZ;
+    mpz_init_set(out.numberz, opz);
+    break;
+  }
+  case NUMBERQ: {
+    out.type = NUMBERQ;
+    mpq_canonicalize(opq);
+    mpq_init(out.numberq);
+    mpq_set(out.numberq, opq);
+    break;
+  }
+  case NUMBERR: {
+    out.type = NUMBERR;
+    mpfr_init_set(out.numberr, opfr, MPFR_RNDN);
+    break;
+  }
+  case NUMBERC: {
+    out.type = NUMBERC;
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_set(out.numberc, opc, MPC_RNDNN);
+    break;
+  }
+  default:
+    error("scm_add");
+    break;
+  }
+  mpz_clear(opz);
+  mpq_clears(opq, opq1, NULL);
+  mpfr_clear(opfr);
+  mpc_clear(opc);
   return out;
 }
 
 Object scm_mul(Object const args) {
-  Object out = numberz_new("1", 10);
-  if (args.type == EMPTY) {
-    return out;
-  }
+  mpz_t opz;
+  mpq_t opq, opq1;
+  mpfr_t opfr;
+  mpc_t opc;
+  mpz_init_set_ui(opz, 1);
+  mpq_inits(opq, opq1, NULL);
+  mpfr_init(opfr);
+  mpc_init2(opc, MPC_PREC);
+  Type type = NUMBERZ;
   for (Object a = args; a.type != EMPTY; a = cdrref(a)) {
     Object arg = value(carref(a));
-    switch (out.type) {
-    case NUMBERZ: {
+    switch (type) {
+    case NUMBERZ:
       switch (arg.type) {
       case NUMBERZ: {
-        mpz_t op;
-        mpz_init(op);
-        mpz_mul(op, out.numberz, arg.numberz);
-        mpz_clear(out.numberz);
-        mpz_init_set(out.numberz, op);
+        mpz_mul(opz, opz, arg.numberz);
         break;
       }
       case NUMBERQ: {
-        mpq_t op;
-        mpq_init(op);
-        mpq_set_z(op, out.numberz);
-        mpz_clear(out.numberz);
-        mpq_init(out.numberq);
-        mpq_mul(out.numberq, op, arg.numberq);
-        mpq_clear(op);
-        if (mpz_cmp_d(mpq_denref(out.numberq), 1) == 0) {
-          mpz_t op;
-          mpz_init_set(op, mpq_numref(out.numberq));
-          mpq_clear(out.numberq);
-          mpz_init_set(out.numberz, op);
-          mpz_clear(op);
-          out.type = NUMBERZ;
-        } else {
-          out.type = NUMBERQ;
-        }
+        type = NUMBERQ;
+        mpq_set_z(opq, opz);
+        mpq_mul(opq, opq, arg.numberq);
         break;
       }
       case NUMBERR: {
-        mpfr_t op;
-        mpfr_init_set_z(op, out.numberz, MPFR_RNDN);
-        mpz_clear(out.numberz);
-        mpfr_init(out.numberr);
-        mpfr_mul(out.numberr, op, arg.numberr, MPFR_RNDN);
-        mpfr_clear(op);
-        out.type = NUMBERR;
+        type = NUMBERR;
+        mpfr_mul_z(opfr, arg.numberr, opz, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_z(op, out.numberz, MPFR_RNDN);
-        mpz_clear(out.numberz);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_mul(out.numberc, op, arg.numberc, MPFR_RNDN);
-        mpc_clear(op);
-        out.type = NUMBERC;
+        type = NUMBERC;
+        mpfr_set_z(opfr, opz, MPFR_RNDN);
+        mpc_mul_fr(opc, arg.numberc, opfr, MPC_RNDNN);
         break;
       }
-
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("*", args);
       }
       break;
-    }
     case NUMBERQ: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpq_t op1, op2;
-        mpq_inits(op1, op2, NULL);
-        mpq_set(op1, out.numberq);
-        mpq_set_z(op2, arg.numberz);
-        mpq_clear(out.numberq);
-        mpq_init(out.numberq);
-        mpq_mul(out.numberq, op1, op2);
-        mpq_clears(op1, op2, NULL);
-        if (mpz_cmp_d(mpq_denref(out.numberq), 1) == 0) {
-          mpz_t op;
-          mpz_init_set(op, mpq_numref(out.numberq));
-          mpq_clear(out.numberq);
-          mpz_init_set(out.numberz, op);
-          mpz_clear(op);
-          out.type = NUMBERZ;
-        }
+        mpq_set_z(opq1, arg.numberz);
+        mpq_mul(opq, opq, opq1);
         break;
       }
       case NUMBERQ: {
-        mpq_t op;
-        mpq_init(op);
-        mpq_set(op, out.numberq);
-        mpq_clear(out.numberq);
-        mpq_init(out.numberq);
-        mpq_mul(out.numberq, op, arg.numberq);
-        mpq_clear(op);
-        if (mpz_cmp_d(mpq_denref(out.numberq), 1) == 0) {
-          mpz_t op;
-          mpz_init_set(op, mpq_numref(out.numberq));
-          mpq_clear(out.numberq);
-          mpz_init_set(out.numberz, op);
-          mpz_clear(op);
-          out.type = NUMBERZ;
-        }
+        mpq_mul(opq, opq, arg.numberq);
         break;
       }
       case NUMBERR: {
-        mpq_t op;
-        mpq_init(op);
-        mpq_set(op, out.numberq);
-        mpq_clear(out.numberq);
-        mpfr_init(out.numberr);
-        mpfr_mul_q(out.numberr, arg.numberr, op, MPFR_RNDN);
-        mpq_clear(op);
-        out.type = NUMBERR;
+        type = NUMBERR;
+        mpfr_mul_q(opfr, arg.numberr, opq, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_q(op, out.numberq, MPFR_RNDN);
-        mpq_clear(out.numberq);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_mul(out.numberc, op, arg.numberc, MPFR_RNDN);
-        mpc_clear(op);
-        out.type = NUMBERC;
+        type = NUMBERC;
+        mpfr_set_q(opfr, opq, MPFR_RNDN);
+        mpc_mul_fr(opc, arg.numberc, opfr, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("*", args);
       }
       break;
@@ -1253,45 +1157,27 @@ Object scm_mul(Object const args) {
     case NUMBERR: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpfr_t op;
-        mpfr_init_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_mul_z(out.numberr, op, arg.numberz, MPFR_RNDN);
-        mpfr_clear(op);
+        mpfr_mul_z(opfr, opfr, arg.numberz, MPFR_RNDN);
         break;
       }
       case NUMBERQ: {
-        mpfr_t op;
-        mpfr_init_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_mul_q(out.numberr, op, arg.numberq, MPFR_RNDN);
-        mpfr_clear(op);
+        mpfr_mul_q(opfr, opfr, arg.numberq, MPFR_RNDN);
         break;
       }
       case NUMBERR: {
-        mpfr_t op;
-        mpfr_init_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_mul(out.numberr, op, arg.numberr, MPFR_RNDN);
-        mpfr_clear(op);
+        mpfr_mul(opfr, opfr, arg.numberr, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_fr(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_mul(out.numberc, op, arg.numberc, MPFR_RNDN);
-        mpc_clear(op);
-        out.type = NUMBERC;
+        type = NUMBERC;
+        mpc_mul_fr(opc, arg.numberc, opfr, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("*", args);
       }
       break;
@@ -1299,62 +1185,73 @@ Object scm_mul(Object const args) {
     case NUMBERC: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_z(op1, arg.numberz, MPFR_RNDN);
-        mpc_mul_fr(out.numberc, op, op1, MPC_RNDNN);
-        mpc_clear(op);
-        mpfr_clear(op1);
+        mpfr_set_z(opfr, arg.numberz, MPFR_RNDN);
+        mpc_mul_fr(opc, opc, opfr, MPC_RNDNN);
         break;
       }
       case NUMBERQ: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_q(op1, arg.numberq, MPFR_RNDN);
-        mpc_mul_fr(out.numberc, op, op1, MPC_RNDNN);
-        mpc_clear(op);
-        mpfr_clear(op1);
+        mpfr_set_q(opfr, arg.numberq, MPFR_RNDN);
+        mpc_mul_fr(opc, opc, opfr, MPC_RNDNN);
         break;
       }
       case NUMBERR: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_mul_fr(out.numberc, op, arg.numberr, MPC_RNDNN);
-        mpc_clear(op);
+        mpc_mul_fr(opc, opc, arg.numberr, MPC_RNDNN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_mul(out.numberc, op, arg.numberc, MPC_RNDNN);
-        mpc_clear(op);
+        mpc_mul(opc, opc, arg.numberc, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("*", args);
       }
       break;
     }
     default:
-      object_free(&out);
+      mpz_clear(opz);
+      mpq_clears(opq, opq1, NULL);
+      mpfr_clear(opfr);
+      mpc_clear(opc);
       return wrong_type("*", args);
     }
   }
+  Object out = none;
+  switch (type) {
+  case NUMBERZ: {
+    out.type = NUMBERZ;
+    mpz_init_set(out.numberz, opz);
+    break;
+  }
+  case NUMBERQ: {
+    mpq_canonicalize(opq);
+    out.type = NUMBERQ;
+    mpq_init(out.numberq);
+    mpq_set(out.numberq, opq);
+    break;
+  }
+  case NUMBERR: {
+    out.type = NUMBERR;
+    mpfr_init_set(out.numberr, opfr, MPFR_RNDN);
+    break;
+  }
+  case NUMBERC: {
+    out.type = NUMBERC;
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_set(out.numberc, opc, MPC_RNDNN);
+    break;
+  }
+  default:
+    error("scm_mul");
+    break;
+  }
+  mpz_clear(opz);
+  mpq_clears(opq, opq1, NULL);
+  mpfr_clear(opfr);
+  mpc_clear(opc);
   return out;
 }
 
@@ -1362,152 +1259,139 @@ Object scm_sub(Object const args) {
   if (args_length(args) == 0) {
     return arguments(args, "-");
   }
-  if (args_length(args) == 1) {
-    Object obj = value(carref(args));
-    switch (obj.type) {
+  Object out = none;
+  size_t len = args_length(args);
+  Object obj1 = value(carref(args));
+  mpz_t opz;
+  mpq_t opq, opq1;
+  mpfr_t opfr;
+  mpc_t opc;
+  Type type = obj1.type;
+  mpz_init(opz);
+  mpq_inits(opq, opq1, NULL);
+  mpfr_init(opfr);
+  mpc_init2(opc, MPC_PREC);
+  switch (type) {
+  case NUMBERZ: {
+    mpz_set(opz, obj1.numberz);
+    break;
+  }
+  case NUMBERQ: {
+    mpq_set(opq, obj1.numberq);
+    break;
+  }
+  case NUMBERR: {
+    mpfr_set(opfr, obj1.numberr, MPFR_RNDN);
+    break;
+  }
+  case NUMBERC: {
+    mpc_set(opc, obj1.numberc, MPC_RNDNN);
+    break;
+  }
+  case NONE:
+    error("scm_sub");
+  default:
+    return wrong_type("-", args);
+  }
+  if (len == 1) {
+    out.type = type;
+    switch (type) {
     case NUMBERZ: {
-      mpz_t op;
-      mpz_init(op);
-      mpz_neg(op, obj.numberz);
-      Object out = {.type = NUMBERZ};
-      mpz_init_set(out.numberz, op);
-      mpz_clear(op);
-      return out;
+      mpz_init(out.numberz);
+      mpz_neg(out.numberz, opz);
+      break;
     }
     case NUMBERQ: {
-      mpq_t op;
-      mpq_init(op);
-      mpq_neg(op, obj.numberq);
-      Object out = {.type = NUMBERQ};
       mpq_init(out.numberq);
-      mpq_set(out.numberq, op);
-      mpq_clear(op);
-      return out;
+      mpq_neg(out.numberq, opq);
+      break;
     }
     case NUMBERR: {
-      Object out = {.type = NUMBERR};
       mpfr_init(out.numberr);
-      mpfr_neg(out.numberr, obj.numberr, MPFR_RNDN);
-      return out;
+      mpfr_neg(out.numberr, opfr, MPFR_RNDN);
+      break;
     }
     case NUMBERC: {
-      Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_neg(out.numberc, obj.numberc, MPC_RNDNN);
-      return out;
+      mpc_neg(out.numberc, opc, MPC_RNDNN);
+      break;
     }
     case NONE:
-      error("scm_add");
+      error("scm_sub");
     default:
       return wrong_type("-", args);
     }
+    mpz_clear(opz);
+    mpq_clears(opq, opq1, NULL);
+    mpfr_clear(opfr);
+    mpc_clear(opc);
+    return out;
   }
-  Object out = car(args);
   for (Object a = cdrref(args); a.type != EMPTY; a = cdrref(a)) {
     Object arg = value(carref(a));
-    switch (out.type) {
+    switch (type) {
     case NUMBERZ:
       switch (arg.type) {
       case NUMBERZ: {
-        mpz_t op;
-        mpz_init(op);
-        mpz_sub(op, out.numberz, arg.numberz);
-        mpz_clear(out.numberz);
-        mpz_init_set(out.numberz, op);
-        out.type = NUMBERZ;
+        mpz_sub(opz, opz, arg.numberz);
         break;
       }
       case NUMBERQ: {
-        mpq_t op;
-        mpq_init(op);
-        mpq_set_z(op, out.numberz);
-        mpz_clear(out.numberz);
-        mpz_init(out.numberz);
-        mpq_sub(out.numberq, op, arg.numberq);
-        mpq_clear(op);
-        out.type = NUMBERQ;
+        type = NUMBERQ;
+        mpq_set_z(opq, opz);
+        mpq_sub(opq, opq, arg.numberq);
         break;
       }
       case NUMBERR: {
-        mpfr_t op;
-        mpfr_init_set_z(op, out.numberz, MPFR_RNDN);
-        mpz_clear(out.numberz);
-        mpfr_init(out.numberr);
-        mpfr_sub(out.numberr, op, arg.numberr, MPFR_RNDN);
-        mpfr_clear(op);
-        out.type = NUMBERR;
+        type = NUMBERR;
+        mpfr_sub_z(opfr, arg.numberr, opz, MPFR_RNDN);
+        mpfr_neg(opfr, opfr, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_z(op, out.numberz, MPC_RNDNN);
-        mpz_clear(out.numberz);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_sub(out.numberc, op, arg.numberc, MPFR_RNDN);
-        mpc_clear(op);
-        out.type = NUMBERC;
+        type = NUMBERC;
+        mpfr_set_z(opfr, opz, MPFR_RNDN);
+        mpc_sub_fr(opc, arg.numberc, opfr, MPC_RNDNN);
+        mpc_neg(opc, opc, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("-", args);
       }
       break;
     case NUMBERQ: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpq_t op1, op2;
-        mpq_inits(op1, op2, NULL);
-        mpq_set(op1, out.numberq);
-        mpq_set_z(op2, arg.numberz);
-        mpq_clear(out.numberq);
-        mpq_init(out.numberq);
-        mpq_sub(out.numberq, op1, op2);
-        mpq_clears(op1, op2, NULL);
+        mpq_set_z(opq1, arg.numberz);
+        mpq_sub(opq, opq, opq1);
         break;
       }
       case NUMBERQ: {
-        mpq_t op;
-        mpq_init(op);
-        mpq_set(op, out.numberq);
-        mpq_clear(out.numberq);
-        mpq_init(out.numberq);
-        mpq_sub(out.numberq, op, arg.numberq);
-        mpq_clear(op);
-        if (mpz_cmp_d(mpq_denref(out.numberq), 1) == 0) {
-          mpz_t op;
-          mpz_init_set(op, mpq_numref(out.numberq));
-          mpq_clear(out.numberq);
-          mpz_init_set(out.numberz, op);
-          mpz_clear(op);
-          out.type = NUMBERZ;
-        }
+        mpq_sub(opq, opq, arg.numberq);
         break;
       }
       case NUMBERR: {
-        mpfr_t op;
-        mpfr_init_set_q(op, out.numberq, MPFR_RNDN);
-        mpq_clear(out.numberq);
-        mpfr_init(out.numberr);
-        mpfr_sub(out.numberr, op, arg.numberr, MPFR_RNDN);
-        mpfr_clear(op);
-        out.type = NUMBERR;
+        type = NUMBERR;
+        mpfr_sub_q(opfr, arg.numberr, opq, MPFR_RNDN);
+        mpfr_neg(opfr, opfr, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_q(op, out.numberq, MPFR_RNDN);
-        mpq_clear(out.numberq);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_sub(out.numberc, op, arg.numberc, MPFR_RNDN);
-        mpc_clear(op);
-        out.type = NUMBERC;
+        type = NUMBERC;
+        mpfr_set_q(opfr, opq, MPFR_RNDN);
+        mpc_sub_fr(opc, arg.numberc, opfr, MPC_RNDNN);
+        mpc_neg(opc, opc, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("-", args);
       }
       break;
@@ -1515,44 +1399,28 @@ Object scm_sub(Object const args) {
     case NUMBERR: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpfr_t op;
-        mpfr_init_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_sub_z(out.numberr, op, arg.numberz, MPFR_RNDN);
-        mpfr_clear(op);
+        mpfr_sub_z(opfr, opfr, arg.numberz, MPFR_RNDN);
         break;
       }
       case NUMBERQ: {
-        mpfr_t op;
-        mpfr_init_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_sub_q(out.numberr, op, arg.numberq, MPFR_RNDN);
-        mpfr_clear(op);
+        mpfr_sub_q(opfr, opfr, arg.numberq, MPFR_RNDN);
         break;
       }
       case NUMBERR: {
-        mpfr_t op;
-        mpfr_init_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_sub(out.numberr, op, arg.numberr, MPFR_RNDN);
-        mpfr_clear(op);
+        mpfr_sub(opfr, opfr, arg.numberr, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_fr(op, out.numberr, MPC_RNDNN);
-        mpfr_clear(out.numberr);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_sub(out.numberc, op, arg.numberc, MPFR_RNDN);
-        mpc_clear(op);
+        type = NUMBERC;
+        mpc_sub_fr(opc, arg.numberc, opfr, MPC_RNDNN);
+        mpc_neg(opc, opc, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("-", args);
       }
       break;
@@ -1560,245 +1428,215 @@ Object scm_sub(Object const args) {
     case NUMBERC: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_z(op1, arg.numberz, MPFR_RNDN);
-        mpc_sub_fr(out.numberc, op, op1, MPC_RNDNN);
-        mpc_clear(op);
-        mpfr_clear(op1);
+        mpfr_set_z(opfr, arg.numberz, MPFR_RNDN);
+        mpc_sub_fr(opc, opc, opfr, MPC_RNDNN);
         break;
       }
       case NUMBERQ: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_q(op1, arg.numberq, MPFR_RNDN);
-        mpc_sub_fr(out.numberc, op, op1, MPC_RNDNN);
-        mpc_clear(op);
-        mpfr_clear(op1);
+        mpfr_set_q(opfr, arg.numberq, MPFR_RNDN);
+        mpc_sub_fr(opc, opc, opfr, MPC_RNDNN);
         break;
       }
       case NUMBERR: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_sub_fr(out.numberc, op, arg.numberr, MPC_RNDNN);
-        mpc_clear(op);
+        mpc_sub_fr(opc, opc, arg.numberr, MPC_RNDNN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_sub(out.numberc, op, arg.numberc, MPC_RNDNN);
-        mpc_clear(op);
+        mpc_sub(opc, opc, arg.numberc, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("-", args);
       }
       break;
     }
     default:
-      object_free(&out);
+      mpz_clear(opz);
+      mpq_clears(opq, opq1, NULL);
+      mpfr_clear(opfr);
+      mpc_clear(opc);
       return wrong_type("-", args);
     }
   }
+  switch (type) {
+  case NUMBERZ: {
+    out.type = NUMBERZ;
+    mpz_init_set(out.numberz, opz);
+    break;
+  }
+  case NUMBERQ: {
+    mpq_canonicalize(opq);
+    out.type = NUMBERQ;
+    mpq_init(out.numberq);
+    mpq_set(out.numberq, opq);
+    break;
+  }
+  case NUMBERR: {
+    out.type = NUMBERR;
+    mpfr_init_set(out.numberr, opfr, MPFR_RNDN);
+    break;
+  }
+  case NUMBERC: {
+    out.type = NUMBERC;
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_set(out.numberc, opc, MPC_RNDNN);
+    break;
+  }
+  default:
+    error("scm_sub");
+    break;
+  }
+  mpz_clear(opz);
+  mpq_clears(opq, opq1, NULL);
+  mpfr_clear(opfr);
+  mpc_clear(opc);
   return out;
 }
 Object scm_div(Object const args) {
   if (args_length(args) == 0) {
     return arguments(args, "/");
   }
-  if (args_length(args) == 1) {
-    Object obj = value(carref(args));
-    switch (obj.type) {
+  Object out = none;
+  size_t len = args_length(args);
+  Object obj1 = value(carref(args));
+  mpz_t opz;
+  mpq_t opq, opq1;
+  mpfr_t opfr;
+  mpc_t opc;
+  Type type = obj1.type;
+  mpz_init(opz);
+  mpq_inits(opq, opq1, NULL);
+  mpfr_init(opfr);
+  mpc_init2(opc, MPC_PREC);
+  switch (type) {
+  case NUMBERZ: {
+    mpz_set(opz, obj1.numberz);
+    break;
+  }
+  case NUMBERQ: {
+    mpq_set(opq, obj1.numberq);
+    break;
+  }
+  case NUMBERR: {
+    mpfr_set(opfr, obj1.numberr, MPFR_RNDN);
+    break;
+  }
+  case NUMBERC: {
+    mpc_set(opc, obj1.numberc, MPC_RNDNN);
+    break;
+  }
+  case NONE:
+    error("scm_div");
+  default:
+    return wrong_type("/", args);
+  }
+  if (len == 1) {
+    out.type = type;
+    switch (type) {
     case NUMBERZ: {
-      mpz_t op;
-      mpz_init(op);
-      mpz_neg(op, obj.numberz);
-      Object out = {.type = NUMBERQ};
+      out.type = NUMBERQ;
       mpq_init(out.numberq);
-      mpz_set_str(mpq_numref(out.numberq), "1", 10);
-      mpz_set(mpq_denref(out.numberq), obj.numberz);
-      mpq_canonicalize(out.numberq);
-      return out;
+      mpz_set_ui(mpq_numref(out.numberq), 1);
+      mpz_set(mpq_denref(out.numberq), opz);
+      break;
     }
     case NUMBERQ: {
-      Object out = {.type = NUMBERQ};
       mpq_init(out.numberq);
-      mpq_inv(out.numberq, obj.numberq);
-      if (mpz_cmp_d(mpq_denref(out.numberq), 1) == 0) {
-        mpz_t op;
-        mpz_init_set(op, mpq_numref(out.numberq));
-        mpq_clear(out.numberq);
-        mpz_init_set(out.numberz, op);
-        mpz_clear(op);
-        out.type = NUMBERZ;
-      }
-      return out;
+      mpq_inv(out.numberq, opq);
+      break;
     }
     case NUMBERR: {
-      Object out = {.type = NUMBERR};
       mpfr_init(out.numberr);
-      mpfr_ui_div(out.numberr, 1, obj.numberr, MPFR_RNDN);
-      return out;
+      mpfr_ui_div(out.numberr, 1, opfr, MPFR_RNDN);
+      break;
     }
     case NUMBERC: {
-      Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_ui_div(out.numberc, 1, obj.numberc, MPC_RNDNN);
-      return out;
+      mpc_ui_div(out.numberc, 1, opc, MPC_RNDNN);
+      break;
     }
     case NONE:
       error("scm_div");
     default:
       return wrong_type("/", args);
     }
-  }
-  Object out = car(args);
-  if (args.type == EMPTY) {
+    mpz_clear(opz);
+    mpq_clears(opq, opq1, NULL);
+    mpfr_clear(opfr);
+    mpc_clear(opc);
     return out;
   }
   for (Object a = cdrref(args); a.type != EMPTY; a = cdrref(a)) {
     Object arg = value(carref(a));
-    switch (out.type) {
+    switch (type) {
     case NUMBERZ:
       switch (arg.type) {
       case NUMBERZ: {
-        mpq_t op;
-        mpq_init(op);
-        mpz_set(mpq_numref(op), out.numberz);
-        mpz_set(mpq_denref(op), arg.numberz);
-        mpq_canonicalize(op);
-        mpz_clear(out.numberz);
-        mpq_init(out.numberq);
-        mpq_set(out.numberq, op);
-        mpq_clear(op);
-        if (mpz_cmp_d(mpq_denref(out.numberq), 1) == 0) {
-          mpz_t op;
-          mpz_init_set(op, mpq_numref(out.numberq));
-          mpq_clear(out.numberq);
-          mpz_init_set(out.numberz, op);
-          mpz_clear(op);
-          out.type = NUMBERZ;
-        } else {
-          out.type = NUMBERQ;
-        }
+        type = NUMBERQ;
+        mpz_set(mpq_numref(opq), opz);
+        mpz_set(mpq_denref(opq), arg.numberz);
         break;
       }
       case NUMBERQ: {
-        mpq_t op;
-        mpq_init(op);
-        mpq_set_z(op, out.numberz);
-        mpz_clear(out.numberz);
-        mpq_init(out.numberq);
-        mpq_div(out.numberq, op, arg.numberq);
-        mpq_clear(op);
-        if (mpz_cmp_d(mpq_denref(out.numberq), 1) == 0) {
-          mpz_t op;
-          mpz_init_set(op, mpq_numref(out.numberq));
-          mpq_clear(out.numberq);
-          mpz_init_set(out.numberz, op);
-          mpz_clear(op);
-          out.type = NUMBERZ;
-        } else {
-          out.type = NUMBERQ;
-        }
+        type = NUMBERQ;
+        mpq_set_z(opq, opz);
+        mpq_div(opq, opq, arg.numberq);
         break;
       }
       case NUMBERR: {
-        mpfr_t op;
-        mpfr_init_set_z(op, out.numberz, MPFR_RNDN);
-        mpz_clear(out.numberz);
-        mpfr_init(out.numberr);
-        mpfr_div(out.numberr, op, arg.numberr, MPFR_RNDN);
-        mpfr_clear(op);
-        out.type = NUMBERR;
+        type = NUMBERR;
+        mpfr_div_z(opfr, arg.numberr, opz, MPFR_RNDN);
+        mpfr_ui_div(opfr, 1, opfr, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_z(op, out.numberz, MPC_RNDNN);
-        mpz_clear(out.numberz);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, op, arg.numberc, MPFR_RNDN);
-        mpc_clear(op);
-        out.type = NUMBERC;
+        type = NUMBERC;
+        mpfr_set_z(opfr, opz, MPFR_RNDN);
+        mpc_div_fr(opc, arg.numberc, opfr, MPC_RNDNN);
+        mpc_ui_div(opc, 1, opc, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("/", args);
       }
       break;
     case NUMBERQ: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpq_t op1, op2;
-        mpq_inits(op1, op2, NULL);
-        mpq_set(op1, out.numberq);
-        mpq_set_z(op2, arg.numberz);
-        mpq_clear(out.numberq);
-        mpq_init(out.numberq);
-        mpq_div(out.numberq, op1, op2);
-        mpq_clears(op1, op2, NULL);
+        mpq_set_z(opq1, arg.numberz);
+        mpq_div(opq, opq, opq1);
         break;
       }
       case NUMBERQ: {
-        mpq_t op;
-        mpq_init(op);
-        mpq_set(op, out.numberq);
-        mpq_clear(out.numberq);
-        mpq_init(out.numberq);
-        mpq_div(out.numberq, op, arg.numberq);
-        mpq_clear(op);
-        if (mpz_cmp_d(mpq_denref(out.numberq), 1) == 0) {
-          mpz_t op;
-          mpz_init_set(op, mpq_numref(out.numberq));
-          mpq_clear(out.numberq);
-          mpz_init_set(out.numberz, op);
-          mpz_clear(op);
-          out.type = NUMBERZ;
-        }
+        mpq_div(opq, opq, arg.numberq);
         break;
       }
       case NUMBERR: {
-        mpfr_t op;
-        mpfr_init_set_q(op, out.numberq, MPFR_RNDN);
-        mpq_clear(out.numberq);
-        mpfr_init(out.numberr);
-        mpfr_div(out.numberr, op, arg.numberr, MPFR_RNDN);
-        mpfr_clear(op);
-        out.type = NUMBERR;
+        type = NUMBERR;
+        mpfr_div_q(opfr, arg.numberr, opq, MPFR_RNDN);
+        mpfr_ui_div(opfr, 1, opfr, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_q(op, out.numberq, MPC_RNDNN);
-        mpq_clear(out.numberq);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, op, arg.numberc, MPC_RNDNN);
-        mpc_clear(op);
-        out.type = NUMBERC;
+        type = NUMBERC;
+        mpfr_set_q(opfr, opq, MPFR_RNDN);
+        mpc_div_fr(opc, arg.numberc, opfr, MPC_RNDNN);
+        mpc_ui_div(opc, 1, opc, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("/", args);
       }
       break;
@@ -1806,45 +1644,28 @@ Object scm_div(Object const args) {
     case NUMBERR: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpfr_t op;
-        mpfr_init_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_div_z(out.numberr, op, arg.numberz, MPFR_RNDN);
-        mpfr_clear(op);
+        mpfr_div_z(opfr, opfr, arg.numberz, MPFR_RNDN);
         break;
       }
       case NUMBERQ: {
-        mpfr_t op;
-        mpfr_init_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_div_q(out.numberr, op, arg.numberq, MPFR_RNDN);
-        mpfr_clear(op);
+        mpfr_div_q(opfr, opfr, arg.numberq, MPFR_RNDN);
         break;
       }
       case NUMBERR: {
-        mpfr_t op;
-        mpfr_init_set(op, out.numberr, MPFR_RNDN);
-        mpfr_clear(out.numberr);
-        mpfr_init(out.numberr);
-        mpfr_div(out.numberr, op, arg.numberr, MPFR_RNDN);
-        mpfr_clear(op);
+        mpfr_div(opfr, opfr, arg.numberr, MPFR_RNDN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set_fr(op, out.numberr, MPC_RNDNN);
-        mpfr_clear(out.numberr);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, op, arg.numberc, MPFR_RNDN);
-        mpc_clear(op);
-        out.type = NUMBERC;
+        type = NUMBERC;
+        mpc_div_fr(opc, arg.numberc, opfr, MPC_RNDNN);
+        mpc_ui_div(opc, 1, opc, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("/", args);
       }
       break;
@@ -1852,63 +1673,104 @@ Object scm_div(Object const args) {
     case NUMBERC: {
       switch (arg.type) {
       case NUMBERZ: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_z(op1, arg.numberz, MPFR_RNDN);
-        mpc_div_fr(out.numberc, op, op1, MPC_RNDNN);
-        mpc_clear(op);
-        mpfr_clear(op1);
+        mpfr_set_z(opfr, arg.numberz, MPFR_RNDN);
+        mpc_div_fr(opc, opc, opfr, MPC_RNDNN);
         break;
       }
       case NUMBERQ: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_q(op1, arg.numberq, MPFR_RNDN);
-        mpc_div_fr(out.numberc, op, op1, MPC_RNDNN);
-        mpc_clear(op);
-        mpfr_clear(op1);
+        mpfr_set_q(opfr, arg.numberq, MPFR_RNDN);
+        mpc_div_fr(opc, opc, opfr, MPC_RNDNN);
         break;
       }
       case NUMBERR: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_div_fr(out.numberc, op, arg.numberr, MPC_RNDNN);
-        mpc_clear(op);
+        mpc_div_fr(opc, opc, arg.numberr, MPC_RNDNN);
         break;
       }
       case NUMBERC: {
-        mpc_t op;
-        mpc_init2(op, MPC_PREC);
-        mpc_set(op, out.numberc, MPC_RNDNN);
-        mpc_clear(out.numberc);
-        mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, op, arg.numberc, MPC_RNDNN);
-        mpc_clear(op);
+        mpc_div(opc, opc, arg.numberc, MPC_RNDNN);
         break;
       }
       default:
-        object_free(&out);
+        mpz_clear(opz);
+        mpq_clears(opq, opq1, NULL);
+        mpfr_clear(opfr);
+        mpc_clear(opc);
         return wrong_type("/", args);
       }
       break;
     }
     default:
-      object_free(&out);
+      mpz_clear(opz);
+      mpq_clears(opq, opq1, NULL);
+      mpfr_clear(opfr);
+      mpc_clear(opc);
       return wrong_type("/", args);
     }
   }
+  switch (type) {
+  case NUMBERZ: {
+    out.type = NUMBERZ;
+    mpz_init_set(out.numberz, opz);
+    break;
+  }
+  case NUMBERQ: {
+    mpq_canonicalize(opq);
+    out.type = NUMBERQ;
+    mpq_init(out.numberq);
+    mpq_set(out.numberq, opq);
+    break;
+  }
+  case NUMBERR: {
+    out.type = NUMBERR;
+    mpfr_init_set(out.numberr, opfr, MPFR_RNDN);
+    break;
+  }
+  case NUMBERC: {
+    out.type = NUMBERC;
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_set(out.numberc, opc, MPC_RNDNN);
+    break;
+  }
+  default:
+    error("scm_div");
+    break;
+  }
+  mpz_clear(opz);
+  mpq_clears(opq, opq1, NULL);
+  mpfr_clear(opfr);
+  mpc_clear(opc);
   return out;
+}
+
+Object scm_abs(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "abs");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case NUMBERZ: {
+    Object out = {.type = NUMBERZ};
+    mpz_init(out.numberz);
+    mpz_abs(out.numberz, obj.numberz);
+    return out;
+  }
+  case NUMBERQ: {
+    Object out = {.type = NUMBERQ};
+    mpq_init(out.numberq);
+    mpq_abs(out.numberq, obj.numberq);
+    return out;
+  }
+  case NUMBERR: {
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_abs(out.numberr, obj.numberr, MPFR_RNDN);
+    return out;
+  }
+  case NONE:
+    error("scm_abs");
+  default:
+    return wrong_type("abs", args);
+  }
 }
 Object scm_numerator(Object const args) {
   if (args_length(args) != 1) {
@@ -2120,22 +1982,1072 @@ Object scm_truncate(Object const args) {
     return wrong_type("truncate", args);
   }
 }
+Object scm_exp(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "exp");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case NUMBERZ: {
+    if (mpz_sgn(obj.numberz) == 0) {
+      return numberz_new("1", 10);
+    }
+    mpfr_t op;
+    mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_exp(out.numberr, op, MPFR_RNDN);
+    mpfr_clear(op);
+    return out;
+  }
+  case NUMBERQ: {
+    if (mpq_sgn(obj.numberq) == 0) {
+      return numberz_new("1", 10);
+    }
+    mpfr_t op;
+    mpfr_init_set_q(op, obj.numberq, MPFR_RNDN);
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_exp(out.numberr, op, MPFR_RNDN);
+    mpfr_clear(op);
+    return out;
+  }
+  case NUMBERR: {
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_exp(out.numberr, obj.numberr, MPFR_RNDN);
+    return out;
+  }
+  case NUMBERC: {
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_exp(out.numberc, obj.numberc, MPC_RNDNN);
+    return out;
+  }
+  case NONE:
+    error("scm_exp");
+  default:
+    return wrong_type("exp", args);
+  }
+}
+Object scm_log(Object const args) {
+  size_t len = args_length(args);
+  switch (len) {
+  case 1: {
+    Object obj = value(carref(args));
+    switch (obj.type) {
+    case NUMBERZ: {
+      if (mpz_cmp_ui(obj.numberz, 1) == 0) {
+        return numberz_new("0", 10);
+      }
+      mpc_t op;
+      mpc_init2(op, MPC_PREC);
+      mpc_set_z(op, obj.numberz, MPC_RNDNN);
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpc_log(out.numberc, op, MPC_RNDNN);
+      mpc_clear(op);
+      return out;
+    }
+    case NUMBERQ: {
+      if (mpq_cmp_ui(obj.numberq, 1, 1) == 0) {
+        return numberz_new("0", 10);
+      }
+      mpc_t op;
+      mpc_init2(op, MPC_PREC);
+      mpc_set_q(op, obj.numberq, MPC_RNDNN);
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpc_log(out.numberc, op, MPC_RNDNN);
+      mpc_clear(op);
+      return out;
+    }
+    case NUMBERR: {
+      mpc_t op;
+      mpc_init2(op, MPC_PREC);
+      mpc_set_fr(op, obj.numberr, MPC_RNDNN);
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpc_log(out.numberc, op, MPC_RNDNN);
+      mpc_clear(op);
+      return out;
+    }
+    case NUMBERC: {
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpc_log(out.numberc, obj.numberc, MPC_RNDNN);
+      return out;
+    }
+    case NONE:
+      error("scm_log");
+    default:
+      return wrong_type("log", args);
+    }
+  }
+  case 2: {
+    Object obj1 = value(carref(args));
+    Object obj2 = value(carref(cdrref(args)));
+    switch (obj1.type) {
+    case NUMBERZ: {
+      switch (obj2.type) {
+      case NUMBERZ: {
+        if (mpz_cmp_ui(obj1.numberz, 1) == 0) {
+          return numberz_new("0", 10);
+        }
+        mpc_t op1, op2, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_z(op1, obj1.numberz, MPC_RNDNN);
+        mpc_set_z(op2, obj2.numberz, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERQ: {
+        if (mpz_cmp_ui(obj1.numberz, 1) == 0) {
+          return numberz_new("0", 10);
+        }
+        mpc_t op1, op2, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_z(op1, obj1.numberz, MPC_RNDNN);
+        mpc_set_q(op2, obj2.numberq, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERR: {
+        if (mpz_cmp_ui(obj1.numberz, 1) == 0) {
+          return numberz_new("0", 10);
+        }
+        mpc_t op1, op2, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_z(op1, obj1.numberz, MPC_RNDNN);
+        mpc_set_fr(op2, obj2.numberr, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERC: {
+        if (mpz_cmp_ui(obj1.numberz, 1) == 0) {
+          return numberz_new("0", 10);
+        }
+        mpc_t op1, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_z(op1, obj1.numberz, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, obj2.numberc, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NONE:
+        error("scm_log");
+      default:
+        return wrong_type("log", args);
+      }
+    }
+    case NUMBERQ: {
+      switch (obj2.type) {
+      case NUMBERZ: {
+        if (mpq_cmp_ui(obj1.numberq, 1, 1) == 0) {
+          return numberz_new("0", 10);
+        }
+        mpc_t op1, op2, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_q(op1, obj1.numberq, MPC_RNDNN);
+        mpc_set_z(op2, obj2.numberz, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERQ: {
+        if (mpq_cmp_ui(obj1.numberq, 1, 1) == 0) {
+          return numberz_new("0", 10);
+        }
+        mpc_t op1, op2, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_q(op1, obj1.numberq, MPC_RNDNN);
+        mpc_set_q(op2, obj2.numberq, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERR: {
+        if (mpq_cmp_ui(obj1.numberq, 1, 1) == 0) {
+          return numberz_new("0", 10);
+        }
+        mpc_t op1, op2, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_q(op1, obj1.numberq, MPC_RNDNN);
+        mpc_set_fr(op2, obj2.numberr, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERC: {
+        if (mpq_cmp_ui(obj1.numberq, 1, 1) == 0) {
+          return numberz_new("0", 10);
+        }
+        mpc_t op1, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_q(op1, obj1.numberq, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, obj2.numberc, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NONE:
+        error("scm_log");
+      default:
+        return wrong_type("log", args);
+      }
+    }
+    case NUMBERR: {
+      switch (obj2.type) {
+      case NUMBERZ: {
+        mpc_t op1, op2, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_fr(op1, obj1.numberr, MPC_RNDNN);
+        mpc_set_z(op2, obj2.numberz, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERQ: {
+        mpc_t op1, op2, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_fr(op1, obj1.numberr, MPC_RNDNN);
+        mpc_set_q(op2, obj2.numberq, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERR: {
+        mpc_t op1, op2, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_fr(op1, obj1.numberr, MPC_RNDNN);
+        mpc_set_fr(op2, obj2.numberr, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERC: {
+        mpc_t op1, rop1, rop2;
+        mpc_init2(op1, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_fr(op1, obj1.numberr, MPC_RNDNN);
+        mpc_log(rop1, op1, MPC_RNDNN);
+        mpc_log(rop2, obj2.numberc, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op1);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NONE:
+        error("scm_log");
+      default:
+        return wrong_type("log", args);
+      }
+    }
+    case NUMBERC: {
+      switch (obj2.type) {
+      case NUMBERZ: {
+        mpc_t op2, rop1, rop2;
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_z(op2, obj2.numberz, MPC_RNDNN);
+        mpc_log(rop1, obj1.numberc, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERQ: {
+        mpc_t op2, rop1, rop2;
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_q(op2, obj2.numberq, MPC_RNDNN);
+        mpc_log(rop1, obj1.numberc, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERR: {
+        mpc_t op2, rop1, rop2;
+        mpc_init2(op2, MPC_PREC);
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_set_fr(op2, obj2.numberr, MPC_RNDNN);
+        mpc_log(rop1, obj1.numberc, MPC_RNDNN);
+        mpc_log(rop2, op2, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(op2);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NUMBERC: {
+        mpc_t rop1, rop2;
+        mpc_init2(rop1, MPC_PREC);
+        mpc_init2(rop2, MPC_PREC);
+        mpc_log(rop1, obj1.numberc, MPC_RNDNN);
+        mpc_log(rop2, obj2.numberc, MPC_RNDNN);
+        Object out = {.type = NUMBERC};
+        mpc_init2(out.numberc, MPC_PREC);
+        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
+        mpc_clear(rop1);
+        mpc_clear(rop2);
+        return out;
+      }
+      case NONE:
+        error("scm_log");
+      default:
+        return wrong_type("log", args);
+      }
+    }
+    case NONE:
+      error("scm_log");
+    default:
+      return wrong_type("log", args);
+    }
+  }
+  case NONE:
+    error("scm_log");
+  default:
+    return arguments(args, "log");
+  }
+}
+Object scm_sin(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "sin");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case NUMBERZ: {
+    if (mpz_sgn(obj.numberz) == 0) {
+      return numberz_new("0", 10);
+    }
+    mpfr_t op;
+    mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_sin(out.numberr, op, MPFR_RNDN);
+    mpfr_clear(op);
+    return out;
+  }
+  case NUMBERQ: {
+    if (mpq_sgn(obj.numberq) == 0) {
+      return numberz_new("0", 0);
+    }
+    mpfr_t op;
+    mpfr_init_set_q(op, obj.numberq, MPFR_RNDN);
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_sin(out.numberr, op, MPFR_RNDN);
+    mpfr_clear(op);
+    return out;
+  }
+  case NUMBERR: {
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_sin(out.numberr, obj.numberr, MPFR_RNDN);
+    return out;
+  }
+  case NUMBERC: {
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_sin(out.numberc, obj.numberc, MPC_RNDNN);
+    return out;
+  }
+  case NONE:
+    error("scm_sin");
+  default:
+    return wrong_type("sin", args);
+  }
+}
+Object scm_cos(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "cos");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case NUMBERZ: {
+    if (mpz_sgn(obj.numberz) == 0) {
+      return numberz_new("1", 10);
+    }
+    mpfr_t op;
+    mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_cos(out.numberr, op, MPFR_RNDN);
+    mpfr_clear(op);
+    return out;
+  }
+  case NUMBERQ: {
+    if (mpq_sgn(obj.numberq) == 0) {
+      return numberz_new("1", 0);
+    }
+    mpfr_t op;
+    mpfr_init_set_q(op, obj.numberq, MPFR_RNDN);
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_cos(out.numberr, op, MPFR_RNDN);
+    mpfr_clear(op);
+    return out;
+  }
+  case NUMBERR: {
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_cos(out.numberr, obj.numberr, MPFR_RNDN);
+    return out;
+  }
+  case NUMBERC: {
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_cos(out.numberc, obj.numberc, MPC_RNDNN);
+    return out;
+  }
+  case NONE:
+    error("scm_cos");
+  default:
+    return wrong_type("cos", args);
+  }
+}
+Object scm_tan(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "tan");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case NUMBERZ: {
+    mpfr_t op;
+    mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_tan(out.numberr, op, MPFR_RNDN);
+    mpfr_clear(op);
+    return out;
+  }
+  case NUMBERQ: {
+    mpfr_t op;
+    mpfr_init_set_q(op, obj.numberq, MPFR_RNDN);
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_tan(out.numberr, op, MPFR_RNDN);
+    mpfr_clear(op);
+    return out;
+  }
+  case NUMBERR: {
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_tan(out.numberr, obj.numberr, MPFR_RNDN);
+    return out;
+  }
+  case NUMBERC: {
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_tan(out.numberc, obj.numberc, MPC_RNDNN);
+    return out;
+  }
+  case NONE:
+    error("scm_tan");
+  default:
+    return wrong_type("tan", args);
+  }
+}
+Object scm_asin(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "asin");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case NUMBERZ: {
+    if (mpz_sgn(obj.numberz) == 0) {
+      return numberz_new("0", 0);
+    }
+    mpc_t op;
+    mpc_init2(op, MPC_PREC);
+    mpc_set_z(op, obj.numberz, MPC_RNDNN);
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_asin(out.numberc, op, MPC_RNDNN);
+    mpc_clear(op);
+    return out;
+  }
+  case NUMBERQ: {
+    if (mpq_sgn(obj.numberq) == 0) {
+      return numberz_new("0", 0);
+    }
+    mpc_t op;
+    mpc_init2(op, MPC_PREC);
+    mpc_set_q(op, obj.numberq, MPC_RNDNN);
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_asin(out.numberc, op, MPC_RNDNN);
+    mpc_clear(op);
+    return out;
+  }
+  case NUMBERR: {
+    mpc_t op;
+    mpc_init2(op, MPC_PREC);
+    mpc_set_fr(op, obj.numberr, MPC_RNDNN);
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_asin(out.numberc, op, MPC_RNDNN);
+    mpc_clear(op);
+    return out;
+  }
+  case NUMBERC: {
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_asin(out.numberc, obj.numberc, MPC_RNDNN);
+    return out;
+  }
+  case NONE:
+    error("scm_asin");
+  default:
+    return wrong_type("asin", args);
+  }
+}
+Object scm_acos(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "acos");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case NUMBERZ: {
+    if (mpz_cmp_ui(obj.numberz, 1) == 0) {
+      return numberz_new("0", 0);
+    }
+    mpc_t op;
+    mpc_init2(op, MPC_PREC);
+    mpc_set_z(op, obj.numberz, MPC_RNDNN);
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_acos(out.numberc, op, MPC_RNDNN);
+    mpc_clear(op);
+    return out;
+  }
+  case NUMBERQ: {
+    if (mpq_cmp_ui(obj.numberq, 1, 1) == 0) {
+      return numberz_new("0", 0);
+    }
+    mpc_t op;
+    mpc_init2(op, MPC_PREC);
+    mpc_set_q(op, obj.numberq, MPC_RNDNN);
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_acos(out.numberc, op, MPC_RNDNN);
+    mpc_clear(op);
+    return out;
+  }
+  case NUMBERR: {
+    mpc_t op;
+    mpc_init2(op, MPC_PREC);
+    mpc_set_fr(op, obj.numberr, MPC_RNDNN);
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_asin(out.numberc, op, MPC_RNDNN);
+    mpc_clear(op);
+    return out;
+  }
+  case NUMBERC: {
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_acos(out.numberc, obj.numberc, MPC_RNDNN);
+    return out;
+  }
+  case NONE:
+    error("scm_acos");
+  default:
+    return wrong_type("acos", args);
+  }
+}
 
+Object scm_atan(Object const args) {
+  size_t len = args_length(args);
+  switch (len) {
+  case 1: {
+    Object obj = value(carref(args));
+    switch (obj.type) {
+    case NUMBERZ: {
+      if (mpz_sgn(obj.numberz) == 0) {
+        return numberz_new("0", 10);
+      }
+      mpfr_t op;
+      mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
+      Object out = {.type = NUMBERR};
+      mpfr_init(out.numberr);
+      mpfr_atan(out.numberr, op, MPC_RNDNN);
+      mpfr_clear(op);
+      return out;
+    }
+    case NUMBERQ: {
+      if (mpq_sgn(obj.numberq) == 0) {
+        return numberz_new("0", 10);
+      }
+      mpfr_t op;
+      mpfr_init_set_q(op, obj.numberq, MPFR_RNDN);
+      Object out = {.type = NUMBERR};
+      mpfr_init(out.numberr);
+      mpfr_atan(out.numberr, op, MPC_RNDNN);
+      mpfr_clear(op);
+      return out;
+    }
+    case NUMBERR: {
+      Object out = {.type = NUMBERR};
+      mpfr_init(out.numberr);
+      mpfr_atan(out.numberr, obj.numberr, MPC_RNDNN);
+      return out;
+    }
+    case NUMBERC: {
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpc_atan(out.numberc, obj.numberc, MPC_RNDNN);
+      return out;
+    }
+    case NONE:
+      error("scm_atan");
+    default:
+      return wrong_type("atan", args);
+    }
+  }
+  case 2: {
+    Object obj1 = value(carref(args));
+    Object obj2 = value(carref(cdrref(args)));
+    switch (obj1.type) {
+    case NUMBERZ: {
+      int sign1 = mpz_sgn(obj1.numberz);
+      switch (obj2.type) {
+      case NUMBERZ: {
+        if (sign1 == 0 && mpz_sgn(obj2.numberz) >= 0) {
+          return numberz_new("0", 10);
+        }
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpc_set_z_z(rop, obj2.numberz, obj1.numberz, MPC_RNDNN);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERQ: {
+        if (sign1 == 0 && mpq_sgn(obj2.numberq) >= 0) {
+          return numberz_new("0", 10);
+        }
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpq_t op1;
+        mpq_init(op1);
+        mpq_set_z(op1, obj1.numberz);
+        mpc_set_q_q(rop, obj2.numberq, op1, MPC_RNDNN);
+        mpq_clear(op1);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERR: {
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpfr_t op1;
+        mpfr_init_set_z(op1, obj1.numberz, MPFR_RNDN);
+        mpc_set_fr_fr(rop, obj2.numberr, op1, MPC_RNDNN);
+        mpfr_clear(op1);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERC: {
+        if (!mpfr_zero_p(mpc_imagref(obj2.numberc))) {
+          return wrong_type("atan", args);
+        }
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpfr_t op1;
+        mpfr_init_set_z(op1, obj1.numberz, MPFR_RNDN);
+        mpc_set_fr_fr(rop, mpc_realref(obj2.numberc), op1, MPC_RNDNN);
+        mpfr_clear(op1);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NONE:
+        error("scm_atan");
+      default:
+        return wrong_type("atan", args);
+      }
+    }
+    case NUMBERQ: {
+      int sign1 = mpq_sgn(obj1.numberq);
+      switch (obj2.type) {
+      case NUMBERZ: {
+        if (sign1 == 0 && mpq_sgn(obj2.numberq) >= 0) {
+          return numberz_new("0", 10);
+        }
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpq_t op2;
+        mpq_init(op2);
+        mpq_set_z(op2, obj2.numberz);
+        mpc_set_q_q(rop, op2, obj1.numberq, MPC_RNDNN);
+        mpq_clear(op2);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERQ: {
+        if (sign1 == 0 && mpq_sgn(obj2.numberq) >= 0) {
+          return numberz_new("0", 10);
+        }
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpc_set_q_q(rop, obj2.numberq, obj1.numberq, MPC_RNDNN);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERR: {
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpfr_t op1;
+        mpfr_init_set_q(op1, obj1.numberq, MPFR_RNDN);
+        mpc_set_fr_fr(rop, obj2.numberr, op1, MPC_RNDNN);
+        mpfr_clear(op1);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERC: {
+        if (!mpfr_zero_p(mpc_imagref(obj2.numberc))) {
+          return wrong_type("atan", args);
+        }
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpfr_t op1;
+        mpfr_init_set_q(op1, obj1.numberq, MPFR_RNDN);
+        mpc_set_fr_fr(rop, mpc_realref(obj2.numberc), op1, MPC_RNDNN);
+        mpfr_clear(op1);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NONE:
+        error("scm_atan");
+      default:
+        return wrong_type("atan", args);
+      }
+    }
+    case NUMBERR: {
+      switch (obj2.type) {
+      case NUMBERZ: {
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpfr_t op2;
+        mpfr_init_set_z(op2, obj2.numberz, MPFR_RNDN);
+        mpc_set_fr_fr(rop, op2, obj1.numberr, MPC_RNDNN);
+        mpfr_clear(op2);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERQ: {
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpfr_t op2;
+        mpfr_init_set_q(op2, obj2.numberq, MPFR_RNDN);
+        mpc_set_fr_fr(rop, op2, obj1.numberr, MPC_RNDNN);
+        mpfr_clear(op2);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERR: {
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpc_set_fr_fr(rop, obj2.numberr, obj1.numberr, MPC_RNDNN);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERC: {
+        if (!mpfr_zero_p(mpc_imagref(obj2.numberc))) {
+          return wrong_type("atan", args);
+        }
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpc_set_fr_fr(rop, mpc_realref(obj2.numberc), obj1.numberr, MPC_RNDNN);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NONE:
+        error("scm_atan");
+      default:
+        return wrong_type("atan", args);
+      }
+    }
+    case NUMBERC: {
+      if (!mpfr_zero_p(mpc_imagref(obj1.numberc))) {
+        return wrong_type("atan", args);
+      }
+      switch (obj2.type) {
+      case NUMBERZ: {
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpfr_t op2;
+        mpfr_init_set_z(op2, obj2.numberz, MPFR_RNDN);
+        mpc_set_fr_fr(rop, op2, mpc_realref(obj1.numberc), MPC_RNDNN);
+        mpfr_clear(op2);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERQ: {
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_init2(rop, MPC_PREC);
+        mpfr_t op2;
+        mpfr_init_set_q(op2, obj2.numberq, MPFR_RNDN);
+        mpc_set_fr_fr(rop, op2, mpc_realref(obj1.numberc), MPC_RNDNN);
+        mpfr_clear(op2);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERR: {
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_set_fr_fr(rop, obj2.numberr, mpc_realref(obj1.numberc), MPC_RNDNN);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NUMBERC: {
+        if (!mpfr_zero_p(mpc_imagref(obj2.numberc))) {
+          return wrong_type("atan", args);
+        }
+        Object out = {.type = NUMBERR};
+        mpfr_init(out.numberr);
+        mpc_t rop;
+        mpc_set_fr_fr(rop, mpc_realref(obj2.numberc), mpc_realref(obj1.numberc),
+                      MPC_RNDNN);
+        mpc_arg(out.numberr, rop, MPFR_RNDN);
+        mpc_clear(rop);
+        return out;
+      }
+      case NONE:
+        error("scm_atan");
+      default:
+        return wrong_type("atan", args);
+      }
+    }
+    case NONE:
+      error("scm_atan");
+    default:
+      return wrong_type("atan", args);
+    }
+  }
+  default:
+    return arguments(args, "atan");
+  }
+}
+Object scm_square(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "square");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case NUMBERZ: {
+    Object out = {.type = NUMBERZ};
+    mpz_init(out.numberz);
+    mpz_mul(out.numberz, obj.numberz, obj.numberz);
+    return out;
+  }
+  case NUMBERQ: {
+    Object out = {.type = NUMBERQ};
+    mpq_init(out.numberq);
+    mpq_mul(out.numberq, obj.numberq, obj.numberq);
+    return out;
+  }
+  case NUMBERR: {
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_mul(out.numberr, obj.numberr, obj.numberr, MPFR_RNDN);
+    return out;
+  }
+  case NUMBERC: {
+    Object out = {.type = NUMBERC};
+    mpc_init2(out.numberc, MPC_PREC);
+    mpc_mul(out.numberc, obj.numberc, obj.numberc, MPC_RNDNN);
+    return out;
+  }
+  case NONE:
+    error("scm_square");
+  default:
+    return wrong_type("square", args);
+  }
+}
 Object scm_sqrt(Object const args) {
   if (args_length(args) != 1) {
     return arguments(args, "sqrt");
   }
-  Object arg = value(carref(args));
-  switch (arg.type) {
+  Object obj = value(carref(args));
+  switch (obj.type) {
   case NUMBERZ: {
-    if (mpz_perfect_square_p(arg.numberz)) {
+    if (mpz_perfect_square_p(obj.numberz)) {
       Object out = {.type = NUMBERZ};
       mpz_init(out.numberz);
-      mpz_sqrt(out.numberz, arg.numberz);
+      mpz_sqrt(out.numberz, obj.numberz);
       return out;
     }
     mpfr_t op;
-    mpfr_init_set_z(op, arg.numberz, MPFR_RNDN);
+    mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
     Object out = {.type = NUMBERR};
     mpfr_init(out.numberr);
     mpfr_sqrt(out.numberr, op, MPFR_RNDN);
@@ -2143,25 +3055,25 @@ Object scm_sqrt(Object const args) {
     return out;
   }
   case NUMBERQ: {
-    if (mpz_perfect_square_p(mpq_numref(arg.numberq)) &&
-        mpz_perfect_square_p(mpq_denref(arg.numberq))) {
+    if (mpz_perfect_square_p(mpq_numref(obj.numberq)) &&
+        mpz_perfect_square_p(mpq_denref(obj.numberq))) {
       Object out = {.type = NUMBERQ};
       mpq_init(out.numberq);
-      mpz_sqrt(mpq_numref(out.numberq), mpq_numref(arg.numberq));
-      mpz_sqrt(mpq_denref(out.numberq), mpq_denref(arg.numberq));
+      mpz_sqrt(mpq_numref(out.numberq), mpq_numref(obj.numberq));
+      mpz_sqrt(mpq_denref(out.numberq), mpq_denref(obj.numberq));
       return out;
     }
   }
   case NUMBERR: {
     Object out = {.type = NUMBERR};
     mpfr_init(out.numberr);
-    mpfr_sqrt(out.numberr, arg.numberr, MPFR_RNDN);
+    mpfr_sqrt(out.numberr, obj.numberr, MPFR_RNDN);
     return out;
   }
   case NUMBERC: {
     Object out = {.type = NUMBERC};
     mpc_init2(out.numberc, MPC_PREC);
-    mpc_sqrt(out.numberc, arg.numberc, MPC_RNDNN);
+    mpc_sqrt(out.numberc, obj.numberc, MPC_RNDNN);
     return out;
   }
   case NONE:
@@ -2688,12 +3600,18 @@ Object scm_make_rectangular(Object const args) {
   case NUMBERZ: {
     switch (obj2.type) {
     case NUMBERZ: {
+      if (mpz_sgn(obj2.numberz) == 0) {
+        return object_copy(obj1);
+      }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
       mpc_set_z_z(out.numberc, obj1.numberz, obj2.numberz, MPC_RNDNN);
       return out;
     }
     case NUMBERQ: {
+      if (mpq_sgn(obj2.numberq) == 0) {
+        return object_copy(obj1);
+      }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
       mpq_t op1;
@@ -2712,6 +3630,18 @@ Object scm_make_rectangular(Object const args) {
       mpfr_clear(op1);
       return out;
     }
+    case NUMBERC: {
+      if (!mpfr_zero_p(mpc_imagref(obj2.numberc))) {
+        return wrong_type("make-rectangular", args);
+      }
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpfr_t op1;
+      mpfr_init_set_z(op1, obj1.numberz, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, op1, mpc_realref(obj2.numberc), MPC_RNDNN);
+      mpfr_clear(op1);
+      return out;
+    }
     case NONE:
       error("scm_make_rectangular");
     default:
@@ -2721,6 +3651,9 @@ Object scm_make_rectangular(Object const args) {
   case NUMBERQ: {
     switch (obj2.type) {
     case NUMBERZ: {
+      if (mpz_sgn(obj2.numberz) == 0) {
+        return object_copy(obj1);
+      }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
       mpq_t op2;
@@ -2731,6 +3664,9 @@ Object scm_make_rectangular(Object const args) {
       return out;
     }
     case NUMBERQ: {
+      if (mpq_sgn(obj2.numberq) == 0) {
+        return object_copy(obj1);
+      }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
       mpc_set_q_q(out.numberc, obj1.numberq, obj2.numberq, MPC_RNDNN);
@@ -2745,6 +3681,18 @@ Object scm_make_rectangular(Object const args) {
       mpfr_clear(op1);
       return out;
     }
+    case NUMBERC: {
+      if (!mpfr_zero_p(mpc_imagref(obj2.numberc))) {
+        return wrong_type("make-rectangular", args);
+      }
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpfr_t op1;
+      mpfr_init_set_q(op1, obj1.numberq, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, op1, mpc_realref(obj2.numberc), MPC_RNDNN);
+      mpfr_clear(op1);
+      return out;
+    }
     case NONE:
       error("scm_make_rectangular");
     default:
@@ -2754,6 +3702,9 @@ Object scm_make_rectangular(Object const args) {
   case NUMBERR: {
     switch (obj2.type) {
     case NUMBERZ: {
+      if (mpz_sgn(obj2.numberz) == 0) {
+        return object_copy(obj1);
+      }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
       mpfr_t op2;
@@ -2763,6 +3714,9 @@ Object scm_make_rectangular(Object const args) {
       return out;
     }
     case NUMBERQ: {
+      if (mpq_sgn(obj2.numberq) == 0) {
+        return object_copy(obj1);
+      }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
       mpfr_t op2;
@@ -2775,6 +3729,68 @@ Object scm_make_rectangular(Object const args) {
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
       mpc_set_fr_fr(out.numberc, obj1.numberr, obj2.numberr, MPC_RNDNN);
+      return out;
+    }
+    case NUMBERC: {
+      if (!mpfr_zero_p(mpc_imagref(obj2.numberc))) {
+        return wrong_type("make-rectangular", args);
+      }
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpc_set_fr_fr(out.numberc, obj1.numberr, mpc_realref(obj2.numberc),
+                    MPC_RNDNN);
+      return out;
+    }
+    case NONE:
+      error("scm_make_rectangular");
+    default:
+      return wrong_type("make-rectangular", args);
+    }
+  }
+  case NUMBERC: {
+    if (!mpfr_zero_p(mpc_imagref(obj1.numberc))) {
+      return wrong_type("make-rectangular", args);
+    }
+    switch (obj2.type) {
+    case NUMBERZ: {
+      if (mpz_sgn(obj2.numberz) == 0) {
+        return object_copy(obj1);
+      }
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpfr_t op2;
+      mpfr_init_set_z(op2, obj2.numberz, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, mpc_realref(obj1.numberc), op2, MPC_RNDNN);
+      mpfr_clear(op2);
+      return out;
+    }
+    case NUMBERQ: {
+      if (mpq_sgn(obj2.numberq) == 0) {
+        return object_copy(obj1);
+      }
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpfr_t op2;
+      mpfr_init_set_q(op2, obj2.numberq, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, mpc_realref(obj1.numberc), op2, MPC_RNDNN);
+      mpfr_clear(op2);
+      return out;
+    }
+    case NUMBERR: {
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpc_set_fr_fr(out.numberc, mpc_realref(obj1.numberc), obj2.numberr,
+                    MPC_RNDNN);
+      return out;
+    }
+    case NUMBERC: {
+      if (!mpfr_zero_p(mpc_imagref(obj2.numberc))) {
+        return wrong_type("make-rectangular", args);
+      }
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpc_set_fr_fr(out.numberc, mpc_realref(obj1.numberc),
+                    mpc_realref(obj2.numberc), MPC_RNDNN);
       return out;
     }
     case NONE:

@@ -135,12 +135,6 @@
         (iter x rest)
         (error "(min) wrong type argument --" x))))
 
-(define abs
-  (lambda (x)
-    (if (real? x)
-        (if (< x 0) (- x) x)
-        (error "(abs) wrong type argument --" x))))
-
 (define floor/
   (lambda (n1 n2)
     (if (and (integer? n1) (integer? n2))
@@ -238,35 +232,39 @@
         (- x n)))
      (floor x))))
 
+;; Stern-Brocot tree
 (define rationalize
   (lambda (x y)
     (if (not (and (real? x) (real? y)))
         (error "(rationalize) wrong type argument -- " (list x y))
         ((lambda ()
-           (define diff (abs y))
-           (define high (+ x diff))
+           (define diff (abs y))           
            (define low (- x diff))
-           (define sign (if (> x 0) 1 -1))
-           (define q (abs (exact x)))      
-           (define between? (lambda (q) (and (<= low q) (<= q high))))
+           (define high (+ x diff))
            (define proc (if (and (exact? x) (exact? y)) exact inexact))
-           (define iter
-             (lambda (q)
-               (if (= q 0)
-                   (proc 0)
-                   ((lambda ()
-                      (define num (numerator q))
-                      (define den (denominator q))
-                      (if (between? (/ (- num 1) den))
-                          (iter (/ (- num 1) den))
-                          (if (= den 1)
-                              q
-                              (if (between? (/ num (- den 1)))
-                                  (iter (/ num (- den 1)))
-                                  q))))))))           
-           (* sign  (proc (if (<= (* high low) 0) 0 (iter q)))))))))
-
-(define squre (lambda (z) (* z z)))
+           (if (<= (* low high) 0)
+               (proc 0)
+               ((lambda ()
+                  (define sign (if (positive? x) 1 -1))
+                  (define low0 (if (positive? sign) low (abs high)))
+                  (define high0 (if (positive? sign) high (abs low)))
+                  (define between? (lambda (x) (and (<= low0 x) (<= x high0))))
+                  (define stern-brocot-tree
+                    (lambda (pnum pden qnum qden)
+                      (define a (/ (+ pnum qnum)
+                                   (+ pden qden)))
+                      (if (between? a)
+                          a
+                          (if (< high0 a)
+                              (stern-brocot-tree pnum
+                                                 pden
+                                                 (numerator a)
+                                                 (denominator a))
+                              (stern-brocot-tree (numerator a)
+                                                 (denominator a)
+                                                 qnum
+                                                 qden)))))
+                  (proc (* sign (stern-brocot-tree 0 1 1 0)))))))))))
 
 ;; Numbers end
 

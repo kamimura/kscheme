@@ -4,11 +4,6 @@
 #include "environment.h"
 #include "procedures.h"
 
-void save(Object obj) { stack = cons(obj, stack); }
-void restore(Object *ptr) {
-  *ptr = car(stack);
-  stack = cdrref(stack);
-}
 extern void yyrestart(FILE *);
 Object kread() {
   yyparse();
@@ -17,7 +12,9 @@ Object kread() {
 Object reverse(Object args) {
   Object out = empty;
   for (Object a = args; a.type != EMPTY; a = cdrref(a)) {
+    save(a);
     out = cons(car(a), out);
+    restore(&a);
   }
   return out;
 }
@@ -25,7 +22,9 @@ Object argl_append(Object obj) {
   Object reversed = reverse(obj);
   Object out = car(reversed);
   for (Object t = cdrref(reversed); t.type != EMPTY; t = cdrref(t)) {
+    save(t);
     out = cons(car(t), out);
+    restore(&t);
   }
   return out;
 }
@@ -188,6 +187,8 @@ int main() {
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_sub}, env);
   define_variable(identifier_new("/"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_div}, env);
+  define_variable(identifier_new("abs"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_abs}, env);
   define_variable(identifier_new("numerator"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_numerator},
                   env);
@@ -202,6 +203,25 @@ int main() {
                   env);
   define_variable(identifier_new("truncate"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_truncate},
+                  env);
+  define_variable(identifier_new("exp"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_exp}, env);
+  define_variable(identifier_new("log"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_log}, env);
+  define_variable(identifier_new("sin"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_sin}, env);
+  define_variable(identifier_new("cos"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_cos}, env);
+  define_variable(identifier_new("tan"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_tan}, env);
+  define_variable(identifier_new("asin"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_asin}, env);
+  define_variable(identifier_new("acos"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_acos}, env);
+  define_variable(identifier_new("atan"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_atan}, env);
+  define_variable(identifier_new("square"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_square},
                   env);
   define_variable(identifier_new("sqrt"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_sqrt}, env);
@@ -790,7 +810,8 @@ primitive_apply:
 compound_apply:
   env = carref(proc);
   unev = carref(cdrref(proc));
-  env = extend_environment(unev, argl, env);
+  env = extend_environment();
+  /* env = extend_environment(unev, argl, env); */
   if (env.type == WRONG_NUMBER_OF_ARGUMENTS) {
     fprintf(yyout, "Error: ");
     object_write(yyout, proc);

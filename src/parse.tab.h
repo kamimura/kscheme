@@ -63,7 +63,7 @@ enum yytokentype {
 #if !defined YYSTYPE && !defined YYSTYPE_IS_DECLARED
 
 union YYSTYPE {
-#line 7 "parse.y" /* yacc.c:1909  */
+#line 9 "parse.y" /* yacc.c:1909  */
 
   Object obj;
 

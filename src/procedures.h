@@ -55,6 +55,9 @@ Object scm_magnitude(Object const args);
 Object scm_angle(Object const args);
 Object scm_inexact(Object const args);
 Object scm_exact(Object const args);
+
+Object scm_number_tostring(Object const args);
+Object scm_string_tonumber(Object const args);
 /* Numbers end */
 
 /* Booleans */

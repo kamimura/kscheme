@@ -7,6 +7,7 @@
 %{
 #include "object.h"
 #include "parse.tab.h"
+
 extern int interactive_mode;
 
 char sign_imag;
@@ -630,7 +631,24 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 }
 %%
 
+#include <stdbool.h>
+bool syntax_error = true;
 void yyerror(char const *msg) {
-printf("%d: %s at '%s'\n", yylineno, msg, yytext);
+  if (syntax_error) {
+    printf("%d: %s at '%s'\n", yylineno, msg, yytext);
+  }
 yylineno = 0;
 }
+int string_tonumber(char *str) {
+  YY_BUFFER_STATE bp = yy_scan_string(str);
+  yy_switch_to_buffer(bp);
+  syntax_error = false;
+  int n = yyparse();
+  syntax_error = true;
+  if (input() != EOF) {
+    n = 1;
+  }
+  yy_delete_buffer(bp);
+  return n;
+  }
+

@@ -1,5 +1,7 @@
 %{
+
 #include "object.h"
+extern int string_tonumber(char *str);
 extern void yyerror(char *s);
 extern int yylex(void);
 %}
@@ -38,7 +40,7 @@ extern int yylex(void);
 program:        datum
                 {
                   kread_obj = $1;
-                  return 1;
+                  return 0;
                 }
         ;
 datum:          simple_datum
@@ -117,3 +119,4 @@ bytevector:     ')'
                 }
         ;
 %%
+

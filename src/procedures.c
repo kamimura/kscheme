@@ -4135,6 +4135,264 @@ Object scm_exact(Object const args) {
     return wrong_type("ixact", args);
   }
 }
+
+#include <string.h> // strlen
+Object scm_number_tostring(Object const args) {
+  size_t len = args_length(args);
+  int base;
+  Object obj1;
+  Object obj2;
+  if (len == 1) {
+    obj1 = carref(args);
+    base = 10;
+  } else if (len == 2) {
+    obj2 = carref(cdrref(args));
+    if (obj2.type != NUMBERZ) {
+      return wrong_type("number->string", args);
+    }
+    if (!(mpz_cmp_ui(obj2.numberz, 2) >= 0 &&
+          mpz_cmp_ui(obj2.numberz, 62) <= 0)) {
+      return wrong_type("number->string", args);
+    }
+    base = mpz_get_ui(obj2.numberz);
+    obj1 = carref(args);
+  } else {
+    return arguments(args, "number->string");
+  }
+  Object out = {.type = STRING_EMPTY};
+  switch (obj1.type) {
+  case NUMBERZ: {
+    char *str = NULL;
+    str = mpz_get_str(str, base, obj1.numberz);
+    for (size_t i = strlen(str) - 1;; i--) {
+      out = string_cons((Object){.type = CHARACTER, .character = str[i]}, out);
+      if (i == 0) {
+        break;
+      }
+    }
+    free(str);
+    return out;
+  }
+  case NUMBERQ: {
+    char *str = NULL;
+    str = mpq_get_str(str, base, obj1.numberq);
+    for (size_t i = strlen(str) - 1;; i--) {
+      out = string_cons((Object){.type = CHARACTER, .character = str[i]}, out);
+      if (i == 0) {
+        break;
+      }
+    }
+    free(str);
+    return out;
+  }
+  case NUMBERR: {
+    char *str = NULL;
+    mpfr_exp_t exp = 0;
+    str = mpfr_get_str(str, &exp, base, 0, obj1.numberr, MPFR_RNDN);
+    size_t sign = mpfr_sgn(obj1.numberr) < 0 ? 1 : 0;
+    for (size_t i = strlen(str) - 1;; i--) {
+      if (i == exp - 1 + sign) {
+        out = string_cons((Object){.type = CHARACTER, .character = '.'}, out);
+      }
+      out = string_cons((Object){.type = CHARACTER, .character = str[i]}, out);
+      if (i == 0) {
+        break;
+      }
+    }
+    mpfr_free_str(str);
+    return out;
+  }
+  case NUMBERC: {
+    char *str_real = NULL;
+    char *str_imag = NULL;
+    mpfr_exp_t exp_real = 0;
+    mpfr_exp_t exp_imag = 0;
+    size_t sign_real = mpfr_sgn(mpc_realref(obj1.numberc)) < 0 ? 1 : 0;
+    size_t sign_imag = mpfr_sgn(mpc_imagref(obj1.numberc)) < 0 ? 1 : 0;
+    str_real = mpfr_get_str(str_real, &exp_real, base, 0,
+                            mpc_realref(obj1.numberc), MPFR_RNDN);
+    str_imag = mpfr_get_str(str_imag, &exp_imag, base, 0,
+                            mpc_imagref(obj1.numberc), MPFR_RNDN);
+    if (!mpfr_zero_p(mpc_imagref(obj1.numberc))) {
+      out = string_cons((Object){.type = CHARACTER, .character = 'i'}, out);
+      for (size_t i = strlen(str_imag) - 1;; i--) {
+        if (i == exp_imag - 1 + sign_imag) {
+          out = string_cons((Object){.type = CHARACTER, .character = '.'}, out);
+        }
+        out = string_cons((Object){.type = CHARACTER, .character = str_imag[i]},
+                          out);
+        if (i == 0) {
+          break;
+        }
+      }
+      if (mpfr_sgn(mpc_imagref(obj1.numberc)) > 0) {
+        out = string_cons((Object){.type = CHARACTER, .character = '+'}, out);
+      }
+    }
+    if (!mpfr_zero_p(mpc_realref(obj1.numberc))) {
+      out = string_cons((Object){.type = CHARACTER, .character = 'i'}, out);
+      for (size_t i = strlen(str_real) - 1;; i--) {
+        if (i == exp_real - 1 + sign_real) {
+          out = string_cons((Object){.type = CHARACTER, .character = '.'}, out);
+        }
+        out = string_cons((Object){.type = CHARACTER, .character = str_real[i]},
+                          out);
+        if (i == 0) {
+          break;
+        }
+      }
+    }
+    mpfr_free_str(str_real);
+    mpfr_free_str(str_imag);
+    return out;
+  }
+  case NONE:
+    error("scm_number_tostring");
+  default:
+    return wrong_type("number->string", args);
+  }
+}
+
+extern FILE *yyin;
+extern void yyrestart(FILE *);
+extern Object kread();
+
+extern int string_tonumber(char *str);
+Object scm_string_tonumber(Object const args) {
+  size_t len = args_length(args);
+  if (!(len == 1 || len == 2)) {
+    return arguments(args, "string->number");
+  }
+  Object obj1 = carref(args);
+  int base = 10;
+  if (len == 2) {
+    Object obj2 = carref(cdrref(args));
+    if (obj2.type != NUMBERZ) {
+      return wrong_type("string->numberz", args);
+    }
+    if (!(mpz_cmp_ui(obj2.numberz, 2) >= 0 &&
+          mpz_cmp_ui(obj2.numberz, 62) <= 0)) {
+      return wrong_type("string->numberz", args);
+    }
+    base = mpz_get_ui(obj2.numberz);
+  }
+  Object o = obj1;
+  size_t uni_len = 0;
+  gint chs_len = 0;
+  for (; o.type != STRING_EMPTY; uni_len++) {
+    chs_len += g_unichar_to_utf8(string_carref(o).character, NULL);
+    o = string_cdrref(o);
+  }
+  char str[chs_len + 1];
+  o = obj1;
+  size_t uni_i = 0;
+  gint str_i = 0;
+  for (; str_i < chs_len; uni_i++) {
+    gchar outbuf[6];
+    gint len = g_unichar_to_utf8(string_carref(o).character, outbuf);
+    for (gint i = 0; i < len; i++) {
+      str[str_i] = outbuf[i];
+      str_i++;
+    }
+    o = string_cdrref(o);
+  }
+  str[str_i] = '\0';
+  FILE *stream = yyin;
+  int n = string_tonumber(str);
+  yyrestart(stream);
+  Object out = kread_obj;
+  if (n == 1) {
+    object_free(&out);
+    return false_obj;
+  }
+  if (str[0] == '#') {
+    if (str[1] == 'b') {
+      base = 2;
+    } else if (str[1] == 'o') {
+      base = 8;
+    } else if (str[1] == 'd') {
+      base = 10;
+    } else if (str[1] == 'x') {
+      base = 16;
+    } else if (str[1] != '\0' && str[2] == '#') {
+      if (str[3] == 'b') {
+        base = 2;
+      } else if (str[3] == 'o') {
+        base = 8;
+      } else if (str[3] == 'd') {
+        base = 10;
+      } else if (str[3] == 'x') {
+        base = 16;
+      }
+    }
+  }
+  if (base != 10) {
+    char *str = NULL;
+    switch (out.type) {
+    case NUMBERZ: {
+      str = mpz_get_str(str, 10, out.numberz);
+      int n = mpz_set_str(out.numberz, str, base);
+      if (n != 0) {
+        object_free(&out);
+        out = false_obj;
+      }
+      free(str);
+      return out;
+    }
+    case NUMBERQ: {
+      str = mpq_get_str(str, 10, out.numberq);
+      int n = mpq_set_str(out.numberq, str, base);
+      if (n != 0) {
+        object_free(&out);
+        out = false_obj;
+      }
+      free(str);
+      return out;
+    }
+    case NUMBERR: {
+      mpfr_exp_t exp = 0;
+      mpfr_get_str(str, &exp, 10, 0, out.numberr, MPFR_RNDN);
+      size_t len = strlen(str) + 1;
+      char str1[len + 2];
+      if (str[0] == '-') {
+        exp++;
+      }
+      size_t j = 0;
+      for (size_t i = 0; i < len; i++) {
+        if (exp == i) {
+          str1[j] = '.';
+          j++;
+        }
+        str1[j] = str[i];
+        j++;
+      }
+      mpfr_free_str(str);
+      str1[j] = '\0';
+      int n = mpfr_set_str(out.numberr, str1, base, MPFR_RNDN);
+      if (n != 0) {
+        object_free(&out);
+        out = false_obj;
+      }
+      return out;
+    }
+    case NUMBERC: {
+      str = mpc_get_str(10, 0, out.numberc, MPC_RNDNN);
+      int n = mpc_set_str(out.numberc, str, base, MPC_RNDNN);
+      if (n != 0) {
+        object_free(&out);
+        out = false_obj;
+      }
+      mpc_free_str(str);
+      return out;
+    }
+    case NONE:
+      error("scm_string_tonumber");
+    default:
+      return false_obj;
+    }
+  }
+  return out;
+}
 /* Numbers end */
 
 /* Booleans */
@@ -5364,9 +5622,6 @@ Object scm_close_port(Object const args) {
   }
   exit(1);
 }
-extern FILE *yyin;
-extern void yyrestart(FILE *);
-extern Object kread();
 int interactive_mode = 1;
 Object scm_read(Object const args) {
   switch (args_length(args)) {

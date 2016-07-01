@@ -255,6 +255,12 @@ int main() {
   define_variable(identifier_new("exact"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_exact},
                   env);
+  define_variable(
+      identifier_new("number->string"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_number_tostring}, env);
+  define_variable(
+      identifier_new("string->number"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_string_tonumber}, env);
   /* Numbers end */
 
   /* Booleans */

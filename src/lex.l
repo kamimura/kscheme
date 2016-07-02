@@ -11,7 +11,7 @@
 extern int interactive_mode;
 
 char sign_imag;
-mpfr_t real;
+ mpfr_t real;
 %}
 
 intraline_whitespace [ \t]
@@ -79,15 +79,37 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 #[eE][-+]?[0-9]+"."[0-9]*
 #[eE][-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+
 #[eE][-+]?[0-9]+"/"[0-9]+
-#[eE][-+][iI][nN][fF]"."0
-#[eE][-+][nN][aA][nN]"."0
+#[eE][-+][iI][nN][fF]"."0 {
+  int sign = yytext[2] == '+' ? 1 : -1;
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_inf(yylval.obj.numberr, sign);
+  return TOKEN_NUMBERR;
+}
+#[eE][-+][nN][aA][nN]"."0 {
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_nan(yylval.obj.numberr);
+  return TOKEN_NUMBERR;
+}
 (#[dD]#[eE]|#[eE]#[dD])[-+]?"."[0-9]+
 (#[dD]#[eE]|#[eE]#[dD])[-+]?"."[0-9]+(e|E)[-+]?[0-9]+
 (#[dD]#[eE]|#[eE]#[dD])[-+]?[0-9]+"."[0-9]*
 (#[dD]#[eE]|#[eE]#[dD])[-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+
 (#[dD]#[eE]|#[eE]#[dD])[-+]?[0-9]+"/"[0-9]+
-(#[dD]#[eE]|#[eE]#[dD])[-+][iI][nN][fF]"."0
-(#[dD]#[eE]|#[eE]#[dD])[-+][nN][aA][nN]"."0
+(#[dD]#[eE]|#[eE]#[dD])[-+][iI][nN][fF]"."0 {
+  int sign = yytext[4] == '+' ? 1 : -1;
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_inf(yylval.obj.numberr, sign);
+  return TOKEN_NUMBERR;
+}
+(#[dD]#[eE]|#[eE]#[dD])[-+][nN][aA][nN]"."0 {
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_nan(yylval.obj.numberr);
+  return TOKEN_NUMBERR;
+}
 [-+]?[0-9]+"/"[0-9]+ {
   if (*yytext == '+') yytext++;
   yylval.obj = numberq_new(yytext, 10);
@@ -98,8 +120,19 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 #[dD][-+]?[0-9]+"."[0-9]*
 #[dD][-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+
 #[dD][-+]?[0-9]+(e|E)[-+]?[0-9]+
-#[dD][-+][iI][nN][fF]"."0
-#[dD][-+][nN][aA][nN]"."0
+#[dD][-+][iI][nN][fF]"."0 {
+  int sign = yytext[2] == '+' ? 1 : -1;
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_inf(yylval.obj.numberr, sign);
+  return TOKEN_NUMBERR;
+}
+#[dD][-+][nN][aA][nN]"."0 {
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_nan(yylval.obj.numberr);
+  return TOKEN_NUMBERR;
+}
 #[iI][-+]?"."[0-9]+
 #[iI][-+]?"."[0-9]+(e|E)[-+]?[0-9]+
 #[iI][-+]?[0-9]+
@@ -107,8 +140,19 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 #[iI][-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+
 #[iI][-+]?[0-9]+"/"[0-9]+
 #[iI][-+]?[0-9]+(e|E)[-+]?[0-9]+
-#[iI][-+][iI][nN][fF]"."0
-#[iI][-+][nN][aA][nN]"."0
+#[iI][-+][iI][nN][fF]"."0 {
+  int sign = yytext[2] == '+' ? 1 : -1;
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_inf(yylval.obj.numberr, sign);
+  return TOKEN_NUMBERR;
+}
+#[iI][-+][nN][aA][nN]"."0 {
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_nan(yylval.obj.numberr);
+  return TOKEN_NUMBERR;
+}
 (#[dD]#[iI]|#[iI]#[dD])[-+]?"."[0-9]+
 (#[dD]#[iI]|#[iI]#[dD])[-+]?"."[0-9]+(e|E)[-+]?[0-9]+
 (#[dD]#[iI]|#[iI]#[dD])[-+]?[0-9]+
@@ -116,8 +160,19 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 (#[dD]#[iI]|#[iI]#[dD])[-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+
 (#[dD]#[iI]|#[iI]#[dD])[-+]?[0-9]+"/"[0-9]+
 (#[dD]#[iI]|#[iI]#[dD])[-+]?[0-9]+(e|E)[-+]?[0-9]+
-(#[dD]#[iI]|#[iI]#[dD])[-+][iI][nN][fF]"."0
-(#[dD]#[iI]|#[iI]#[dD])[-+][nN][aA][nN]"."0
+(#[dD]#[iI]|#[iI]#[dD])[-+][iI][nN][fF]"."0 {
+  int sign = yytext[4] == '+' ? 1 : -1;
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_inf(yylval.obj.numberr, sign);
+  return TOKEN_NUMBERR;
+}
+(#[dD]#[iI]|#[iI]#[dD])[-+][nN][aA][nN]"."0 {
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_nan(yylval.obj.numberr);
+  return TOKEN_NUMBERR;
+}
 [-+]?"."[0-9]+ {
   if (*yytext == '+') yytext++;
   yylval.obj = numberr_new(yytext, 10);
@@ -144,16 +199,17 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   return TOKEN_NUMBERR;
 }
 [-+][iI][nN][fF]"."0 {
-  /* if (yytext[0] == '+') { */
-  /*   yylval.obj = numberr_new("inf", 10); */
-  /*   return R; */
-  /* } */
-  /* yylval.obj = numberr_new("-inf", 10); */
-  /* return R; */
+  int sign = yytext[0] == '+' ? 1 : -1;
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_inf(yylval.obj.numberr, sign);
+  return TOKEN_NUMBERR;
 }
 [-+][nN][aA][nN]"."0 {  
-  /* yylval.obj = numberr_new("nan", 10); */
-  /* return R; */
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_nan(yylval.obj.numberr);
+  return TOKEN_NUMBERR;
 }
 #[dD][-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
 #[eE][-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
@@ -166,7 +222,6 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   sign_imag = yytext[yyleng - 1];
   yytext[yyleng - 1] = '\0';
   if (*yytext == '+') yytext++;
-  /* realstr = strdup(yytext); */
   mpfr_init_set_str(real, yytext, 10, MPFR_RNDN);
 }
 <IMAG>[0-9]+"i" {
@@ -191,35 +246,93 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 #[eE][-+]?[0-9]+"."[0-9]*<IMAG> {/* BEGIN IMAG; */}
 #[eE][-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
 #[eE][-+]?[0-9]+"/"[0-9]+<IMAG> {/* BEGIN IMAG; */}
-#[eE][-+][iI][nN][fF]"."0<IMAG> {/* BEGIN IMAG; */}
-#[eE][-+][nN][aA][nN]"."0<IMAG> {/* BEGIN IMAG; */}
+#[eE][-+][iI][nN][fF]"."0[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  int sign = yytext[2] == '+' ? 1 : -1;
+  mpfr_init(real);
+  mpfr_set_inf(real, sign);
+}
+#[eE][-+][nN][aA][nN]"."0[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  mpfr_init(real);
+  mpfr_set_nan(real);
+}
 (#[dD]#[eE]|#[eE]#[dD])[-+]?"."[0-9]+<IMAG> {/* BEGIN IMAG; */}
 (#[dD]#[eE]|#[eE]#[dD])[-+]?"."[0-9]+(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
 (#[dD]#[eE]|#[eE]#[dD])[-+]?[0-9]+"."[0-9]*<IMAG> {/* BEGIN IMAG; */}
 (#[dD]#[eE]|#[eE]#[dD])[-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
 (#[dD]#[eE]|#[eE]#[dD])[-+]?[0-9]+"/"[0-9]+<IMAG> {/* BEGIN IMAG; */}
-(#[dD]#[eE]|#[eE]#[dD])[-+][iI][nN][fF]"."0<IMAG> {/* BEGIN IMAG; */}
-(#[dD]#[eE]|#[eE]#[dD])[-+][nN][aA][nN]"."0<IMAG> {/* BEGIN IMAG; */}
-[-+]?[0-9]+"/"[0-9]+[-+] {
-  /* BEGIN IMAG; */
-  /* sign_imag = yytext[yyleng - 1]; */
-  /* yytext[yyleng - 1] = '\0'; */
-  /* if (*yytext == '+') yytext++; */
-  /* mpq_t op; */
-  /* mpq_init(op); */
-  /* mpq_set_str(op, yytext, 10); */
-  /* mpfr_init(real); */
-  /* mpfr_set_q(real, op, MPFR_RNDN); */
-  /* mpq_clear(op); */
+(#[dD]#[eE]|#[eE]#[dD])[-+][iI][nN][fF]"."0[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  int sign = yytext[4] == '+' ? 1 : -1;
+  mpfr_init(real);
+  mpfr_set_inf(real, sign);
 }
- /* <IMAG>[0-9]+"/"[0-9]+"i" */
+(#[dD]#[eE]|#[eE]#[dD])[-+][nN][aA][nN]"."0[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  mpfr_init(real);
+  mpfr_set_nan(real);
+}
+[-+]?[0-9]+"/"[0-9]+[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  yytext[yyleng - 1] = '\0';
+  if (*yytext == '+') yytext++;
+  mpq_t op;
+  mpq_init(op);
+  mpq_set_str(op, yytext, 10);
+  mpfr_init_set_q(real, op, MPFR_RNDN);
+}
+<IMAG>[0-9]+"/"[0-9]+"i" {
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_t opfr;
+  mpfr_init(opfr);
+  mpq_t opq;
+  mpq_init(opq);
+  if (sign_imag == '+') {
+    mpq_set_str(opq, yytext, 10);
+    mpfr_set_q(opfr, opq, MPFR_RNDN);
+    mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
+  } else {
+    char *str = malloc(sizeof(char) * yyleng);
+    str[0] = '-';
+    str[1] = '\0';
+    strcat(str, yytext);
+    mpq_set_str(opq, str, 10);
+    mpfr_set_q(opfr, opq, MPFR_RNDN);
+    mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
+    free(str);
+  }
+  mpfr_clear(real);
+  mpfr_clear(opfr);
+  mpq_clear(opq);
+  return TOKEN_NUMBERC;
+}
 #[dD][-+]?"."[0-9]+<IMAG> {/* BEGIN IMAG; */}
 #[dD][-+]?"."[0-9]+(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
 #[dD][-+]?[0-9]+"."[0-9]*<IMAG> {/* BEGIN IMAG; */}
 #[dD][-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
 #[dD][-+]?[0-9]+(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
-#[dD][-+][iI][nN][fF]"."0<IMAG> {/* BEGIN IMAG; */}
-#[dD][-+][nN][aA][nN]"."0<IMAG> {/* BEGIN IMAG; */}
+#[dD][-+][iI][nN][fF]"."0[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  int sign = yytext[2] == '+' ? 1 : -1;
+  mpfr_init(real);
+  mpfr_set_inf(real, sign);
+}
+#[dD][-+][nN][aA][nN]"."0[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  mpfr_init(real);
+  mpfr_set_nan(real);
+}
 #[iI][-+]?"."[0-9]+<IMAG> {/* BEGIN IMAG; */}
 #[iI][-+]?"."[0-9]+(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
 #[iI][-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
@@ -227,8 +340,19 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 #[iI][-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
 #[iI][-+]?[0-9]+"/"[0-9]+<IMAG> {/* BEGIN IMAG; */}
 #[iI][-+]?[0-9]+(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
-#[iI][-+][iI][nN][fF]"."0<IMAG> {/* BEGIN IMAG; */}
-#[iI][-+][nN][aA][nN]"."0<IMAG> {/* BEGIN IMAG; */}
+#[iI][-+][iI][nN][fF]"."0[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  int sign = yytext[2] == '+' ? 1 : -1;
+  mpfr_init(real);
+  mpfr_set_inf(real, sign);
+}
+#[iI][-+][nN][aA][nN]"."0[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  mpfr_init(real);
+  mpfr_set_nan(real);
+}
 (#[dD]#[iI]|#[iI]#[dD])[-+]?"."[0-9]+<IMAG> {/* BEGIN IMAG; */}
 (#[dD]#[iI]|#[iI]#[dD])[-+]?"."[0-9]+(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
 (#[dD]#[iI]|#[iI]#[dD])[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
@@ -236,91 +360,130 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 (#[dD]#[iI]|#[iI]#[dD])[-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
 (#[dD]#[iI]|#[iI]#[dD])[-+]?[0-9]+"/"[0-9]+<IMAG> {/* BEGIN IMAG; */}
 (#[dD]#[iI]|#[iI]#[dD])[-+]?[0-9]+(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
-(#[dD]#[iI]|#[iI]#[dD])[-+][iI][nN][fF]"."0<IMAG> {/* BEGIN IMAG; */}
-(#[dD]#[iI]|#[iI]#[dD])[-+][nN][aA][nN]"."0<IMAG> {/* BEGIN IMAG; */}
-[-+]?"."[0-9]+[-+] {
-  /* BEGIN IMAG; */  
-  /* sign_imag = yytext[yyleng - 1]; */
-  /* yytext[yyleng - 1] = '\0'; */
-  /* if (*yytext == '+') yytext++;   */
-  /* mpfr_init_set_str(real, yytext, 10, MPFR_RNDN);   */
+(#[dD]#[iI]|#[iI]#[dD])[-+][iI][nN][fF]"."0[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  int sign = yytext[4] == '+' ? 1 : -1;
+  mpfr_init(real);
+  mpfr_set_inf(real, sign);
 }
-[-+]?"."[0-9]+(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
+(#[dD]#[iI]|#[iI]#[dD])[-+][nN][aA][nN]"."0[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  mpfr_init(real);
+  mpfr_set_nan(real);
+}
+[-+]?"."[0-9]+[-+] |
+[-+]?"."[0-9]+(e|E)[-+]?[0-9]+[-+] |
 [-+]?[0-9]+"."[0-9]*[-+] {
-  /* BEGIN IMAG; */
-  /* sign_imag = yytext[yyleng - 1]; */
-  /* yytext[yyleng - 1] = '\0'; */
-  /* if (*yytext == '+') yytext++;   */
-  /* mpfr_init_set_str(real, yytext, 10, MPFR_RNDN);   */
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  yytext[yyleng - 1] = '\0';
+  if (*yytext == '+') yytext++;
+  mpfr_init_set_str(real, yytext, 10, MPFR_RNDN);
 }
 <IMAG>[0-9]+"."[0-9]*[iI] {
-  /* puts("imag"); */
-  /* BEGIN INITIAL; */
-  /* yytext[yyleng - 1] = '\0'; */
-  /* if (sign_imag == '+') { */
-  /*   yylval.obj = numberc_new_real_imag(realstr, yytext); */
-  /*   free(realstr); */
-  /* } else { */
-  /*   char *s = yytext; */
-  /*   char *sign = (char[]){'-', '\0'}; */
-  /*   yylval.obj = numberc_new_real_imag(realstr, strcat(sign, s)); */
-  /* } */
-  /* return C; */
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  if (sign_imag == '+') {    
+    yylval.obj = numberc_new_r_istr(real, yytext);
+  } else {
+    char *str = malloc(sizeof(char) * yyleng);
+    str[0] = '-';
+    str[1] = '\0';
+    strcat(str, yytext);    
+    yylval.obj = numberc_new_r_istr(real, str);
+    free(str);
+  }
+  mpfr_clear(real);
+  return TOKEN_NUMBERC;
 }
-[-+][0-9]+"."[0-9]*[iI] {  
-  /* yytext[yyleng - 1] = '\0'; */
-  /* if (*yytext == '+') { yytext++; }     */
-  /* yylval.obj = numberc_new_fr(yytext, 10); */
-  /* return C; */
+[-+][0-9]+"."[0-9]*[iI] {
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  yytext[yyleng - 1] = '\0';
+  if (*yytext == '+') { yytext++; }
+  mpfr_set_str(mpc_imagref(yylval.obj.numberc), yytext, 10, MPFR_RNDN);
+  return TOKEN_NUMBERC;
 }
-[-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
-[-+]?[0-9]+(e|E)[-+]?[0-9]+<IMAG> {/* BEGIN IMAG; */}
+[-+]?[0-9]+"."[0-9]*(e|E)[-+]?[0-9]+[-+] |
+[-+]?[0-9]+(e|E)[-+]?[0-9]+[-+] {
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  yytext[yyleng - 1] = '\0';
+  if (*yytext == '+') yytext++;
+  mpfr_init_set_str(real, yytext, 10, MPFR_RNDN);
+}
 [-+][iI][nN][fF]"."0[-+] {
-  /* BEGIN IMAG; */
-  /* sign_imag = yytext[yyleng - 1]; */
-  /* if (*yytext == '+') { */
-  /*   mpfr_init_set_str(real, "inf", 10, MPFR_RNDN);   */
-  /* } else { */
-  /*   mpfr_init_set_str(real, "-inf", 10, MPFR_RNDN);   */
-  /* }   */
-}
-<IMAG>[iI][nN][fF]"."0"i" {
-  /* BEGIN INITIAL; */
-  /* mpfr_t imag; */
-  /* if (sign_imag == '+') { */
-  /*   mpfr_init_set_str(imag, "inf", 10, MPFR_RNDN); */
-  /* } else { */
-  /*   mpfr_init_set_str(imag, "-inf", 10, MPFR_RNDN); */
-  /* }   */
-  /* yylval.obj = numberc_new_real_imag(real, imag);   */
-  /* mpfr_clears(real, imag, NULL); */
-  /* return C; */
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  int sign = yytext[0] == '+' ? 1 : -1;
+  mpfr_init(real);
+  mpfr_set_inf(real, sign);
 }
 [-+][nN][aA][nN]"."0[-+] {
-  /* BEGIN IMAG; */
-  /* sign_imag = yytext[yyleng - 1]; */
-  /* mpfr_init_set_str(real, "nan", 10, MPFR_RNDN);   */
+  BEGIN IMAG;
+  sign_imag = yytext[yyleng - 1];
+  mpfr_init(real);
+  mpfr_set_nan(real);
 }
-<IMAG>[nN][aA][nN]"."0"i" {
-  /* BEGIN INITIAL; */
-  /* mpfr_t imag; */
-  /* mpfr_init_set_str(imag, "nan", 10, MPFR_RNDN); */
-  /* yylval.obj = numberc_new_real_imag(real, imag);   */
-  /* mpfr_clears(real, imag, NULL); */
-  /* return C; */
+<IMAG>[nN][aA][nN]"."0[iI] {
+  BEGIN INITIAL;
+  mpfr_t imag;
+  mpfr_init(imag);
+  mpfr_set_nan(imag);
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpc_set_fr_fr(yylval.obj.numberc, real, imag, MPC_RNDNN);
+  mpfr_clears(real, imag, NULL);
+  return TOKEN_NUMBERC;
 }
 #[bB][-+]?[01]+
 (#[bB]#[eE]|#[eE]#[bB])[-+]?[01]+
 #[bB][-+]?[01]+"/"[01]+
 (#[bB]#[eE]|#[eE]#[bB])[-+]?[01]+"/"[01]+
-(#[bB]#[eE]|#[eE]#[bB])[-+][iI][nN][fF]"."0
-(#[bB]#[eE]|#[eE]#[bB])[-+][nN][aA][nN]"."0
-#[bB][-+][iI][nN][fF]"."0
-#[bB][-+][nN][aA][nN]"."0
+(#[bB]#[eE]|#[eE]#[bB])[-+][iI][nN][fF]"."0 {
+  int sign = yytext[4] == '+' ? 1 : -1;
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_inf(yylval.obj.numberr, sign);
+  return TOKEN_NUMBERR;
+}
+(#[bB]#[eE]|#[eE]#[bB])[-+][nN][aA][nN]"."0 {
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_nan(yylval.obj.numberr);
+  return TOKEN_NUMBERR;
+}
+#[bB][-+][iI][nN][fF]"."0 {
+  int sign = yytext[2] == '+' ? 1 : -1;
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_inf(yylval.obj.numberr, sign);
+  return TOKEN_NUMBERR;
+}
+#[bB][-+][nN][aA][nN]"."0 {
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_nan(yylval.obj.numberr);
+  return TOKEN_NUMBERR;
+}
 (#[bB]#[iI]|#[iI]#[bB])[-+]?[01]+
 (#[bB]#[iI]|#[iI]#[bB])[-+]?[01]+"/"[01]+
-(#[bB]#[iI]|#[iI]#[bB])[-+][iI][nN][fF]"."0
-(#[bB]#[iI]|#[iI]#[bB])[-+][nN][aA][nN]"."0
+(#[bB]#[iI]|#[iI]#[bB])[-+][iI][nN][fF]"."0 {
+  int sign = yytext[4] == '+' ? 1 : -1;
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_inf(yylval.obj.numberr, sign);
+  return TOKEN_NUMBERR;
+}
+(#[bB]#[iI]|#[iI]#[bB])[-+][nN][aA][nN]"."0 {
+  yylval.obj.type = NUMBERR;
+  mpfr_init(yylval.obj.numberr);
+  mpfr_set_nan(yylval.obj.numberr);
+  return TOKEN_NUMBERR;
+}
 #[bB][-+]?[01]+<IMAG_BIN> {BEGIN IMAG_BIN;}
 (#[bB]#[eE]|#[eE]#[bB])[-+]?[01]+<IMAG_BIN> {BEGIN IMAG_BIN;}
 #[bB][-+]?[01]+"/"[01]+<IMAG_BIN> {BEGIN IMAG_BIN;}
@@ -368,128 +531,229 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 <IMAG>@[-+][nN][aA][nN]"."0
 <IMAG>[-+]"."[0-9]+(e|E)[-+]?[0-9]+[iI]
 <IMAG>"."[0-9]+[iI] {
-  /* BEGIN INITIAL; */
-  /* yytext[yyleng - 1] = '\0'; */
-  /* mpfr_t imag; */
-  /* if (sign_imag == '+') { */
-  /*   mpfr_init_set_str(imag, yytext, 10, MPFR_RNDN); */
-  /* } else { */
-  /*   mpfr_init_set_str(imag, strcat("-", yytext), 10, MPFR_RNDN); */
-  /* } */
-  /* yylval.obj = numberc_new_real_imag(real, imag); */
-  /* mpfr_clears(real, imag, NULL); */
-  /* return C; */
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  if (sign_imag == '+') {    
+    yylval.obj = numberc_new_r_istr(real, yytext);
+  } else {
+    char *str = malloc(sizeof(char) * yyleng);
+    str[0] = '-';
+    str[1] = '\0';
+    strcat(str, yytext);    
+    yylval.obj = numberc_new_r_istr(real, str);
+    free(str);
+  }
+  mpfr_clear(real);
+  return TOKEN_NUMBERC;
 }
-<IMAG>[-+][0-9]+"."[0-9]*(e|E)[-+]?[0-9]+[iI]
-<IMAG>[-+][0-9]+"."[0-9]*[iI]
+<IMAG>[-+][0-9]+"."[0-9]*(e|E)[-+]?[0-9]+[iI] |
+<IMAG>[-+][0-9]+"."[0-9]*[iI] {
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  if (sign_imag == '+') {    
+    yylval.obj = numberc_new_r_istr(real, yytext);
+  } else {
+    char *str = malloc(sizeof(char) * yyleng);
+    str[0] = '-';
+    str[1] = '\0';
+    strcat(str, yytext);    
+    yylval.obj = numberc_new_r_istr(real, str);
+    free(str);
+  }
+  mpfr_clear(real);
+  return TOKEN_NUMBERC;
+}
 <IMAG>[0-9]+"/"[0-9]+[iI] {
-  /* BEGIN INITIAL; */
-  /* yytext[yyleng - 1] = '\0'; */
-  /* mpq_t op; */
-  /* mpq_init(op); */
-  /* if (sign_imag == '+') { */
-  /*   mpq_set_str(op, yytext, 10); */
-  /* } else { */
-  /*   mpq_set_str(op, strcat("-", yytext), 10); */
-  /* } */
-  /* mpfr_t imag; */
-  /* mpfr_init(imag); */
-  /* mpfr_set_q(imag, op, MPFR_RNDN); */
-  /* mpq_clear(op); */
-  /* yylval.obj = numberc_new_real_imag(real, imag);   */
-  /* mpfr_clears(real, imag, NULL);   */
-  /* return C;   */
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_t opfr;
+  mpq_t opq;
+  mpfr_init(opfr);
+  mpq_init(opq);
+  if (sign_imag == '+') {
+    mpq_set_str(opq, yytext, 10);
+    mpfr_set_q(opfr, opq, MPFR_RNDN);
+    mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
+  } else {
+    char *str = malloc(sizeof(char) * yyleng);
+    str[0] = '-';
+    str[1] = '\0';
+    strcat(str, yytext);
+    mpq_set_str(opq, str, 10);
+    mpfr_set_q(opfr, opq, MPFR_RNDN);
+    mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
+    free(str);
+  }
+  mpfr_clear(real);
+  mpfr_clear(opfr);
+  mpq_clear(opq);
+  return TOKEN_NUMBERC;
 }
 <IMAG>[-+][0-9]+(e|E)[-+]?[0-9]+[iI]
 <IMAG>[0-9]+[iI] {
-  /* BEGIN INITIAL; */
-  /* yytext[yyleng - 1] = '\0'; */
-  /* mpfr_t imag; */
-  /* if (sign_imag == '+') { */
-  /*   mpfr_init_set_str(imag, yytext, 10, MPFR_RNDN); */
-  /* } else { */
-  /*   char *s = yytext; */
-  /*   char *sign = (char[]){'-', '\0'}; */
-  /*   mpfr_init_set_str(imag, strcat(sign, s), 10, MPFR_RNDN); */
-  /* }   */
-  /* yylval.obj = numberc_new_real_imag(real, imag);   */
-  /* mpfr_clears(real, imag, NULL);   */
-  /* return C;   */
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  if (sign_imag == '+') {    
+    yylval.obj = numberc_new_r_istr(real, yytext);
+  } else {
+    char *str = malloc(sizeof(char) * yyleng);
+    str[0] = '-';
+    str[1] = '\0';
+    strcat(str, yytext);    
+    yylval.obj = numberc_new_r_istr(real, str);
+    free(str);
+  }
+  mpfr_clear(real);
+  return TOKEN_NUMBERC;
 }
 <IMAG>[iI] {
-  /* BEGIN INITIAL; */
-  /* mpfr_t imag; */
-  /* if (sign_imag == '+') { */
-  /*   mpfr_init_set_str(imag, "1", 10, MPFR_RNDN); */
-  /* } else { */
-  /*   mpfr_init_set_str(imag, "-1", 10, MPFR_RNDN); */
-  /* }   */
-  /* yylval.obj = numberc_new_real_imag(real, imag);   */
-  /* mpfr_clears(real, imag, NULL);   */
-  /* return C;     */
+  BEGIN INITIAL;
+  if (sign_imag == '+') {    
+    yylval.obj = numberc_new_r_istr(real, "1");
+  } else {
+    yylval.obj = numberc_new_r_istr(real, "-1");
+  }
+  mpfr_clear(real);
+  return TOKEN_NUMBERC;
 }
-<IMAG>[-+][iI][nN][fF]"."0[iI]
-<IMAG>[-+][nN][aA][nN]"."0[iI]
+<IMAG>[iI][nN][fF]".0"[iI] {
+  BEGIN INITIAL;
+  yylval.obj.type = NUMBERC;  
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set(mpc_realref(yylval.obj.numberc), real, MPFR_RNDN);
+  int sign = sign_imag == '+' ? 1 : -1;
+  mpfr_set_inf(mpc_imagref(yylval.obj.numberc), sign);
+  mpfr_clear(real);
+  return TOKEN_NUMBERC;  
+}
 <IMAG_BIN>@[-+]?[01]+
 <IMAG_BIN>@[-+]?[01]+"/"[01]+
 <IMAG_BIN>@[-+][iI][nN][fF]"."0
-<IMAG_BIN>@[-+][nN][aA][nN]"."0
+<IMAG_BIN>@[-+][nN][aA][nN]"."0 
 <IMAG_BIN>[-+][01]+[iI]
 <IMAG_BIN>[-+][01]+"/"[01]+[iI]
 <IMAG_BIN>[-+][iI]
-<IMAG_BIN>[-+][iI][nN][fF]"."0[iI]
-<IMAG_BIN>[-+][nN][aA][nN]"."0[iI]
+<IMAG_BIN>[-+][iI][nN][fF]"."0[iI] {
+  BEGIN INITIAL;
+  yylval.obj.type = NUMBERC;  
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set(mpc_realref(yylval.obj.numberc), real, MPFR_RNDN);
+  int sign = sign_imag == '+' ? 1 : -1;
+  mpfr_set_inf(mpc_imagref(yylval.obj.numberc), sign);
+  mpfr_clear(real);
+  return TOKEN_NUMBERC; 
+}
+<IMAG_BIN>[nN][aA][nN]"."0[iI] {
+  BEGIN INITIAL;
+  mpfr_t imag;
+  mpfr_init(imag);
+  mpfr_set_nan(imag);
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpc_set_fr_fr(yylval.obj.numberc, real, imag, MPC_RNDNN);
+  mpfr_clears(real, imag, NULL);
+  return TOKEN_NUMBERC;
+}
 <IMAG_OCT>@[-+]?[0-7]+
 <IMAG_OCT>@[-+]?[0-7]+"/"[0-7]+
 <IMAG_OCT>[-+][0-7]+[iI]
 <IMAG_OCT>[-+][0-7]+"/"[0-7]+[iI]
 <IMAG_OCT>[-+][iI]
-<IMAG_OCT>[-+][iI][nN][fF]"."0[iI]
-<IMAG_OCT>[-+][nN][aA][nN]"."0[iI]
+<IMAG_OCT>[-+][iI][nN][fF]"."0[iI] {
+  BEGIN INITIAL;
+  yylval.obj.type = NUMBERC;  
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set(mpc_realref(yylval.obj.numberc), real, MPFR_RNDN);
+  int sign = sign_imag == '+' ? 1 : -1;
+  mpfr_set_inf(mpc_imagref(yylval.obj.numberc), sign);
+  mpfr_clear(real);
+  return TOKEN_NUMBERC; 
+}
+<IMAG_OCT>[nN][aA][nN]"."0[iI] {
+  BEGIN INITIAL;
+  mpfr_t imag;
+  mpfr_init(imag);
+  mpfr_set_nan(imag);
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpc_set_fr_fr(yylval.obj.numberc, real, imag, MPC_RNDNN);
+  mpfr_clears(real, imag, NULL);
+  return TOKEN_NUMBERC;
+}
 <IMAG_HEX>@[-+]?[0-9a-fA-F]+
 <IMAG_HEX>@[-+]?[0-9a-fA-F]+"/"[0-9a-fA-F]+
 <IMAG_HEX>[-+][0-9a-fA-F]+[iI]
 <IMAG_HEX>[-+][0-9a-fA-F]+"/"[0-9a-fA-F]+[iI]
 <IMAG_HEX>[-+][iI]
-<IMAG_HEX>[-+][iI][nN][fF]"."0[iI]
-<IMAG_HEX>[-+][nN][aA][nN]"."0[iI]
+<IMAG_HEX>[-+][iI][nN][fF]"."0[iI] {
+  BEGIN INITIAL;
+  yylval.obj.type = NUMBERC;  
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set(mpc_realref(yylval.obj.numberc), real, MPFR_RNDN);
+  int sign = sign_imag == '+' ? 1 : -1;
+  mpfr_set_inf(mpc_imagref(yylval.obj.numberc), sign);
+  mpfr_clear(real);
+  return TOKEN_NUMBERC; 
+}
+<IMAG_HEX>[nN][aA][nN]"."0[iI] {
+  BEGIN INITIAL;
+  mpfr_t imag;
+  mpfr_init(imag);
+  mpfr_set_nan(imag);
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpc_set_fr_fr(yylval.obj.numberc, real, imag, MPC_RNDNN);
+  mpfr_clears(real, imag, NULL);
+  return TOKEN_NUMBERC;
+}
 #[dD][-+][0-9]+[iI]
 #[eE][-+][0-9]+[iI]
 #[eE][-+][0-9]+(e|E)[-+][0-9]+[iI]
 (#[dD]#[eE]|#[eE]#[dD])[-+][0-9]+[iI]
 (#[dD]#[eE]|#[eE]#[dD])[-+][0-9]+(e|E)[-+][0-9]+[iI]
 [-+][iI] {
-  /* if (*yytext == '+') { */
-  /*   yylval.obj = numberc_new("(0 1)", 10); */
-  /* } else { */
-  /*   yylval.obj = numberc_new("(0 -1)", 10); */
-  /* }   */
-  /* return C;     */
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  if (*yytext == '+') { 
+    mpfr_set_str(mpc_imagref(yylval.obj.numberc), "1", 10, MPFR_RNDN);
+  } else {
+    mpfr_set_str(mpc_imagref(yylval.obj.numberc), "-1", 10, MPFR_RNDN);
+  }
+  return TOKEN_NUMBERC;
 }
 [-+][0-9]+[iI] {
-  /* yytext[yyleng - 1] = '\0'; */
-  /* if (*yytext == '+') { */
-  /*   yytext++; */
-  /* } */
-  /* yylval.obj = numberc_new_z(yytext, 10); */
-  /* return C;   */
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  yytext[yyleng - 1] = '\0';
+  if (*yytext == '+') { yytext++; }
+  mpfr_set_str(mpc_imagref(yylval.obj.numberc), yytext, 10, MPFR_RNDN);
+  return TOKEN_NUMBERC;
 }
 [-+][0-9]+"/"[0-9]+[iI] {
-  /* yytext[yyleng - 1] = '\0'; */
-  /* if (*yytext == '+') { */
-  /*   yytext++; */
-  /* } */
-  /* yylval.obj =  numberc_new_q(yytext, 10); */
-  /* return C; */
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  yytext[yyleng - 1] = '\0';
+  if (*yytext == '+') { yytext++; }
+  mpq_t opq;
+  mpq_init(opq);
+  mpq_set_str(opq, yytext, 10);
+  mpfr_set_q(mpc_imagref(yylval.obj.numberc), opq, MPFR_RNDN);
+  mpq_clear(opq);
+  return TOKEN_NUMBERC;
 }
 [-+]"."[0-9]+[iI] {
-  /* BEGIN INITIAL; */
-  /* yytext[yyleng - 1] = '\0'; */
-  /* if (*yytext == '+') { */
-  /*   yytext++; */
-  /* } */
-  /* yylval.obj = numberc_new_fr(yytext, 10); */
-  /* return C; */
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  yytext[yyleng - 1] = '\0';
+  if (*yytext == '+') { yytext++; }
+  mpfr_set_str(mpc_imagref(yylval.obj.numberc), yytext, 10, MPFR_RNDN);
+  return TOKEN_NUMBERC;
 }
 #[dD][-+][0-9]+"/"[0-9]+[iI]
 #[eE][-+]"."[0-9]+[iI]
@@ -497,28 +761,58 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 #[eE][-+][0-9]+"."[0-9]*[iI]
 #[eE][-+][0-9]+"."[0-9]*(e|E)[-+][0-9]+[iI]
 #[eE][-+][0-9]+"/"[0-9]+[iI]
-#[eE][-+][iI][nN][fF]"."0[iI]
-#[eE][-+][nN][aA][nN]"."0[iI]
+#[eE][-+][iI][nN][fF]"."0[iI] 
+#[eE][-+][nN][aA][nN]"."0[iI]  {
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  mpfr_set_nan(mpc_imagref(yylval.obj.numberc));
+  return TOKEN_NUMBERC;
+}
 (#[dD]#[eE]|#[eE]#[dD])[-+]"."[0-9]+[iI]
 (#[dD]#[eE]|#[eE]#[dD])[-+]"."[0-9]+(e|E)[-+][0-9]+[iI]
 (#[dD]#[eE]|#[eE]#[dD])[-+][0-9]+"."[0-9]*[iI]
 (#[dD]#[eE]|#[eE]#[dD])[-+][0-9]+"."[0-9]*(e|E)[-+][0-9]+[iI]
 (#[dD]#[eE]|#[eE]#[dD])[-+][0-9]+"/"[0-9]+[iI]
 (#[dD]#[eE]|#[eE]#[dD])[-+][iI][nN][fF]"."0[iI]
-(#[dD]#[eE]|#[eE]#[dD])[-+][nN][aA][nN]"."0[iI]
+(#[dD]#[eE]|#[eE]#[dD])[-+][nN][aA][nN]"."0[iI] {
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  mpfr_set_nan(mpc_imagref(yylval.obj.numberc));
+  return TOKEN_NUMBERC;
+}
 
 #[bB][-+][01]+[iI]
 (#[bB]#[eE]|#[eE]#[bB])[-+][01]+[iI]
 #[bB][-+][01]+"/"[01]+[iI]
 (#[bB]#[eE]|#[eE]#[bB])[-+][01]+"/"[01]+[iI]
 (#[bB]#[eE]|#[eE]#[bB])[-+][iI][nN][fF]"."0[iI]
-(#[bB]#[eE]|#[eE]#[bB])[-+][nN][aA][nN]"."0[iI]
+(#[bB]#[eE]|#[eE]#[bB])[-+][nN][aA][nN]"."0[iI] {
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  mpfr_set_nan(mpc_imagref(yylval.obj.numberc));
+  return TOKEN_NUMBERC;
+}
 #[bB][-+][iI][nN][fF]"."0[iI]
-#[bB][-+][nN][aA][nN]"."0[iI]
+#[bB][-+][nN][aA][nN]"."0[iI] {
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  mpfr_set_nan(mpc_imagref(yylval.obj.numberc));
+  return TOKEN_NUMBERC;
+}
 (#[bB]#[iI]|#[iI]#[bB])[-+][01]+[iI]
 (#[bB]#[iI]|#[iI]#[bB])[-+][01]+"/"[01]+[iI]
 (#[bB]#[iI]|#[iI]#[bB])[-+][iI][nN][fF]"."0[iI]
-(#[bB]#[iI]|#[iI]#[bB])[-+][nN][aA][nN]"."0[iI]
+(#[bB]#[iI]|#[iI]#[bB])[-+][nN][aA][nN]"."0[iI] {
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  mpfr_set_nan(mpc_imagref(yylval.obj.numberc));
+  return TOKEN_NUMBERC;
+}
 
 #[oO][-+][0-7]+[iI]
 (#[oO]#[eE]|#[eE]#[oO])[-+][0-7]+[iI]

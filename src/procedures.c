@@ -4143,10 +4143,10 @@ Object scm_number_tostring(Object const args) {
   Object obj1;
   Object obj2;
   if (len == 1) {
-    obj1 = carref(args);
+    obj1 = value(carref(args));
     base = 10;
   } else if (len == 2) {
-    obj2 = carref(cdrref(args));
+    obj2 = value(carref(cdrref(args)));
     if (obj2.type != NUMBERZ) {
       return wrong_type("number->string", args);
     }
@@ -4155,7 +4155,7 @@ Object scm_number_tostring(Object const args) {
       return wrong_type("number->string", args);
     }
     base = mpz_get_ui(obj2.numberz);
-    obj1 = carref(args);
+    obj1 = value(carref(args));
   } else {
     return arguments(args, "number->string");
   }
@@ -4263,10 +4263,10 @@ Object scm_string_tonumber(Object const args) {
   if (!(len == 1 || len == 2)) {
     return arguments(args, "string->number");
   }
-  Object obj1 = carref(args);
+  Object obj1 = value(carref(args));
   int base = 10;
   if (len == 2) {
-    Object obj2 = carref(cdrref(args));
+    Object obj2 = value(carref(cdrref(args)));
     if (obj2.type != NUMBERZ) {
       return wrong_type("string->numberz", args);
     }

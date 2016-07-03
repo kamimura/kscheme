@@ -78,6 +78,7 @@ Object scm_list(Object const args);
 /* Pairs and lists end */
 /* Symbols */
 Object scm_symbol_p(Object const args);
+Object scm_symbol_tostring(Object const args);
 /* Characters */
 Object scm_char_p(Object const args);
 Object scm_char_alphabetic_p(Object const args);
@@ -119,6 +120,7 @@ Object scm_error_implementation_defined_object(Object const args);
 Object scm_error_object_p(Object const args);
 Object scm_error_object_message(Object const args);
 Object scm_error_object_irritants(Object const args);
+Object scm_read_error_p(Object const args);
 Object scm_file_error_p(Object const args);
 /* Input and output */
 Object scm_input_port_p(Object const args);

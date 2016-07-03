@@ -40,7 +40,7 @@ void pair_get_cycles(Object const obj, uint8_t *cycles) {
           g_tree_destroy(ot_ptr->t);
           ot_ptr = g_queue_pop_tail(queue);
         } else {
-          g_tree_insert(ot_ptr->t, (gpointer)obj.index, &tree_value);
+          g_tree_insert(ot_ptr->t, (gpointer)(ot_ptr->o.index), &tree_value);
           Object o1 = carref(ot_ptr->o);
           Object o2 = cdrref(ot_ptr->o);
           GTree *tree2 = tree_copy(ot_ptr->t);

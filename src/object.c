@@ -30,6 +30,7 @@ Object object_copy(Object obj) {
     mpc_set(out.numberc, obj.numberc, MPC_RNDNN);
     return out;
   }
+  case READ_ERROR:
   case FILE_ERROR: {
     Object out = {.type = obj.type, .message = strdup(obj.message)};
     return out;
@@ -52,6 +53,7 @@ void object_free(Object *obj_ptr) {
   case NUMBERC:
     mpc_clear(obj_ptr->numberc);
     break;
+  case READ_ERROR:
   case FILE_ERROR:
     free(obj_ptr->message);
     break;
@@ -75,8 +77,8 @@ void object_write(FILE *stream, Object obj) {
     mpq_out_str(stream, 10, obj.numberq);
     break;
   case NUMBERR: {
-    if (mpfr_zero_p(obj.numberr)) {
-      fprintf(stream, "0.0");
+    if (mpfr_nan_p(obj.numberr)) {
+      fprintf(stream, "+nan.0");
     } else if (mpfr_inf_p(obj.numberr)) {
       if (mpfr_sgn(obj.numberr) >= 0) {
         fprintf(stream, "+");
@@ -85,14 +87,21 @@ void object_write(FILE *stream, Object obj) {
       }
       fprintf(stream, "inf.0");
     } else {
-      /* mpfr_out_str(stream, 10, 0, obj.numberr, MPFR_RNDN); */
-      mpfr_fprintf(stream, "%.16Rf", obj.numberr);
+      mpfr_fprintf(stream, "%.16Rg", obj.numberr);
+      mpfr_t op;
+      mpfr_init(op);
+      mpfr_trunc(op, obj.numberr);
+      mpfr_sub(op, obj.numberr, op, MPFR_RNDN);
+      if (mpfr_zero_p(op)) {
+        fprintf(stream, ".0");
+      }
+      mpfr_clear(op);
     }
     break;
   }
   case NUMBERC: {
-    if (mpfr_zero_p(mpc_realref(obj.numberc))) {
-      fprintf(stream, "0.0");
+    if (mpfr_nan_p(mpc_realref(obj.numberc))) {
+      fprintf(stream, "+nan.0");
     } else if (mpfr_inf_p(mpc_realref(obj.numberc))) {
       if (mpfr_sgn(mpc_realref(obj.numberc)) >= 0) {
         fprintf(stream, "+");
@@ -101,21 +110,40 @@ void object_write(FILE *stream, Object obj) {
       }
       fprintf(stream, "inf.0");
     } else {
-      /* mpfr_out_str(stream, 10, 0, mpc_realref(obj.numberc), MPFR_RNDN); */
-      mpfr_fprintf(stream, "%.16Rf", mpc_realref(obj.numberc));
+      mpfr_fprintf(stream, "%.16Rg", mpc_realref(obj.numberc));
+      mpfr_t op;
+      mpfr_init(op);
+      mpfr_trunc(op, mpc_realref(obj.numberc));
+      mpfr_sub(op, mpc_realref(obj.numberc), op, MPFR_RNDN);
+      if (mpfr_zero_p(op)) {
+        fprintf(stream, ".0");
+      }
+      mpfr_clear(op);
     }
     if (mpfr_zero_p(mpc_imagref(obj.numberc))) {
       break;
     }
-    if (mpfr_sgn(mpc_imagref(obj.numberc)) >= 0) {
-      fprintf(stream, "+");
+    if (mpfr_nan_p(mpc_imagref(obj.numberc))) {
+      fprintf(stream, "+nan.0");
+    } else {
+      if (mpfr_sgn(mpc_imagref(obj.numberc)) >= 0) {
+        fprintf(stream, "+");
+      }
+      mpfr_fprintf(stream, "%.16Rg", mpc_imagref(obj.numberc));
+      if (mpfr_inf_p(mpc_imagref(obj.numberc))) {
+        fprintf(stream, ".0");
+      } else {
+        mpfr_t op;
+        mpfr_init(op);
+        mpfr_trunc(op, mpc_imagref(obj.numberc));
+        mpfr_sub(op, mpc_imagref(obj.numberc), op, MPFR_RNDN);
+        if (mpfr_zero_p(op)) {
+          fprintf(stream, ".0");
+        }
+        mpfr_clear(op);
+      }
     }
-    /* mpfr_out_str(stream, 10, 0, mpc_imagref(obj.numberc), MPFR_RNDN); */
-    /* fprintf(stream, "i"); */
-    mpfr_fprintf(stream, "%.16Rfi", mpc_imagref(obj.numberc));
-    if (mpfr_inf_p(mpc_imagref(obj.numberc))) {
-      fprintf(stream, ".0");
-    }
+    fprintf(stream, "i");
     break;
   }
   case CHARACTER: {
@@ -205,6 +233,41 @@ void object_write(FILE *stream, Object obj) {
         fprintf(stream, "%s", outbuf);
         break;
       }
+      }
+    }
+    fprintf(stream, "\"");
+    break;
+  }
+  case STRING_IMMUTABLE: {
+    fprintf(stream, "\"");
+    for (size_t i = 0; obj.string_immutable[i] != '\0'; i++) {
+      switch (obj.string_immutable[i]) {
+      case 0:
+        fprintf(stream, "\\x0000;");
+        break;
+      case 7:
+        fprintf(stream, "\\a");
+        break;
+      case 8:
+        fprintf(stream, "\\b");
+        break;
+      case 0xa:
+        fprintf(stream, "\\n");
+        break;
+      case 0xd:
+        fprintf(stream, "\\r");
+        break;
+      case 0x22:
+        fprintf(stream, "\\\"");
+        break;
+      case 0x5c:
+        fprintf(stream, "\\\\");
+        break;
+      case 0x7c:
+        fprintf(stream, "\\|");
+        break;
+      default:
+        fprintf(stream, "%c", obj.string_immutable[i]);
       }
     }
     fprintf(stream, "\"");
@@ -321,9 +384,9 @@ void object_write(FILE *stream, Object obj) {
     break;
   }
   case PORT_OUTPUT_TEXT: {
-    fprintf(stream, "#<text-output-port ");
+    fprintf(stream, "#<text-output-port");
     if (port_carref(obj).port == NULL) {
-      fprintf(stream, "(closed) ");
+      fprintf(stream, "(closed)");
     }
     fprintf(stream, " ");
     object_write(stream, port_cdrref(obj));
@@ -342,6 +405,9 @@ void object_write(FILE *stream, Object obj) {
   }
   case EOF_OBJ:
     fprintf(stream, "#<eof>");
+    break;
+  case READ_ERROR:
+    fprintf(stream, "#<read-error: %s>", obj.message);
     break;
   case FILE_ERROR:
     fprintf(stream, "#<file-error: %s>", obj.message);
@@ -478,8 +544,12 @@ void object_display(FILE *stream, Object obj) {
     }
     break;
   }
+  case STRING_IMMUTABLE: {
+    fprintf(stream, "%s", obj.string_immutable);
+    break;
+  }
   case NONE:
-    exit(1);
+    error("object_display");
   default:
     object_write(stream, obj);
     break;

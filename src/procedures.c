@@ -72,45 +72,10 @@ Object scm_eqv_p(Object const args) {
       return mpz_cmp(obj1.numberz, obj2.numberz) == 0 ? true_obj : false_obj;
     case NUMBERQ:
       return mpq_cmp_z(obj2.numberq, obj1.numberz) == 0 ? true_obj : false_obj;
-    case NUMBERR:
-    case NUMBERC:
-    case CHARACTER:
-    case STRING_EMPTY:
-    case STRING:
-    case VECTOR:
-    case BYTEVECTOR:
-    case EMPTY:
-    case PAIR:
-    case IDENTIFIER:
-    case TRUE_TYPE:
-    case FALSE_TYPE:
-    case QUOTE:
-    case LAMBDA:
-    case IF:
-    case SET:
-    case DEFINE:
-    case BEGIN_TYPE:
-    case AND:
-    case OR:
-    case PRIMITIVE_PROCEDURE:
-    case PRIMITIVE_PROCEDURE_APPLY:
-    case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-    case CONTINUATION:
-    case PRIMITIVE_PROCEDURE_RAISE:
-    case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PROCEDURE:
-    case EOF_OBJ:
-    case FILE_ERROR:
-    case PORT_INPUT_TEXT:
-    case PORT_INPUT_BINARY:
-    case PORT_OUTPUT_TEXT:
-    case PORT_OUTPUT_BINARY:
-    case IMPLEMENTATION_DEFINED_OBJECT:
-    case UNSPECIFIED:
-    case MULTIPLE_ZERO:
-      return false_obj;
+    case NONE:
+      error("scm_eav_p");
     default:
-      error("eqv?");
+      return false_obj;
     }
   case NUMBERQ: {
     switch (obj2.type) {
@@ -118,45 +83,10 @@ Object scm_eqv_p(Object const args) {
       return mpq_cmp_z(obj1.numberq, obj2.numberz) == 0 ? true_obj : false_obj;
     case NUMBERQ:
       return mpq_cmp(obj1.numberq, obj2.numberq) == 0 ? true_obj : false_obj;
-    case NUMBERR:
-    case NUMBERC:
-    case CHARACTER:
-    case STRING_EMPTY:
-    case STRING:
-    case VECTOR:
-    case BYTEVECTOR:
-    case EMPTY:
-    case PAIR:
-    case IDENTIFIER:
-    case TRUE_TYPE:
-    case FALSE_TYPE:
-    case QUOTE:
-    case LAMBDA:
-    case IF:
-    case SET:
-    case DEFINE:
-    case BEGIN_TYPE:
-    case AND:
-    case OR:
-    case PRIMITIVE_PROCEDURE:
-    case PRIMITIVE_PROCEDURE_APPLY:
-    case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-    case CONTINUATION:
-    case PRIMITIVE_PROCEDURE_RAISE:
-    case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PROCEDURE:
-    case EOF_OBJ:
-    case FILE_ERROR:
-    case PORT_INPUT_TEXT:
-    case PORT_INPUT_BINARY:
-    case PORT_OUTPUT_TEXT:
-    case PORT_OUTPUT_BINARY:
-    case IMPLEMENTATION_DEFINED_OBJECT:
-    case UNSPECIFIED:
-    case MULTIPLE_ZERO:
-      return false_obj;
+    case NONE:
+      error("scm_eqv_p");
     default:
-      error("eqv?");
+      return false_obj;
     }
   }
   case NUMBERR: {
@@ -171,45 +101,10 @@ Object scm_eqv_p(Object const args) {
       }
       return false_obj;
     }
-    case NUMBERZ:
-    case NUMBERQ:
-    case CHARACTER:
-    case STRING_EMPTY:
-    case STRING:
-    case VECTOR:
-    case BYTEVECTOR:
-    case EMPTY:
-    case PAIR:
-    case IDENTIFIER:
-    case TRUE_TYPE:
-    case FALSE_TYPE:
-    case QUOTE:
-    case LAMBDA:
-    case IF:
-    case SET:
-    case DEFINE:
-    case BEGIN_TYPE:
-    case AND:
-    case OR:
-    case PRIMITIVE_PROCEDURE:
-    case PRIMITIVE_PROCEDURE_APPLY:
-    case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-    case CONTINUATION:
-    case PRIMITIVE_PROCEDURE_RAISE:
-    case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PROCEDURE:
-    case EOF_OBJ:
-    case FILE_ERROR:
-    case PORT_INPUT_TEXT:
-    case PORT_INPUT_BINARY:
-    case PORT_OUTPUT_TEXT:
-    case PORT_OUTPUT_BINARY:
-    case IMPLEMENTATION_DEFINED_OBJECT:
-    case UNSPECIFIED:
-    case MULTIPLE_ZERO:
-      return false_obj;
+    case NONE:
+      error("scm_eqv_p");
     default:
-      error("eqv?");
+      return false_obj;
     }
   }
   case NUMBERC: {
@@ -225,45 +120,10 @@ Object scm_eqv_p(Object const args) {
     case NUMBERC: {
       return mpc_cmp(obj1.numberc, obj2.numberc) == 0 ? true_obj : false_obj;
     }
-    case NUMBERZ:
-    case NUMBERQ:
-    case CHARACTER:
-    case STRING_EMPTY:
-    case STRING:
-    case VECTOR:
-    case BYTEVECTOR:
-    case EMPTY:
-    case PAIR:
-    case IDENTIFIER:
-    case TRUE_TYPE:
-    case FALSE_TYPE:
-    case QUOTE:
-    case LAMBDA:
-    case IF:
-    case SET:
-    case DEFINE:
-    case BEGIN_TYPE:
-    case AND:
-    case OR:
-    case PRIMITIVE_PROCEDURE:
-    case PRIMITIVE_PROCEDURE_APPLY:
-    case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
-    case CONTINUATION:
-    case PRIMITIVE_PROCEDURE_RAISE:
-    case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:
-    case PROCEDURE:
-    case EOF_OBJ:
-    case FILE_ERROR:
-    case PORT_INPUT_TEXT:
-    case PORT_INPUT_BINARY:
-    case PORT_OUTPUT_TEXT:
-    case PORT_OUTPUT_BINARY:
-    case IMPLEMENTATION_DEFINED_OBJECT:
-    case UNSPECIFIED:
-    case MULTIPLE_ZERO:
-      return false_obj;
+    case NONE:
+      error("scm_eqv_p");
     default:
-      error("eqv?");
+      return false_obj;
     }
   }
   case CHARACTER:
@@ -273,6 +133,11 @@ Object scm_eqv_p(Object const args) {
   case STRING:
     return obj1.type == obj2.type && obj1.index && obj2.index ? true_obj
                                                               : false_obj;
+  case STRING_IMMUTABLE:
+    return obj1.type == obj2.type &&
+                   obj1.string_immutable == obj2.string_immutable
+               ? true_obj
+               : false_obj;
   case PRIMITIVE_PROCEDURE:
     return obj2.type == PRIMITIVE_PROCEDURE && obj1.proc == obj2.proc
                ? true_obj
@@ -332,51 +197,29 @@ Object scm_eq_p(Object const args) {
   case MULTIPLE_ZERO:
     return obj1.type == obj2.type ? true_obj : false_obj;
   case IDENTIFIER:
-    return obj2.type == IDENTIFIER && obj1.identifier == obj2.identifier
-               ? true_obj
-               : false_obj;
   case NUMBERZ:
   case NUMBERQ:
   case NUMBERR:
   case NUMBERC:
-    return scm_eqv_p(args);
   case CHARACTER:
-    return obj2.type == CHARACTER && obj1.character == obj2.character
-               ? true_obj
-               : false_obj;
   case STRING_EMPTY:
-    return obj1.type == obj2.type ? true_obj : false_obj;
   case STRING:
-    return obj1.type == obj2.type && obj1.index == obj2.index ? true_obj
-                                                              : false_obj;
+  case STRING_IMMUTABLE:
   case VECTOR:
-    return obj1.type == obj2.type && obj1.index == obj2.index ? true_obj
-                                                              : false_obj;
   case BYTEVECTOR:
-    return obj1.type == obj2.type && obj1.index == obj2.index ? true_obj
-                                                              : false_obj;
   case PRIMITIVE_PROCEDURE:
-    return obj2.type == PRIMITIVE_PROCEDURE && obj1.index == obj2.index
-               ? true_obj
-               : false_obj;
   case PROCEDURE:
-    return obj2.type == PROCEDURE && obj1.index == obj2.index ? true_obj
-                                                              : false_obj;
   case IMPLEMENTATION_DEFINED_OBJECT:
-    return obj1.type == obj2.type && obj1.index == obj2.index ? true_obj
-                                                              : false_obj;
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
-    return obj1.type == obj2.type && obj1.index == obj2.index ? true_obj
-                                                              : false_obj;
+  case PAIR:
+    return scm_eqv_p(args);
   case EOF_OBJ:
   case FILE_ERROR:
   case UNSPECIFIED:
     return false_obj;
-  case PAIR:
-    return obj2.type == PAIR && obj1.index == obj2.index ? true_obj : false_obj;
   case NONE:
     error("scm_eq_p");
   default:
@@ -398,6 +241,8 @@ Object scm_number_p(Object const args) {
   case NUMBERR:
   case NUMBERC:
     return true_obj;
+  case NONE:
+    error("scm_number_p");
   default:
     return false_obj;
   }
@@ -4614,6 +4459,22 @@ Object scm_symbol_p(Object const args) {
     return false_obj;
   }
 }
+Object scm_symbol_tostring(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "char?");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case IDENTIFIER: {
+    return (Object){.type = STRING_IMMUTABLE,
+                    .string_immutable = obj.identifier};
+  }
+  case NONE:
+    error("scm_symbol_tostring");
+  default:
+    return wrong_type("symbol->string", args);
+  }
+}
 /* Symbols end */
 /* Characters */
 Object scm_char_p(Object const args) {
@@ -4822,6 +4683,7 @@ Object scm_string_p(Object const args) {
   switch (obj.type) {
   case STRING_EMPTY:
   case STRING:
+  case STRING_IMMUTABLE:
     return true_obj;
   case NONE:
     exit(1);
@@ -4883,21 +4745,27 @@ Object scm_string_length(Object const args) {
     return arguments(args, "string-length");
   }
   size_t len = 0;
-  switch (value(carref(args)).type) {
+  Object obj = value(carref(args));
+  switch (obj.type) {
   case STRING_EMPTY:
   case STRING: {
-    for (Object obj = carref(args); obj.type != STRING_EMPTY;
-         obj = string_cdrref(obj)) {
+    for (Object o = obj; o.type != STRING_EMPTY; o = value(string_cdrref(o))) {
       len++;
     }
     Object out = {.type = NUMBERZ};
     mpz_init_set_ui(out.numberz, len);
     return out;
   }
+  case STRING_IMMUTABLE: {
+    Object out = {.type = NUMBERZ};
+    mpz_init_set_si(out.numberz, g_utf8_strlen(obj.string_immutable, -1));
+    return out;
+  }
+  case NONE:
+    error("scm_string_length");
   default:
     return wrong_type("string-length", args);
   }
-  exit(1);
 }
 Object scm_string_ref(Object const args) {
   if (args_length(args) != 2) {
@@ -4905,12 +4773,28 @@ Object scm_string_ref(Object const args) {
   }
   Object s = value(carref(args));
   Object k = value(carref(cdrref(args)));
-  if ((s.type != STRING_EMPTY && s.type != STRING) || k.type != NUMBERZ) {
+  if ((s.type != STRING && s.type != STRING_IMMUTABLE) || k.type != NUMBERZ) {
     return wrong_type("string-ref", args);
   }
-  size_t i = mpz_get_ui(k.numberz);
+  long int i = mpz_get_si(k.numberz);
+  if (i < 0) {
+    return wrong_type("string-ref", args);
+  }
+  if (s.type == STRING_IMMUTABLE) {
+    if (g_utf8_strlen(s.string_immutable, -1) <= i) {
+      return wrong_type("string-ref", args);
+    }
+    char *ch = s.string_immutable;
+    for (; i > 0; i--) {
+      ch = g_utf8_find_next_char(ch, NULL);
+    }
+    return character_new(ch);
+  }
   for (; i > 0; i--) {
     s = string_cdrref(s);
+    if (s.type == STRING_EMPTY) {
+      return wrong_type("string-ref", args);
+    }
   }
   Object c = string_carref(s);
   return c;
@@ -4921,7 +4805,7 @@ Object scm_string_set(Object const args) {
   }
   Object s = value(carref(args));
   Object k = value(carref(cdrref(args)));
-  if ((s.type != STRING_EMPTY && s.type != STRING) || k.type != NUMBERZ) {
+  if (s.type != STRING || k.type != NUMBERZ) {
     return wrong_type("string-set!", args);
   }
   Object c = value(carref(cdrref(cdrref(args))));
@@ -5183,52 +5067,74 @@ Object scm_utfeight_tostring(Object const args) {
 }
 Object scm_string_toutfeight(Object const args) {
   Object obj;
-  size_t start;
-  size_t end;
+  long int start;
+  long int end;
   switch (args_length(args)) {
   case 1: {
     obj = value(carref(args));
     start = 0;
-    if (obj.type != STRING && obj.type != STRING_EMPTY) {
+    if (obj.type != STRING && obj.type != STRING_EMPTY &&
+        obj.type != STRING_IMMUTABLE) {
       return wrong_type("string->utf8", args);
     }
     end = 0;
-    for (Object o = obj; o.type != STRING_EMPTY; o = cdrref(o)) {
-      end++;
+    if (obj.type == STRING_IMMUTABLE) {
+      end = strlen(obj.string_immutable);
+    } else {
+      for (Object o = obj; o.type != STRING_EMPTY; o = cdrref(o)) {
+        end++;
+      }
     }
     break;
   }
   case 2: {
     obj = value(carref(args));
-    if (value(carref(cdrref(args))).type != NUMBERZ) {
+    Object obj2 = value(carref(cdrref(args)));
+    if ((obj.type != STRING && obj.type != STRING_EMPTY &&
+         obj.type != STRING_IMMUTABLE) ||
+        obj2.type != NUMBERZ) {
       return wrong_type("string->utf8", args);
     }
-    start = mpz_get_ui(value(carref(cdrref(args))).numberz);
-    if (obj.type != STRING && obj.type != STRING_EMPTY) {
+    start = mpz_get_si(obj2.numberz);
+    if (start < 0) {
       return wrong_type("string->utf8", args);
     }
     end = 0;
-    for (Object o = obj; o.type != STRING_EMPTY; o = cdrref(o)) {
-      end++;
+    if (obj.type == STRING_IMMUTABLE) {
+      end = strlen(obj.string_immutable);
+    } else {
+      for (Object o = obj; o.type != STRING_EMPTY; o = cdrref(o)) {
+        end++;
+      }
+    }
+    if (start > end) {
+      return wrong_type("string->utf8", args);
     }
     break;
   }
   case 3: {
     obj = value(carref(args));
-    if (value(carref(cdrref(args))).type != NUMBERZ) {
+    Object obj2 = value(carref(cdrref(args)));
+    Object obj3 = value(carref(cdrref(cdrref(args))));
+    if ((obj.type != STRING && obj.type != STRING_EMPTY &&
+         obj.type != STRING_IMMUTABLE) ||
+        obj2.type != NUMBERZ || obj3.type != NUMBERZ) {
       return wrong_type("string->utf8", args);
     }
-    start = mpz_get_ui(value(carref(cdrref(args))).numberz);
-    if (carref(cdrref(cdrref(args))).type != NUMBERZ) {
+    start = mpz_get_si(obj2.numberz);
+    if (start < 0) {
       return wrong_type("string->utf8", args);
     }
-    end = mpz_get_ui(carref(cdrref(cdrref(args))).numberz);
+    end = mpz_get_si(obj2.numberz);
+    if (start > end) {
+      return wrong_type("string->utf8", args);
+    }
     break;
   }
   default:
     return arguments(args, "string->utf8");
   }
-  if (end <= start) {
+  if (end == start) {
     return list2bytevector(empty);
   }
   switch (obj.type) {
@@ -5253,6 +5159,16 @@ Object scm_string_toutfeight(Object const args) {
       t = cons(o, t);
     }
     g_free(s);
+    Object out = list2bytevector(t);
+    return out;
+  }
+  case STRING_IMMUTABLE: {
+    Object t = empty;
+    for (long int i = end - 1; i >= start; i--) {
+      Object o = {.type = NUMBERZ};
+      mpz_init_set_ui(o.numberz, (uint8_t)obj.string_immutable[i]);
+      t = cons(o, t);
+    }
     Object out = list2bytevector(t);
     return out;
   }
@@ -5343,6 +5259,12 @@ Object scm_error_object_message(Object const args) {
   }
   exit(1);
 }
+Object scm_read_error_p(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "file-error?");
+  }
+  return value(carref(args)).type == READ_ERROR ? true_obj : false_obj;
+}
 Object scm_file_error_p(Object const args) {
   if (args_length(args) != 1) {
     return arguments(args, "file-error?");
@@ -5428,11 +5350,10 @@ Object scm_input_port_open_p(Object const args) {
   case PORT_OUTPUT_BINARY:
     return false_obj;
   case NONE:
-    exit(1);
+    error("scm_input_port_open_p");
   default:
-    exit(1);
+    return wrong_type("input-port-open?", args);
   }
-  return wrong_type("input-port-open?", args);
 }
 Object scm_output_port_open_p(Object const args) {
   if (args_length(args) != 1) {
@@ -5447,12 +5368,13 @@ Object scm_output_port_open_p(Object const args) {
   case PORT_INPUT_BINARY:
     return false_obj;
   case NONE:
-    exit(1);
+    error("scm_output_port_open_p");
   default:
     return wrong_type("output-port-open?", args);
   }
-  exit(1);
 }
+#include <errno.h>
+#include <string.h>
 Object scm_open_output_file(Object const args) {
   if (args_length(args) != 1) {
     return arguments(args, "open-output-file");
@@ -5476,15 +5398,24 @@ Object scm_open_output_file(Object const args) {
     char *s = g_ucs4_to_utf8(str, len, &items_read, &items_written, &error);
     FILE *f = fopen(s, "w");
     if (f == NULL) {
-      exit(1);
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
     }
     Object out = cons((Object){.port = f}, obj);
     g_free(s);
     out.type = PORT_OUTPUT_TEXT;
     return out;
   }
+  case STRING_IMMUTABLE: {
+    FILE *f = fopen(obj.string_immutable, "w");
+    if (f == NULL) {
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+    }
+    Object out = cons((Object){.port = f}, obj);
+    out.type = PORT_OUTPUT_TEXT;
+    return out;
+  }
   case NONE:
-    exit(1);
+    error("scm_open_output_file");
   default:
     return wrong_type("open-output-file", args);
   }
@@ -5513,15 +5444,24 @@ Object scm_open_binary_output_file(Object const args) {
     char *s = g_ucs4_to_utf8(str, len, &items_read, &items_written, &error);
     FILE *f = fopen(s, "wb");
     if (f == NULL) {
-      exit(1);
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
     }
     Object out = cons((Object){.port = f}, obj);
     g_free(s);
     out.type = PORT_OUTPUT_BINARY;
     return out;
   }
+  case STRING_IMMUTABLE: {
+    FILE *f = fopen(obj.string_immutable, "wb");
+    if (f == NULL) {
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+    }
+    Object out = cons((Object){.port = f}, obj);
+    out.type = PORT_OUTPUT_BINARY;
+    return out;
+  }
   case NONE:
-    exit(1);
+    error("scm_open_binary_output_file");
   default:
     return wrong_type("open-binary-output-file", args);
   }
@@ -5550,10 +5490,21 @@ Object scm_open_input_file(Object const args) {
     char *s = g_ucs4_to_utf8(str, len, &items_read, &items_written, &error);
     FILE *f = fopen(s, "r");
     if (f == NULL) {
-      exit(1);
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+      ;
     }
     Object out = cons((Object){.port = f}, obj);
     g_free(s);
+    out.type = PORT_INPUT_TEXT;
+    return out;
+  }
+  case STRING_IMMUTABLE: {
+    FILE *f = fopen(obj.string_immutable, "r");
+    if (f == NULL) {
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+      ;
+    }
+    Object out = cons((Object){.port = f}, obj);
     out.type = PORT_INPUT_TEXT;
     return out;
   }
@@ -5562,7 +5513,6 @@ Object scm_open_input_file(Object const args) {
   default:
     return wrong_type("open-input-file", args);
   }
-  exit(1);
 }
 Object scm_open_binary_input_file(Object const args) {
   if (args_length(args) != 1) {
@@ -5587,19 +5537,29 @@ Object scm_open_binary_input_file(Object const args) {
     char *s = g_ucs4_to_utf8(str, len, &items_read, &items_written, &error);
     FILE *f = fopen(s, "rb");
     if (f == NULL) {
-      exit(1);
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+      ;
     }
     Object out = cons((Object){.port = f}, obj);
     g_free(s);
     out.type = PORT_INPUT_BINARY;
     return out;
   }
+  case STRING_IMMUTABLE: {
+    FILE *f = fopen(obj.string_immutable, "rb");
+    if (f == NULL) {
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+      ;
+    }
+    Object out = cons((Object){.port = f}, obj);
+    out.type = PORT_INPUT_BINARY;
+    return out;
+  }
   case NONE:
-    exit(1);
+    error("scm_open_binary_input_file");
   default:
     return wrong_type("open-binary-input-file", args);
   }
-  exit(1);
 }
 Object scm_close_port(Object const args) {
   if (args_length(args) != 1) {
@@ -5616,7 +5576,7 @@ Object scm_close_port(Object const args) {
     return unspecified;
   }
   case NONE:
-    exit(1);
+    error("scm_close_port");
   default:
     return wrong_type("close-port", args);
   }
@@ -5636,8 +5596,9 @@ Object scm_read(Object const args) {
     if (obj.type != PORT_INPUT_TEXT) {
       return wrong_type("read", args);
     }
-    if (obj.port == NULL) {
-      exit(1);
+    if (port_carref(obj).port == NULL) {
+      return (Object){.type = READ_ERROR, .message = strdup(strerror(errno))};
+      ;
     }
     FILE *stream = yyin;
     yyrestart(port_carref(obj).port);
@@ -5811,33 +5772,52 @@ Object scm_file_exists_p(Object const args) {
     g_free(filename);
     return b ? true_obj : false_obj;
   }
+  case STRING_IMMUTABLE: {
+    gboolean b = g_file_test(obj.string_immutable, G_FILE_TEST_EXISTS);
+    return b ? true_obj : false_obj;
+  }
   default:
     return wrong_type("file-exists?", args);
   }
   exit(1);
 }
-#include <errno.h>
-#include <string.h>
 Object scm_primitive_delete_file(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "delete-file");
+  }
   Object obj = value(carref(args));
-  size_t len = 0;
-  for (Object o = obj; o.type != STRING_EMPTY; o = string_cdrref(o)) {
-    len++;
+  switch (obj.type) {
+  case STRING_EMPTY:
+  case STRING: {
+    size_t len = 0;
+    for (Object o = obj; o.type != STRING_EMPTY; o = string_cdrref(o)) {
+      len++;
+    }
+    gunichar str[len];
+    Object o = obj;
+    for (size_t i = 0; i < len; i++) {
+      str[i] = string_carref(o).character;
+      o = string_cdrref(o);
+    }
+    glong items_read, items_written;
+    GError *error;
+    char *filename =
+        g_ucs4_to_utf8(str, len, &items_read, &items_written, &error);
+    int n = remove(filename);
+    g_free(filename);
+    return n == 0 ? unspecified : (Object){.type = FILE_ERROR,
+                                           .message = strdup(strerror(errno))};
   }
-  gunichar str[len];
-  Object o = obj;
-  for (size_t i = 0; i < len; i++) {
-    str[i] = string_carref(o).character;
-    o = string_cdrref(o);
+  case STRING_IMMUTABLE: {
+    int n = remove(obj.string_immutable);
+    return n == 0 ? unspecified : (Object){.type = FILE_ERROR,
+                                           .message = strdup(strerror(errno))};
   }
-  glong items_read, items_written;
-  GError *error;
-  char *filename =
-      g_ucs4_to_utf8(str, len, &items_read, &items_written, &error);
-  int n = remove(filename);
-  g_free(filename);
-  return n == 0 ? unspecified : (Object){.type = FILE_ERROR,
-                                         .message = strdup(strerror(errno))};
+  case NONE:
+    error("scm_primitive_delete_file");
+  default:
+    return wrong_type("delete-file", args);
+  }
 }
 #include <unistd.h>
 extern FILE *yyout;

@@ -299,6 +299,9 @@ int main() {
   define_variable(identifier_new("symbol?"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_symbol_p},
                   env);
+  define_variable(
+      identifier_new("symbol->string"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_symbol_tostring}, env);
   /* Symbols end */
   /* Characters */
   define_variable(identifier_new("char?"),
@@ -441,6 +444,9 @@ int main() {
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_error_object_irritants},
       env);
   define_variable(
+      identifier_new("read-error?"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_read_error_p}, env);
+  define_variable(
       identifier_new("file-error?"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_file_error_p}, env);
   /* Exceptions end */
@@ -544,6 +550,7 @@ eval_dispatch:
   case CHARACTER:
   case STRING_EMPTY:
   case STRING:
+  case STRING_IMMUTABLE:
   case VECTOR:
   case BYTEVECTOR:
   case QUOTE:
@@ -567,6 +574,7 @@ eval_dispatch:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
   case EOF_OBJ:
+  case READ_ERROR:
   case FILE_ERROR:
   case UNSPECIFIED:
     goto ev_self_eval;
@@ -808,6 +816,10 @@ primitive_apply:
     goto expt_error;
   case EXACT_ERROR:
     goto exact_error;
+  case READ_ERROR:
+    goto read_error;
+  case FILE_ERROR:
+    goto file_error;
   default:
     break;
   }
@@ -1026,6 +1038,12 @@ syntax_error:
 expt_error:
   goto signal_error;
 exact_error:
+  goto signal_error;
+read_error:
+  fprintf(yyout, "Error: %s\n", val.message);
+  goto signal_error;
+file_error:
+  fprintf(yyout, "Error: %s\n", val.message);
   goto signal_error;
 signal_error:;
   goto read_eval_print_loop;

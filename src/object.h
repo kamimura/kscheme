@@ -15,6 +15,7 @@ typedef enum type {
   CHARACTER,
   STRING_EMPTY,
   STRING,
+  STRING_IMMUTABLE,
   VECTOR,
   BYTEVECTOR,
   QUOTE,
@@ -36,6 +37,7 @@ typedef enum type {
   PORT_OUTPUT_TEXT,
   PORT_OUTPUT_BINARY,
   EOF_OBJ,
+  READ_ERROR,
   FILE_ERROR,
   AND,
   OR,
@@ -68,6 +70,7 @@ typedef struct Object {
     size_t vector_length;
     size_t bytevector_length;
     struct Object (*proc)(struct Object);
+    char *string_immutable;
     FILE *port;
     char *message;
   };

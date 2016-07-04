@@ -67,6 +67,7 @@ static void error(char const *msg) {
   fprintf(stderr, "kscheme error: %s\n", msg);
   exit(1);
 }
+#include <ctype.h> // isprint
 void object_write(FILE *stream, Object obj) {
   switch (obj.type) {
   case NUMBERZ:
@@ -273,6 +274,50 @@ void object_write(FILE *stream, Object obj) {
     fprintf(stream, "\"");
     break;
   }
+  case STRING_IMMUTABLE_VERTICAL: {
+    fprintf(stream, "\"");
+    char *p = obj.string_immutable_vertical;
+    for (gunichar c = g_utf8_get_char(p); c != '\0'; c = g_utf8_get_char(p)) {
+      p = g_utf8_next_char(p);
+      switch (c) {
+      case 0:
+        fprintf(stream, "\\x0000;");
+        break;
+      case 7:
+        fprintf(stream, "\\a");
+        break;
+      case 8:
+        fprintf(stream, "\\b");
+        break;
+      case 0xa:
+        fprintf(stream, "\\n");
+        break;
+      case 0xd:
+        fprintf(stream, "\\r");
+        break;
+      case 0x22:
+        fprintf(stream, "\\\"");
+        break;
+      case 0x5c:
+        fprintf(stream, "\\\\");
+        break;
+      case 0x7c:
+        fprintf(stream, "\\|");
+        break;
+      default:
+        if (g_unichar_isprint(c)) {
+          char outbuf[6];
+          gint len = g_unichar_to_utf8(c, outbuf);
+          outbuf[len] = '\0';
+          fprintf(stream, "%s", outbuf);
+        } else {
+          fprintf(stream, "\\x%x;", c);
+        }
+      }
+    }
+    fprintf(stream, "\"");
+    break;
+  }
   case VECTOR: {
     fprintf(stream, "#(");
     size_t len = cdrs[obj.index].vector_length;
@@ -301,6 +346,50 @@ void object_write(FILE *stream, Object obj) {
   case IDENTIFIER:
     fprintf(stream, "%s", obj.identifier);
     break;
+  case IDENTIFIER_VERTICAL: {
+    fprintf(stream, "|");
+    char *p = obj.identifier_vertical;
+    for (gunichar c = g_utf8_get_char(p); c != '\0'; c = g_utf8_get_char(p)) {
+      p = g_utf8_next_char(p);
+      switch (c) {
+      case 0:
+        fprintf(stream, "\\x0000;");
+        break;
+      case 7:
+        fprintf(stream, "\\a");
+        break;
+      case 8:
+        fprintf(stream, "\\b");
+        break;
+      case 0xa:
+        fprintf(stream, "\\n");
+        break;
+      case 0xd:
+        fprintf(stream, "\\r");
+        break;
+      case 0x22:
+        fprintf(stream, "\\\"");
+        break;
+      case 0x5c:
+        fprintf(stream, "\\\\");
+        break;
+      case 0x7c:
+        fprintf(stream, "\\|");
+        break;
+      default:
+        if (g_unichar_isprint(c)) {
+          char outbuf[6];
+          gint len = g_unichar_to_utf8(c, outbuf);
+          outbuf[len] = '\0';
+          fprintf(stream, "%s", outbuf);
+        } else {
+          fprintf(stream, "\\x%x;", c);
+        }
+      }
+    }
+    fprintf(stream, "|");
+    break;
+  }
   case EMPTY:
     fprintf(stream, "()");
     break;
@@ -546,6 +635,12 @@ void object_display(FILE *stream, Object obj) {
   }
   case STRING_IMMUTABLE: {
     fprintf(stream, "%s", obj.string_immutable);
+    break;
+  }
+  case STRING_IMMUTABLE_VERTICAL: {
+    for (size_t i = 1; i != '|'; i++) {
+      fprintf(stream, "%c", obj.string_immutable_vertical[i]);
+    }
     break;
   }
   case NONE:

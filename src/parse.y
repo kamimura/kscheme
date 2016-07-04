@@ -1,7 +1,7 @@
 %{
 
 #include "object.h"
-extern int string_tonumber(char *str);
+extern int stringto(char *str);
 extern void yyerror(char *s);
 extern int yylex(void);
 %}
@@ -15,6 +15,7 @@ extern int yylex(void);
                         
 %token  <obj>           TOKEN_BOOLEAN
                         TOKEN_IDENTIFIER
+                        TOKEN_IDENTIFIER_VERTICAL
                         TOKEN_NUMBERZ
                         TOKEN_NUMBERQ
                         TOKEN_NUMBERR
@@ -97,6 +98,7 @@ vector:         ')'
                 }
         ;
 identifier:     TOKEN_IDENTIFIER
+        |       TOKEN_IDENTIFIER_VERTICAL
         ;
 number:         TOKEN_NUMBERZ
         |       TOKEN_NUMBERQ

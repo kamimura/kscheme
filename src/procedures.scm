@@ -459,23 +459,8 @@
   ;; Pairs and lists end
 
   ;; Symbols
-  (define symbol=?
-    (lambda (s1 s2 . args)
-      (if (not (symbol? s1))
-          #f
-          (if (not (eq? s1 s2))
-              #f
-              ((lambda ()
-                 (define iter
-                   (lambda (items)
-                     (if (null? items)
-                         #t
-                         (if (not (eq? s1 (car items)))
-                             #f
-                             (iter (cdr items))))))
-                 (iter args)))))))
-
   ;; Symbols end
+  
   ;; Characters
   (define char=?
     (lambda (char1 char2 . args)
@@ -857,7 +842,7 @@
                       (if (null? (cdr args))
                           (string-length s)
                           (cadr args))
-                      (string-length)))
+                      (string-length s)))
       (define iter
         (lambda (i)
           (if (>= i end)

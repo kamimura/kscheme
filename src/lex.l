@@ -1,5 +1,5 @@
 %option noyywrap yylineno
-%x ID_VERTICAL_LEX
+%x IDENTIFIER_VERTICAL_LEX
 %x NESTED_COMMENT
 %x IMAG IMAG_BIN IMAG_OCT IMAG_HEX
 %x STRING_ELEMENT
@@ -10,8 +10,9 @@
 
 extern int interactive_mode;
 
+GSList *sym_list = NULL;
 char sign_imag;
- mpfr_t real;
+mpfr_t real;
 %}
 
 intraline_whitespace [ \t]
@@ -49,6 +50,68 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   yylval.obj = identifier_new(yytext);
   return TOKEN_IDENTIFIER;
 }
+ /* | ⟨symbol element⟩* | */
+"||" {
+  char *str = strdup("");
+  yylval.obj = identifier_vertical_new(str);
+  free(str);
+  return TOKEN_IDENTIFIER_VERTICAL;
+}
+
+"|" {
+  BEGIN IDENTIFIER_VERTICAL_LEX;
+  sym_list = NULL;
+}
+<IDENTIFIER_VERTICAL_LEX>"|" {
+  BEGIN INITIAL;
+  sym_list = g_slist_reverse(sym_list);
+  guint len = g_slist_length(sym_list);
+  identifier_vertical_str = malloc(sizeof(char) * (len + 1) );
+  g_slist_foreach(sym_list, identifier_vertical_func, NULL);
+  identifier_vertical_str[identifier_vertical_i] = '\0';
+  identifier_vertical_i = 0;
+  yylval.obj = identifier_vertical_new(identifier_vertical_str);
+  free(identifier_vertical_str);
+  g_slist_free(sym_list);
+  return TOKEN_IDENTIFIER_VERTICAL;
+}
+ /* inline hex escape */
+<IDENTIFIER_VERTICAL_LEX>\\[xX][0-9a-fA-F]+";" {
+  yytext[yyleng - 1] = '\0';
+  yytext += 2;  
+  char *endptr = NULL;
+  gunichar c = (gunichar)strtol(yytext, &endptr, 16);
+  char outbuf[6];
+  int len = g_unichar_to_utf8(c, outbuf);
+  for (size_t i = 0; i < len; i++) {
+    sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER(outbuf[i]));
+  }
+}
+<IDENTIFIER_VERTICAL_LEX>\\"|" {
+  sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('|'));
+}
+ /* mnemonic escape */
+<IDENTIFIER_VERTICAL_LEX>\\a {
+  sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('\a'));
+}
+<IDENTIFIER_VERTICAL_LEX>\\b {
+  sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('\b'));
+}
+<IDENTIFIER_VERTICAL_LEX>\\t {
+  sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('\t'));
+}
+<IDENTIFIER_VERTICAL_LEX>\\n {
+  sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('\n'));
+}
+<IDENTIFIER_VERTICAL_LEX>\\r {
+  sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('\r'));
+}
+<IDENTIFIER_VERTICAL_LEX>[^\\|] {
+   for (size_t i = 0; yytext[i] != '\0'; i++) {
+     sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER(yytext[i]));
+   }
+}
+
  /* explicit sign */
 [+-] {
   yylval.obj = identifier_new(yytext);
@@ -933,7 +996,7 @@ void yyerror(char const *msg) {
   }
 yylineno = 0;
 }
-int string_tonumber(char *str) {
+int stringto(char *str) {
   YY_BUFFER_STATE bp = yy_scan_string(str);
   yy_switch_to_buffer(bp);
   syntax_error = false;

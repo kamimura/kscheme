@@ -300,8 +300,14 @@ int main() {
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_symbol_p},
                   env);
   define_variable(
+      identifier_new("symbol=?"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_symbol_equal_p}, env);
+  define_variable(
       identifier_new("symbol->string"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_symbol_tostring}, env);
+  define_variable(
+      identifier_new("string->symbol"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_string_tosymbol}, env);
   /* Symbols end */
   /* Characters */
   define_variable(identifier_new("char?"),
@@ -551,6 +557,7 @@ eval_dispatch:
   case STRING_EMPTY:
   case STRING:
   case STRING_IMMUTABLE:
+  case STRING_IMMUTABLE_VERTICAL:
   case VECTOR:
   case BYTEVECTOR:
   case QUOTE:
@@ -579,11 +586,13 @@ eval_dispatch:
   case UNSPECIFIED:
     goto ev_self_eval;
   case IDENTIFIER:
+  case IDENTIFIER_VERTICAL:
     goto ev_variable;
   case PAIR: {
     Object t = carref(expr);
     switch (t.type) {
-    case IDENTIFIER: {
+    case IDENTIFIER:
+    case IDENTIFIER_VERTICAL: {
       Object t1 = lookup_variable_valueref(t, env);
       switch (t1.type) {
       case NONE: {

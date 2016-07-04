@@ -4102,7 +4102,7 @@ extern FILE *yyin;
 extern void yyrestart(FILE *);
 extern Object kread();
 
-extern int string_tonumber(char *str);
+extern int stringto(char *str);
 Object scm_string_tonumber(Object const args) {
   size_t len = args_length(args);
   if (!(len == 1 || len == 2)) {
@@ -4121,52 +4121,74 @@ Object scm_string_tonumber(Object const args) {
     }
     base = mpz_get_ui(obj2.numberz);
   }
-  Object o = obj1;
-  size_t uni_len = 0;
-  gint chs_len = 0;
-  for (; o.type != STRING_EMPTY; uni_len++) {
-    chs_len += g_unichar_to_utf8(string_carref(o).character, NULL);
-    o = string_cdrref(o);
-  }
-  char str[chs_len + 1];
-  o = obj1;
-  size_t uni_i = 0;
-  gint str_i = 0;
-  for (; str_i < chs_len; uni_i++) {
-    gchar outbuf[6];
-    gint len = g_unichar_to_utf8(string_carref(o).character, outbuf);
-    for (gint i = 0; i < len; i++) {
-      str[str_i] = outbuf[i];
-      str_i++;
+  Object out;
+  char *s = NULL;
+  int n;
+  switch (obj1.type) {
+  case STRING_EMPTY:
+  case STRING: {
+    Object o = obj1;
+    size_t uni_len = 0;
+    gint chs_len = 0;
+    for (; o.type != STRING_EMPTY; uni_len++) {
+      chs_len += g_unichar_to_utf8(string_carref(o).character, NULL);
+      o = string_cdrref(o);
     }
-    o = string_cdrref(o);
+    char str[chs_len + 1];
+    o = obj1;
+    size_t uni_i = 0;
+    gint str_i = 0;
+    for (; str_i < chs_len; uni_i++) {
+      gchar outbuf[6];
+      gint len = g_unichar_to_utf8(string_carref(o).character, outbuf);
+      for (gint i = 0; i < len; i++) {
+        str[str_i] = outbuf[i];
+        str_i++;
+      }
+      o = string_cdrref(o);
+    }
+    str[str_i] = '\0';
+    FILE *stream = yyin;
+    n = stringto(str);
+    yyrestart(stream);
+    out = kread_obj;
+    s = str;
+    break;
   }
-  str[str_i] = '\0';
-  FILE *stream = yyin;
-  int n = string_tonumber(str);
-  yyrestart(stream);
-  Object out = kread_obj;
+  case STRING_IMMUTABLE: {
+    FILE *stream = yyin;
+    n = stringto(obj1.string_immutable);
+    yyrestart(stream);
+    out = kread_obj;
+    s = obj1.string_immutable;
+    break;
+  }
+  case NONE:
+    error("scm_string_tonumber");
+  default:
+    return wrong_type("string->number", args);
+  }
   if (n == 1) {
     object_free(&out);
     return false_obj;
   }
-  if (str[0] == '#') {
-    if (str[1] == 'b') {
+  if (s[0] == '#') {
+    if (s[1] == 'b') {
       base = 2;
-    } else if (str[1] == 'o') {
+    } else if (s[1] == 'o') {
       base = 8;
-    } else if (str[1] == 'd') {
+    } else if (s[1] == 'd') {
       base = 10;
-    } else if (str[1] == 'x') {
+    } else if (s[1] == 'x') {
       base = 16;
-    } else if (str[1] != '\0' && str[2] == '#') {
-      if (str[3] == 'b') {
+    } else if (s[1] != '\0' && s[2] == '#') {
+      if (s[3] == 'b') {
         base = 2;
-      } else if (str[3] == 'o') {
+      } else if (s[3] == 'o') {
         base = 8;
-      } else if (str[3] == 'd') {
+      } else if (s[3] == 'd') {
         base = 10;
-      } else if (str[3] == 'x') {
+      } else if (s[3] == 'x') {
         base = 16;
       }
     }
@@ -4459,6 +4481,55 @@ Object scm_symbol_p(Object const args) {
     return false_obj;
   }
 }
+Object scm_symbol_equal_p(Object const args) {
+  if (args_length(args) < 2) {
+    return arguments(args, "symbol=?");
+  }
+  Object obj1 = value(carref(args));
+  switch (obj1.type) {
+  case IDENTIFIER: {
+    for (Object o = cdrref(args); o.type != EMPTY; o = cdrref(o)) {
+      Object obj2 = value(carref(o));
+      switch (obj2.type) {
+      case IDENTIFIER: {
+        if (obj1.identifier == obj2.identifier) {
+          break;
+        }
+        return false_obj;
+      }
+      case NONE:
+        error("scm_symbol_equal_p");
+      default:
+        return wrong_type("symbol=?", args);
+      }
+    }
+    return true_obj;
+  }
+  case IDENTIFIER_VERTICAL: {
+    for (Object o = cdrref(args); o.type != EMPTY; o = cdrref(o)) {
+      Object obj2 = value(carref(o));
+      switch (obj2.type) {
+      case IDENTIFIER_VERTICAL: {
+        if (obj1.identifier == obj2.identifier) {
+          break;
+        }
+        return false_obj;
+      }
+      case NONE:
+        error("scm_symbol_equal_p");
+      default:
+        return wrong_type("symbol=?", args);
+      }
+    }
+    return true_obj;
+  }
+  case NONE:
+    error("scm_symbol_equal_p");
+  default:
+    return wrong_type("symbol=?", args);
+  }
+}
+
 Object scm_symbol_tostring(Object const args) {
   if (args_length(args) != 1) {
     return arguments(args, "char?");
@@ -4469,10 +4540,87 @@ Object scm_symbol_tostring(Object const args) {
     return (Object){.type = STRING_IMMUTABLE,
                     .string_immutable = obj.identifier};
   }
+  case IDENTIFIER_VERTICAL: {
+    return (Object){.type = STRING_IMMUTABLE_VERTICAL,
+                    .string_immutable_vertical = obj.identifier_vertical};
+  }
   case NONE:
     error("scm_symbol_tostring");
   default:
     return wrong_type("symbol->string", args);
+  }
+}
+Object scm_string_tosymbol(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "string->symbol");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case STRING_EMPTY: {
+    return identifier_vertical_new("");
+  }
+  case STRING: {
+    Object o = obj;
+    size_t uni_len = 0;
+    gint chs_len = 0;
+    for (; o.type != STRING_EMPTY; uni_len++) {
+      switch (string_carref(o).character) {
+      case '\\':
+        chs_len += 2;
+        break;
+      default:
+        chs_len += g_unichar_to_utf8(string_carref(o).character, NULL);
+        break;
+      }
+      o = string_cdrref(o);
+    }
+    char str[2 * chs_len + 3];
+    o = obj;
+    gint str_i = 0;
+    str[str_i] = '|';
+    str_i++;
+    for (size_t i = 0; i < chs_len; i++) {
+      gchar outbuf[6];
+      gint len = g_unichar_to_utf8(string_carref(o).character, outbuf);
+      if (outbuf[0] == '|') {
+        str[str_i] = '\\';
+        str_i++;
+        str[str_i] = '|';
+        str_i++;
+      } else {
+        for (gint j = 0; j < len; j++) {
+          str[str_i] = outbuf[j];
+          str_i++;
+        }
+      }
+      o = string_cdrref(o);
+    }
+    str[str_i] = '|';
+    str[str_i + 1] = '\0';
+    FILE *stream = yyin;
+    int n = stringto(str);
+    yyrestart(stream);
+    if (n != 0) {
+      return wrong_type("string->symbol", args);
+    }
+    Object out = kread_obj;
+    if (out.type == IDENTIFIER || out.type == IDENTIFIER_VERTICAL) {
+      return out;
+    } else {
+      return wrong_type("string->symbol", args);
+    }
+  }
+  case STRING_IMMUTABLE: {
+    return (Object){.type = IDENTIFIER, .identifier = obj.identifier};
+  }
+  case STRING_IMMUTABLE_VERTICAL: {
+    return (Object){.type = IDENTIFIER_VERTICAL,
+                    .identifier_vertical = obj.identifier_vertical};
+  }
+  case NONE:
+    error("scm_string_tosymbol");
+  default:
+    return wrong_type("string->symbol", args);
   }
 }
 /* Symbols end */
@@ -4542,10 +4690,11 @@ Object scm_char_upper_case_p(Object const args) {
     return !g_unichar_isalpha(obj.character)
                ? wrong_type("char-upper-case?", args)
                : g_unichar_isupper(obj.character) ? true_obj : false_obj;
+  case NONE:
+    error("scm_char_upper_case_p");
   default:
     return wrong_type("char-upper-case?", args);
   }
-  exit(1);
 }
 Object scm_char_lower_case_p(Object const args) {
   if (args_length(args) != 1) {
@@ -4557,10 +4706,11 @@ Object scm_char_lower_case_p(Object const args) {
     return !g_unichar_isalpha(obj.character)
                ? wrong_type("char-lower-case?", args)
                : g_unichar_islower(obj.character) ? true_obj : false_obj;
+  case NONE:
+    error("scm_char_lower_case_p");
   default:
     return wrong_type("char-lower-case?", args);
   }
-  exit(1);
 }
 Object scm_digit_value(Object const args) {
   if (args_length(args) != 1) {
@@ -4576,10 +4726,11 @@ Object scm_digit_value(Object const args) {
     mpz_init_set_si(out.numberz, n);
     return out;
   }
+  case NONE:
+    error("scm_digit_value");
   default:
     return wrong_type("digit-value", args);
   }
-  exit(1);
 }
 Object scm_char_tointeger(Object const args) {
   if (args_length(args) != 1) {
@@ -4592,10 +4743,11 @@ Object scm_char_tointeger(Object const args) {
     mpz_init_set_si(out.numberz, obj.character);
     return out;
   }
+  case NONE:
+    error("scm_char_tointeger");
   default:
     return wrong_type("char->integer", args);
   }
-  exit(1);
 }
 Object scm_integer_tochar(Object const args) {
   if (args_length(args) != 1) {
@@ -4615,11 +4767,10 @@ Object scm_integer_tochar(Object const args) {
     return wrong_type("integer->char", args);
   }
   case NONE:
-    exit(1);
+    error("scm_integer_tochar");
   default:
     return wrong_type("integer->char", args);
   }
-  exit(1);
 }
 Object scm_char_upcase(Object const args) {
   if (args_length(args) != 1) {
@@ -4631,10 +4782,11 @@ Object scm_char_upcase(Object const args) {
     return (Object){.type = CHARACTER,
                     .character = g_unichar_toupper(obj.character)};
   }
+  case NONE:
+    error("scm_char_upcase");
   default:
     return wrong_type("char-upcase", args);
   }
-  exit(1);
 }
 Object scm_char_downcase(Object const args) {
   if (args_length(args) != 1) {
@@ -4646,10 +4798,11 @@ Object scm_char_downcase(Object const args) {
     return (Object){.type = CHARACTER,
                     .character = g_unichar_tolower(obj.character)};
   }
+  case NONE:
+    error("scm_char_downcase");
   default:
     return wrong_type("char-downcase", args);
   }
-  exit(1);
 }
 Object scm_char_foldcase(Object const args) {
   if (args_length(args) != 1) {
@@ -4666,10 +4819,11 @@ Object scm_char_foldcase(Object const args) {
     free(s);
     return out;
   }
+  case NONE:
+    error("scm_char_foldcase");
   default:
     return wrong_type("char-foldcase", args);
   }
-  exit(1);
 }
 
 /* Characters end */
@@ -4684,13 +4838,13 @@ Object scm_string_p(Object const args) {
   case STRING_EMPTY:
   case STRING:
   case STRING_IMMUTABLE:
+  case STRING_IMMUTABLE_VERTICAL:
     return true_obj;
   case NONE:
-    exit(1);
+    error("scm_string_p");
   default:
     return false_obj;
   }
-  exit(1);
 }
 Object scm_make_string(Object const args) {
   switch (args_length(args)) {
@@ -4761,6 +4915,12 @@ Object scm_string_length(Object const args) {
     mpz_init_set_si(out.numberz, g_utf8_strlen(obj.string_immutable, -1));
     return out;
   }
+  case STRING_IMMUTABLE_VERTICAL: {
+    Object out = {.type = NUMBERZ};
+    mpz_init_set_si(out.numberz,
+                    g_utf8_strlen(obj.string_immutable_vertical, -1));
+    return out;
+  }
   case NONE:
     error("scm_string_length");
   default:
@@ -4773,12 +4933,47 @@ Object scm_string_ref(Object const args) {
   }
   Object s = value(carref(args));
   Object k = value(carref(cdrref(args)));
-  if ((s.type != STRING && s.type != STRING_IMMUTABLE) || k.type != NUMBERZ) {
+  switch (s.type) {
+  case STRING:
+  case STRING_IMMUTABLE:
+  case STRING_IMMUTABLE_VERTICAL:
+    break;
+  case NONE:
+    error("scm_string_ref");
+  default:
     return wrong_type("string-ref", args);
   }
-  long int i = mpz_get_si(k.numberz);
+  long int i;
+  switch (k.type) {
+  case NUMBERZ: {
+    i = mpz_get_si(k.numberz);
+    break;
+  }
+  case NUMBERQ: {
+    mpq_canonicalize(k.numberq);
+    if (mpz_cmp_ui(mpq_denref(k.numberq), 1) == 0) {
+      i = mpz_get_si(mpq_denref(k.numberq));
+      break;
+    }
+    return wrong_type("string-ref", args);
+  }
+  case NONE:
+    error("scm_string_ref");
+  default:
+    return wrong_type("string-ref", args);
+  }
   if (i < 0) {
     return wrong_type("string-ref", args);
+  }
+  if (s.type == STRING) {
+    for (; i > 0; i--) {
+      s = string_cdrref(s);
+      if (s.type == STRING_EMPTY) {
+        return wrong_type("string-ref", args);
+      }
+    }
+    Object c = string_carref(s);
+    return c;
   }
   if (s.type == STRING_IMMUTABLE) {
     if (g_utf8_strlen(s.string_immutable, -1) <= i) {
@@ -4790,14 +4985,14 @@ Object scm_string_ref(Object const args) {
     }
     return character_new(ch);
   }
-  for (; i > 0; i--) {
-    s = string_cdrref(s);
-    if (s.type == STRING_EMPTY) {
-      return wrong_type("string-ref", args);
-    }
+  if (g_utf8_strlen(s.string_immutable_vertical, -1) <= i) {
+    return wrong_type("string-ref", args);
   }
-  Object c = string_carref(s);
-  return c;
+  char *ch = s.string_immutable_vertical;
+  for (; i > 0; i--) {
+    ch = g_utf8_find_next_char(ch, NULL);
+  }
+  return character_new(ch);
 }
 Object scm_string_set(Object const args) {
   if (args_length(args) != 3) {
@@ -4827,11 +5022,10 @@ Object scm_vector_p(Object const args) {
   case VECTOR:
     return true_obj;
   case NONE:
-    exit(1);
+    error("scm_vector_p");
   default:
     return false_obj;
   }
-  exit(1);
 }
 Object scm_vector(Object const args) { return list2vector(args); }
 Object scm_vector_length(Object const args) {
@@ -4846,11 +5040,10 @@ Object scm_vector_length(Object const args) {
     return out;
   }
   case NONE:
-    exit(1);
+    error("scm_vector_length");
   default:
     return wrong_type("vector-length", args);
   }
-  exit(1);
 }
 Object scm_vector_ref(Object const args) {
   if (args_length(args) != 2) {
@@ -4870,11 +5063,10 @@ Object scm_vector_ref(Object const args) {
     return object_copy(cars[obj.index + i]);
   }
   case NONE:
-    exit(1);
+    error("scm_vector_ref");
   default:
     return wrong_type("vector-ref", args);
   }
-  exit(1);
 }
 Object scm_vector_set(Object const args) {
   if (args_length(args) != 3) {
@@ -4897,11 +5089,10 @@ Object scm_vector_set(Object const args) {
     return unspecified;
   }
   case NONE:
-    exit(1);
+    error("scm_vector_set");
   default:
     return wrong_type("vector-set!", args);
   }
-  exit(1);
 }
 
 /* Vectors end */
@@ -4915,11 +5106,10 @@ Object scm_bytevector_p(Object const args) {
   case BYTEVECTOR:
     return true_obj;
   case NONE:
-    exit(1);
+    error("scm_bytevector_p");
   default:
     return false_obj;
   }
-  exit(1);
 }
 Object scm_bytevector(Object const args) { return list2bytevector(args); }
 Object scm_bytevector_length(Object const args) {
@@ -4934,11 +5124,10 @@ Object scm_bytevector_length(Object const args) {
     return out;
   }
   case NONE:
-    exit(1);
+    error("scm_bytevector_length");
   default:
     return wrong_type("bytevetor-length", args);
   }
-  exit(1);
 }
 
 Object scm_bytevector_ueight_ref(Object const args) {
@@ -4959,11 +5148,10 @@ Object scm_bytevector_ueight_ref(Object const args) {
     return object_copy(cars[obj.index + i]);
   }
   case NONE:
-    exit(1);
+    error("scm_bytevector_ueight_ref");
   default:
     return wrong_type("bytevetor-u8-ref", args);
   }
-  exit(1);
 }
 Object scm_bytevector_ueight_set(Object const args) {
   if (args_length(args) != 3) {
@@ -4986,11 +5174,10 @@ Object scm_bytevector_ueight_set(Object const args) {
     return unspecified;
   }
   case NONE:
-    exit(1);
+    error("scm_bytevector_ueight_set");
   default:
     return wrong_type("bytevetor-u8-set!", args);
   }
-  exit(1);
 }
 Object scm_utfeight_tostring(Object const args) {
   Object obj;
@@ -5029,7 +5216,7 @@ Object scm_utfeight_tostring(Object const args) {
     return arguments(args, "utf8->string");
   }
   if (end <= start) {
-    exit(1);
+    return arguments(args, "utf8->string");
   }
   switch (obj.type) {
   case BYTEVECTOR: {
@@ -5059,27 +5246,28 @@ Object scm_utfeight_tostring(Object const args) {
     return out;
   }
   case NONE:
-    exit(1);
+    error("scm_utfeight_tostring");
   default:
     return wrong_type("ut8->string", args);
   }
-  exit(1);
 }
 Object scm_string_toutfeight(Object const args) {
   Object obj;
   long int start;
-  long int end;
+  long int end = 0;
   switch (args_length(args)) {
   case 1: {
     obj = value(carref(args));
     start = 0;
     if (obj.type != STRING && obj.type != STRING_EMPTY &&
-        obj.type != STRING_IMMUTABLE) {
+        obj.type != STRING_IMMUTABLE && obj.type != STRING_IMMUTABLE_VERTICAL) {
       return wrong_type("string->utf8", args);
     }
     end = 0;
     if (obj.type == STRING_IMMUTABLE) {
       end = strlen(obj.string_immutable);
+    } else if (obj.type == STRING_IMMUTABLE_VERTICAL) {
+      end = strlen(obj.string_immutable_vertical);
     } else {
       for (Object o = obj; o.type != STRING_EMPTY; o = cdrref(o)) {
         end++;
@@ -5091,17 +5279,29 @@ Object scm_string_toutfeight(Object const args) {
     obj = value(carref(args));
     Object obj2 = value(carref(cdrref(args)));
     if ((obj.type != STRING && obj.type != STRING_EMPTY &&
-         obj.type != STRING_IMMUTABLE) ||
-        obj2.type != NUMBERZ) {
+         obj.type != STRING_IMMUTABLE &&
+         obj.type != STRING_IMMUTABLE_VERTICAL) ||
+        (obj2.type != NUMBERZ && obj2.type != NUMBERQ)) {
       return wrong_type("string->utf8", args);
     }
-    start = mpz_get_si(obj2.numberz);
+    if (obj2.type == NUMBERZ) {
+      start = mpz_get_si(obj2.numberz);
+    } else {
+      mpq_canonicalize(obj2.numberq);
+      if (mpz_cmp_ui(mpq_denref(obj2.numberq), 1) == 0) {
+        start = mpz_get_si(mpq_numref(obj2.numberq));
+      } else {
+        return wrong_type("string->utf8", args);
+      }
+    }
     if (start < 0) {
       return wrong_type("string->utf8", args);
     }
     end = 0;
     if (obj.type == STRING_IMMUTABLE) {
       end = strlen(obj.string_immutable);
+    } else if (obj.type == STRING_IMMUTABLE_VERTICAL) {
+      end = strlen(obj.string_immutable_vertical);
     } else {
       for (Object o = obj; o.type != STRING_EMPTY; o = cdrref(o)) {
         end++;
@@ -5117,17 +5317,37 @@ Object scm_string_toutfeight(Object const args) {
     Object obj2 = value(carref(cdrref(args)));
     Object obj3 = value(carref(cdrref(cdrref(args))));
     if ((obj.type != STRING && obj.type != STRING_EMPTY &&
-         obj.type != STRING_IMMUTABLE) ||
-        obj2.type != NUMBERZ || obj3.type != NUMBERZ) {
+         obj.type != STRING_IMMUTABLE &&
+         obj.type != STRING_IMMUTABLE_VERTICAL) ||
+        (obj2.type != NUMBERZ && obj2.type != NUMBERQ) ||
+        (obj3.type != NUMBERZ && obj3.type != NUMBERQ)) {
       return wrong_type("string->utf8", args);
     }
-    start = mpz_get_si(obj2.numberz);
-    if (start < 0) {
-      return wrong_type("string->utf8", args);
-    }
-    end = mpz_get_si(obj2.numberz);
-    if (start > end) {
-      return wrong_type("string->utf8", args);
+    if (obj2.type == NUMBERZ) {
+      start = mpz_get_si(obj2.numberz);
+    } else {
+      mpq_canonicalize(obj2.numberq);
+      if (mpz_cmp_ui(mpq_denref(obj2.numberq), 1) == 0) {
+        start = mpz_get_si(mpq_numref(obj2.numberq));
+      } else {
+        return wrong_type("string->utf8", args);
+      }
+      if (start < 0) {
+        return wrong_type("string->utf8", args);
+      }
+      if (obj3.type == NUMBERZ) {
+        end = mpz_get_si(obj2.numberz);
+      } else {
+        mpq_canonicalize(obj3.numberq);
+        if (mpz_cmp_ui(mpq_denref(obj3.numberq), 1) == 0) {
+          end = mpz_get_si(mpq_numref(obj3.numberq));
+        } else {
+          return wrong_type("string->utf8", args);
+        }
+      }
+      if (start > end) {
+        return wrong_type("string->utf8", args);
+      }
     }
     break;
   }
@@ -5172,12 +5392,21 @@ Object scm_string_toutfeight(Object const args) {
     Object out = list2bytevector(t);
     return out;
   }
+  case STRING_IMMUTABLE_VERTICAL: {
+    Object t = empty;
+    for (long int i = end - 1; i >= start; i--) {
+      Object o = {.type = NUMBERZ};
+      mpz_init_set_ui(o.numberz, (uint8_t)obj.string_immutable_vertical[i]);
+      t = cons(o, t);
+    }
+    Object out = list2bytevector(t);
+    return out;
+  }
   case NONE:
-    exit(1);
+    error("scm_string_toutfeight");
   default:
     return wrong_type("string->utf8", args);
   }
-  exit(1);
 }
 /* Bytevectors end */
 /* Control features */
@@ -5197,11 +5426,10 @@ Object scm_procedure_p(Object const args) {
     return true_obj;
 
   case NONE:
-    exit(1);
+    error("scm_procedure_p");
   default:
     return false_obj;
   }
-  exit(1);
 }
 /* Control features end */
 /* Exceptions */
@@ -5223,11 +5451,10 @@ Object scm_error_object_p(Object const args) {
     return true_obj;
   }
   case NONE:
-    exit(1);
+    error("scm_error_object_p");
   default:
     return false_obj;
   }
-  exit(1);
 }
 Object scm_error_object_irritants(Object const args) {
   if (args_length(args) != 1) {
@@ -5238,11 +5465,10 @@ Object scm_error_object_irritants(Object const args) {
   case IMPLEMENTATION_DEFINED_OBJECT:
     return implementation_defined_object_cdrref(obj);
   case NONE:
-    exit(1);
+    error("scm_error_object_irritants");
   default:
     return wrong_type("error-object-irritants", args);
   }
-  exit(1);
 }
 Object scm_error_object_message(Object const args) {
   if (args_length(args) != 1) {
@@ -5253,11 +5479,10 @@ Object scm_error_object_message(Object const args) {
   case IMPLEMENTATION_DEFINED_OBJECT:
     return implementation_defined_object_carref(obj);
   case NONE:
-    exit(1);
+    error("scm_error_object_message");
   default:
     return wrong_type("error-object-message", args);
   }
-  exit(1);
 }
 Object scm_read_error_p(Object const args) {
   if (args_length(args) != 1) {
@@ -5283,11 +5508,10 @@ Object scm_input_port_p(Object const args) {
   case PORT_INPUT_BINARY:
     return true_obj;
   case NONE:
-    exit(1);
+    error("scm_input_port_p");
   default:
     return false_obj;
   }
-  exit(1);
 }
 Object scm_output_port_p(Object const args) {
   if (args_length(args) != 1) {
@@ -5299,11 +5523,10 @@ Object scm_output_port_p(Object const args) {
   case PORT_OUTPUT_BINARY:
     return true_obj;
   case NONE:
-    exit(1);
+    error("scm_output_port_p'");
   default:
     return false_obj;
   }
-  exit(1);
 }
 Object scm_textual_port_p(Object const args) {
   if (args_length(args) != 1) {
@@ -5315,11 +5538,10 @@ Object scm_textual_port_p(Object const args) {
   case PORT_INPUT_TEXT:
     return true_obj;
   case NONE:
-    exit(1);
+    error("scm_textual_port_p");
   default:
     return false_obj;
   }
-  exit(1);
 }
 Object scm_binary_port_p(Object const args) {
   if (args_length(args) != 1) {
@@ -5331,11 +5553,10 @@ Object scm_binary_port_p(Object const args) {
   case PORT_INPUT_BINARY:
     return true_obj;
   case NONE:
-    exit(1);
+    error("scm_binary_port_p");
   default:
     return false_obj;
   }
-  exit(1);
 }
 Object scm_input_port_open_p(Object const args) {
   if (args_length(args) != 1) {
@@ -5419,7 +5640,6 @@ Object scm_open_output_file(Object const args) {
   default:
     return wrong_type("open-output-file", args);
   }
-  exit(1);
 }
 Object scm_open_binary_output_file(Object const args) {
   if (args_length(args) != 1) {
@@ -5465,7 +5685,6 @@ Object scm_open_binary_output_file(Object const args) {
   default:
     return wrong_type("open-binary-output-file", args);
   }
-  exit(1);
 }
 Object scm_open_input_file(Object const args) {
   if (args_length(args) != 1) {
@@ -5509,7 +5728,7 @@ Object scm_open_input_file(Object const args) {
     return out;
   }
   case NONE:
-    exit(1);
+    error("scm_open_input_file");
   default:
     return wrong_type("open-input-file", args);
   }
@@ -5580,7 +5799,6 @@ Object scm_close_port(Object const args) {
   default:
     return wrong_type("close-port", args);
   }
-  exit(1);
 }
 int interactive_mode = 1;
 Object scm_read(Object const args) {
@@ -5611,7 +5829,6 @@ Object scm_read(Object const args) {
   default:
     return arguments(args, "read");
   }
-  exit(1);
 }
 Object scm_read_char(Object const args) {
   switch (args_length(args)) {

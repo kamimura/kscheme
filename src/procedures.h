@@ -78,7 +78,9 @@ Object scm_list(Object const args);
 /* Pairs and lists end */
 /* Symbols */
 Object scm_symbol_p(Object const args);
+Object scm_symbol_equal_p(Object const args);
 Object scm_symbol_tostring(Object const args);
+Object scm_string_tosymbol(Object const args);
 /* Characters */
 Object scm_char_p(Object const args);
 Object scm_char_alphabetic_p(Object const args);

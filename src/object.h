@@ -6,6 +6,7 @@ typedef enum type {
   EMPTY,
   PAIR,
   IDENTIFIER,
+  IDENTIFIER_VERTICAL,
   TRUE_TYPE,
   FALSE_TYPE,
   NUMBERZ,
@@ -16,6 +17,7 @@ typedef enum type {
   STRING_EMPTY,
   STRING,
   STRING_IMMUTABLE,
+  STRING_IMMUTABLE_VERTICAL,
   VECTOR,
   BYTEVECTOR,
   QUOTE,
@@ -62,6 +64,7 @@ typedef struct Object {
     void *cont;
     size_t index;
     char *identifier;
+    char *identifier_vertical;
     mpz_t numberz;
     mpq_t numberq;
     mpfr_t numberr;
@@ -71,6 +74,7 @@ typedef struct Object {
     size_t bytevector_length;
     struct Object (*proc)(struct Object);
     char *string_immutable;
+    char *string_immutable_vertical;
     FILE *port;
     char *message;
   };

@@ -575,35 +575,28 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   sign_imag = yytext[yyleng - 1];
   mpfr_set_nan(real);
 }
-<IMAG>[0-9]+"i" {
+<IMAG>[0-9]+[iI] {
   BEGIN INITIAL;
   yytext[yyleng - 1] = '\0';
-  yylval.obj = numberc_new_r_istr(real, yytext);
+  mpfr_set_str(opfr, yytext, 10, MPFR_RNDN);
+  yylval.obj = numberc_new_r_istr(real, yytext, 10);
   if (sign_imag == '-') {
     mpfr_neg(mpc_imagref(yylval.obj.numberc),mpc_imagref(yylval.obj.numberc),
                           MPFR_RNDN);
   }
   return TOKEN_NUMBERC;
 }
-<IMAG>[0-9]+"/"[0-9]+"i" {
+<IMAG>[0-9]+"/"[0-9]+[iI] {
   BEGIN INITIAL;
   yytext[yyleng - 1] = '\0';
   yylval.obj.type = NUMBERC;
   mpc_init2(yylval.obj.numberc, MPC_PREC);
-  if (sign_imag == '+') {
-    mpq_set_str(opq, yytext, 10);
-    mpfr_set_q(opfr, opq, MPFR_RNDN);
-    mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
-  } else {
-    char *str = malloc(sizeof(char) * yyleng);
-    str[0] = '-';
-    str[1] = '\0';
-    strcat(str, yytext);
-    mpq_set_str(opq, str, 10);
-    mpfr_set_q(opfr, opq, MPFR_RNDN);
-    mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
-    free(str);
+  mpq_set_str(opq, yytext, 10);
+  mpfr_set_q(opfr, opq, MPFR_RNDN);
+  if (sign_imag == '-') {
+    mpfr_neg(opfr, opfr, MPFR_RNDN);
   }
+  mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
   return TOKEN_NUMBERC;
 }
 <IMAG>[nN][aA][nN]"."0[iI] {
@@ -617,52 +610,25 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 }
 <IMAG>[0-9]*"."[0-9]+(e|E)[-+]?[0-9]+[iI] |
 <IMAG>[0-9]*"."[0-9]+[iI] |
-<IMAG>[0-9]+(e|E)[-+]?[0-9]+[iI] |
-<IMAG>[0-9]+[iI] {
+<IMAG>[0-9]+(e|E)[-+]?[0-9]+[iI] {
   BEGIN INITIAL;
-  yytext[yyleng - 1] = '\0';
-  if (sign_imag == '+') {    
-    yylval.obj = numberc_new_r_istr(real, yytext);
-  } else {
-    char *str = malloc(sizeof(char) * yyleng);
-    str[0] = '-';
-    str[1] = '\0';
-    strcat(str, yytext);    
-    yylval.obj = numberc_new_r_istr(real, str);
-    free(str);
-  }
-  return TOKEN_NUMBERC;
-}
-<IMAG>[0-9]+"/"[0-9]+[iI] {
-  BEGIN INITIAL;
-  yytext[yyleng - 1] = '\0';
   yylval.obj.type = NUMBERC;
-  mpc_init2(yylval.obj.numberc, MPC_PREC);
-  if (sign_imag == '+') {
-    mpq_set_str(opq, yytext, 10);
-    mpfr_set_q(opfr, opq, MPFR_RNDN);
-    mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
-  } else {
-    char *str = malloc(sizeof(char) * yyleng);
-    str[0] = '-';
-    str[1] = '\0';
-    strcat(str, yytext);
-    mpq_set_str(opq, str, 10);
-    mpfr_set_q(opfr, opq, MPFR_RNDN);
-    mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
-    free(str);
+  mpc_init2(yylval.obj.numberc, MPC_PREC);  
+  yytext[yyleng - 1] = '\0';  
+  mpfr_set_str(imag, yytext, 10, MPFR_RNDN);
+  if (sign_imag == '-') {
+    mpfr_neg(imag, imag, MPFR_RNDN);
   }
-  
+  mpc_set_fr_fr(yylval.obj.numberc, real, imag, MPC_RNDNN);
   return TOKEN_NUMBERC;
 }
 <IMAG>[iI] {
   BEGIN INITIAL;
   if (sign_imag == '+') {    
-    yylval.obj = numberc_new_r_istr(real, "1");
+    yylval.obj = numberc_new_r_istr(real, "1", 10);
   } else {
-    yylval.obj = numberc_new_r_istr(real, "-1");
-  }
-  
+    yylval.obj = numberc_new_r_istr(real, "-1", 10);
+  }  
   return TOKEN_NUMBERC;
 }
 <IMAG>[iI][nN][fF]".0"[iI] {
@@ -1216,9 +1182,38 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   mpfr_set_inf(real, sign);
 }
 
-<IMAG_BIN>[-+][01]+[iI]
-<IMAG_BIN>[-+][01]+"/"[01]+[iI]
-<IMAG_BIN>[-+][iI]
+<IMAG_BIN>[01]+[iI] {
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  yylval.obj = numberc_new_r_istr(real, yytext, 2);
+  if (sign_imag == '-') {
+    mpfr_neg(mpc_imagref(yylval.obj.numberc),mpc_imagref(yylval.obj.numberc),
+                          MPFR_RNDN);
+  }
+  return TOKEN_NUMBERC;
+}
+<IMAG_BIN>[01]+"/"[01]+[iI] {
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpq_set_str(opq, yytext, 2);
+  mpfr_set_q(opfr, opq, MPFR_RNDN);
+  if (sign_imag == '-') {
+    mpfr_neg(opfr, opfr, MPFR_RNDN);
+  }
+  mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
+  return TOKEN_NUMBERC;
+}
+<IMAG_BIN>[iI] {
+  BEGIN INITIAL;
+  if (sign_imag == '+') {    
+    yylval.obj = numberc_new_r_istr(real, "1", 2);
+  } else {
+    yylval.obj = numberc_new_r_istr(real, "-1", 2);
+  }  
+  return TOKEN_NUMBERC;
+}
 <IMAG_BIN>[-+][iI][nN][fF]"."0[iI] {
   BEGIN INITIAL;
   yylval.obj.type = NUMBERC;  
@@ -1238,6 +1233,18 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   return TOKEN_NUMBERC;
 }
  /* #b0+imag */
+#[bB][-+][iI] {  
+  BEGIN INITIAL;
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  if (yytext[2] == '+') {
+    mpfr_set_si(mpc_imagref(yylval.obj.numberc), 1, MPFR_RNDN);
+  } else {
+    mpfr_set_si(mpc_imagref(yylval.obj.numberc), -1, MPFR_RNDN);
+  }
+  return TOKEN_NUMBERC;
+}
 #[bB][-+][01]+[iI] {
   yylval.obj.type = NUMBERC;
   mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -1503,7 +1510,7 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   yytext[yyleng - 1] = '\0';
   yytext += 2;
   if (*yytext == '+') yytext++;
-  mpfr_set_str(real, yytext, 2, MPFR_RNDN);    
+  mpfr_set_str(real, yytext, 8, MPFR_RNDN);    
 }
 (#[oO]#[eE]|#[eE]#[oO])[-+]?[0-8]+[-+] |
 (#[oO]#[iI]|#[iI]#[oO])[-+]?[0-8]+[-+] {
@@ -1559,9 +1566,38 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   mpfr_set_inf(real, sign);
 }
 
-<IMAG_OCT>[-+][0-8]+[iI]
-<IMAG_OCT>[-+][0-8]+"/"[0-8]+[iI]
-<IMAG_OCT>[-+][iI]
+<IMAG_OCT>[0-7]+[iI] {
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  yylval.obj = numberc_new_r_istr(real, yytext, 8);
+  if (sign_imag == '-') {
+    mpfr_neg(mpc_imagref(yylval.obj.numberc),mpc_imagref(yylval.obj.numberc),
+                          MPFR_RNDN);
+  }
+  return TOKEN_NUMBERC;
+}
+<IMAG_OCT>[0-7]+"/"[0-7]+[iI] {
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpq_set_str(opq, yytext, 8);
+  mpfr_set_q(opfr, opq, MPFR_RNDN);
+  if (sign_imag == '-') {
+    mpfr_neg(opfr, opfr, MPFR_RNDN);
+  }
+  mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
+  return TOKEN_NUMBERC;
+}
+<IMAG_OCT>[iI] {
+  BEGIN INITIAL;
+  if (sign_imag == '+') {    
+    yylval.obj = numberc_new_r_istr(real, "1", 8);
+  } else {
+    yylval.obj = numberc_new_r_istr(real, "-1", 8);
+  }  
+  return TOKEN_NUMBERC;
+}
 <IMAG_OCT>[-+][iI][nN][fF]"."0[iI] {
   BEGIN INITIAL;
   yylval.obj.type = NUMBERC;  
@@ -1581,6 +1617,18 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   return TOKEN_NUMBERC;
 }
  /* #o0+imag */
+#[oO][-+][iI] {  
+  BEGIN INITIAL;
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  if (yytext[2] == '+') {
+    mpfr_set_si(mpc_imagref(yylval.obj.numberc), 1, MPFR_RNDN);
+  } else {
+    mpfr_set_si(mpc_imagref(yylval.obj.numberc), -1, MPFR_RNDN);
+  }
+  return TOKEN_NUMBERC;
+}
 #[oO][-+][0-8]+[iI] {
   yylval.obj.type = NUMBERC;
   mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -1846,7 +1894,7 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   yytext[yyleng - 1] = '\0';
   yytext += 2;
   if (*yytext == '+') yytext++;
-  mpfr_set_str(real, yytext, 2, MPFR_RNDN);    
+  mpfr_set_str(real, yytext, 16, MPFR_RNDN);    
 }
 (#[xX]#[eE]|#[eE]#[xX])[-+]?[0-9a-fA-F]+[-+] |
 (#[xX]#[iI]|#[iI]#[xX])[-+]?[0-9a-fA-F]+[-+] {
@@ -1902,9 +1950,39 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   mpfr_set_inf(real, sign);
 }
 
-<IMAG_HEX>[-+][0-9a-fA-F]+[iI]
-<IMAG_HEX>[-+][0-9a-fA-F]+"/"[0-9a-fA-F]+[iI]
-<IMAG_HEX>[-+][iI]
+<IMAG_HEX>[0-9a-fA-F]+[iI] {
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  yylval.obj = numberc_new_r_istr(real, yytext, 16);
+  if (sign_imag == '-') {
+    mpfr_neg(mpc_imagref(yylval.obj.numberc),mpc_imagref(yylval.obj.numberc),
+                          MPFR_RNDN);
+  }
+  return TOKEN_NUMBERC;
+}
+<IMAG_HEX>[0-9a-fA-F]+"/"[0-9a-fA-F]+[iI] {
+  BEGIN INITIAL;
+  yytext[yyleng - 1] = '\0';
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpq_set_str(opq, yytext, 16);
+  mpfr_set_q(opfr, opq, MPFR_RNDN);
+  if (sign_imag == '-') {
+    mpfr_neg(opfr, opfr, MPFR_RNDN);
+  }
+  mpc_set_fr_fr(yylval.obj.numberc, real, opfr, MPC_RNDNN);
+  return TOKEN_NUMBERC;
+}
+<IMAG_HEX>[iI] {
+  BEGIN INITIAL;
+  if (sign_imag == '+') {    
+    yylval.obj = numberc_new_r_istr(real, "1", 16);
+  } else {
+    yylval.obj = numberc_new_r_istr(real, "-1", 16);
+  }  
+  return TOKEN_NUMBERC;
+}
+
 <IMAG_HEX>[-+][iI][nN][fF]"."0[iI] {
   BEGIN INITIAL;
   yylval.obj.type = NUMBERC;  
@@ -1924,6 +2002,18 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
   return TOKEN_NUMBERC;
 }
  /* #x0+imag */
+#[xX][-+][iI] {  
+  BEGIN INITIAL;
+  yylval.obj.type = NUMBERC;
+  mpc_init2(yylval.obj.numberc, MPC_PREC);
+  mpfr_set_ui(mpc_realref(yylval.obj.numberc), 0, MPFR_RNDN);
+  if (yytext[2] == '+') {
+    mpfr_set_si(mpc_imagref(yylval.obj.numberc), 1, MPFR_RNDN);
+  } else {
+    mpfr_set_si(mpc_imagref(yylval.obj.numberc), -1, MPFR_RNDN);
+  }
+  return TOKEN_NUMBERC;
+}
 #[xX][-+][0-9a-fA-F]+[iI] {
   yylval.obj.type = NUMBERC;
   mpc_init2(yylval.obj.numberc, MPC_PREC);

@@ -1434,6 +1434,28 @@
   ;; System interface end
 
   ;; Derived expression types
+  ;; (define make-promise
+  ;;   (lambda (done? proc)
+  ;;     (list (cons done? proc))))
+  ;; (define force
+  ;;   (lambda (promise)
+  ;;     (if (promise-done? promise)
+  ;;         (promise-value promise)
+  ;;         ((lambda (promise*)
+  ;;            (if (not (promise-done? promise))
+  ;;                (promise-update! promise* promise))
+  ;;            (force promise))
+  ;;          (promise-value promise)))))
+  ;; (define promise-done?
+  ;;   (lambda (x) (caar x)))
+  ;; (define promise-value
+  ;;   (lambda (x) (cdar x)))
+  ;; (define promise-update!
+  ;;   (lambda (new old)
+  ;;     (set-car! (car old) (promise-done? new))
+  ;;     (set-cdr! (car old) (promise-value new))
+  ;;     (set-car! new (car old))))
+
   (define make-parameter
     (lambda (init . o)
       (define converter (if (pair? o) (car o) (lambda (x) x)))

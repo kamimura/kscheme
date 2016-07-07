@@ -427,7 +427,25 @@ void object_write(FILE *stream, Object obj) {
   case OR:
     fprintf(stream, "#<syntax or>");
     break;
+  case DELAY:
+    fprintf(stream, "#<syntax delay>");
+    break;
+  case DELAY_FORCE:
+    fprintf(stream, "#<syntax delay-force>");
+    break;
+  case PROMISE: {
+    fprintf(stream, "#<promise ");
+    if (carref(obj).type == TRUE_TYPE) {
+      fprintf(stream, "(forced)>");
+    } else {
+      object_write(stream, cdrref(obj));
+      fprintf(stream, ">");
+    }
+    break;
+  }
   case PRIMITIVE_PROCEDURE:
+  case PRIMITIVE_PROCEDURE_MAKE_PROMISE:
+  case PRIMITIVE_PROCEDURE_FORCE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case PRIMITIVE_PROCEDURE_RAISE:

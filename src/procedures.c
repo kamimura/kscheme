@@ -6,13 +6,13 @@ static void error(char const *msg) {
   exit(1);
 }
 extern FILE *yyout;
-static Object arguments(Object obj, char const *s) {
+Object arguments(Object obj, char const *s) {
   fprintf(yyout, "Error: (%s) wrong number of arguments -- ", s);
   object_write(yyout, obj);
   fprintf(yyout, "\n");
   return (Object){.type = WRONG_NUMBER_OF_ARGUMENTS};
 }
-static Object wrong_type(char const *prog_name, Object obj) {
+Object wrong_type(char const *prog_name, Object obj) {
   fprintf(yyout, "Error: (%s) wrong type argument -- ", prog_name);
   object_write(yyout, obj);
   fprintf(yyout, "\n");
@@ -35,6 +35,24 @@ static Object value(Object const obj) {
   }
   return o;
 }
+
+/* Derived expression types */
+Object scm_promise_p(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "promise?");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case PROMISE:
+    return true_obj;
+  case NONE:
+    error("scm_promise_p");
+  default:
+    return false_obj;
+  }
+}
+/* Derived expression types end */
+
 Object scm_eqv_p(Object const args) {
   if (args_length(args) != 2) {
     return arguments(args, "eqv?");
@@ -44,6 +62,7 @@ Object scm_eqv_p(Object const args) {
   switch (obj1.type) {
   case TRUE_TYPE:
   case FALSE_TYPE:
+  case PRIMITIVE_PROCEDURE_FORCE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
@@ -57,6 +76,8 @@ Object scm_eqv_p(Object const args) {
   case BEGIN_TYPE:
   case AND:
   case OR:
+  case DELAY:
+  case DELAY_FORCE:
   case EMPTY:
   case STRING_EMPTY:
   case UNSPECIFIED:
@@ -165,6 +186,9 @@ Object scm_eqv_p(Object const args) {
   case BYTEVECTOR:
     return obj2.type == BYTEVECTOR && obj1.index == obj2.index ? true_obj
                                                                : false_obj;
+  case PROMISE:
+    return obj1.type == obj2.type && obj1.index == obj2.index ? true_obj
+                                                              : false_obj;
   case NONE:
     error("scm_eqv_p");
   default:
@@ -180,6 +204,7 @@ Object scm_eq_p(Object const args) {
   switch (obj1.type) {
   case TRUE_TYPE:
   case FALSE_TYPE:
+  case PRIMITIVE_PROCEDURE_FORCE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
@@ -193,6 +218,8 @@ Object scm_eq_p(Object const args) {
   case BEGIN_TYPE:
   case AND:
   case OR:
+  case DELAY:
+  case DELAY_FORCE:
   case EMPTY:
   case MULTIPLE_ZERO:
     return obj1.type == obj2.type ? true_obj : false_obj;
@@ -207,6 +234,7 @@ Object scm_eq_p(Object const args) {
   case STRING_IMMUTABLE:
   case VECTOR:
   case BYTEVECTOR:
+  case PROMISE:
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
   case IMPLEMENTATION_DEFINED_OBJECT:
@@ -5418,6 +5446,7 @@ Object scm_procedure_p(Object const args) {
   switch (obj.type) {
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
+  case PRIMITIVE_PROCEDURE_FORCE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:

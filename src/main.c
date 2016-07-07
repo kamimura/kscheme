@@ -141,7 +141,19 @@ int main() {
   define_variable(identifier_new("begin"), (Object){.type = BEGIN_TYPE}, env);
   define_variable(identifier_new("and"), (Object){.type = AND}, env);
   define_variable(identifier_new("or"), (Object){.type = OR}, env);
+  define_variable(identifier_new("delay"), (Object){.type = DELAY}, env);
+  define_variable(identifier_new("delay-force"), (Object){.type = DELAY_FORCE},
+                  env);
   /* primitive-procedures */
+
+  /* Derived expression types */
+  define_variable(identifier_new("make-promise"),
+                  (Object){.type = PRIMITIVE_PROCEDURE_MAKE_PROMISE}, env);
+  define_variable(identifier_new("force"),
+                  (Object){.type = PRIMITIVE_PROCEDURE_FORCE}, env);
+  define_variable(identifier_new("promise?"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_promise_p},
+                  env);
   /* Equivalence predicates  */
   define_variable(identifier_new("eqv?"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_eqv_p},
@@ -583,8 +595,13 @@ eval_dispatch:
   case BEGIN_TYPE:
   case AND:
   case OR:
+  case DELAY:
+  case DELAY_FORCE:
+  case PROMISE:
   case PRIMITIVE_PROCEDURE:
   case PROCEDURE:
+  case PRIMITIVE_PROCEDURE_MAKE_PROMISE:
+  case PRIMITIVE_PROCEDURE_FORCE:
   case PRIMITIVE_PROCEDURE_APPLY:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
@@ -663,8 +680,22 @@ eval_dispatch:
         }
         goto ev_or;
       }
+      case DELAY: {
+        if (!list_p(expr) || list_length(expr) != 2) {
+          goto syntax_error;
+        }
+        goto ev_delay;
+      }
+      case DELAY_FORCE: {
+        if (!list_p(expr) || list_length(expr) != 2) {
+          goto syntax_error;
+        }
+        goto ev_delay_force;
+      }
       case PRIMITIVE_PROCEDURE:
       case PROCEDURE:
+      case PRIMITIVE_PROCEDURE_MAKE_PROMISE:
+      case PRIMITIVE_PROCEDURE_FORCE:
       case PRIMITIVE_PROCEDURE_APPLY:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
@@ -681,6 +712,8 @@ eval_dispatch:
     }
     case PRIMITIVE_PROCEDURE:
     case PROCEDURE:
+    case PRIMITIVE_PROCEDURE_MAKE_PROMISE:
+    case PRIMITIVE_PROCEDURE_FORCE:
     case PRIMITIVE_PROCEDURE_APPLY:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
@@ -780,6 +813,22 @@ apply_dispatch:
   case PROCEDURE: {
     goto compound_apply;
   }
+  case PRIMITIVE_PROCEDURE_MAKE_PROMISE: {
+    if (list_length(argl) != 1) {
+      object_free(&val);
+      val = arguments(argl, "make-promise");
+      goto wrong_number_of_arguments;
+    }
+    goto ev_make_promise;
+  }
+  case PRIMITIVE_PROCEDURE_FORCE: {
+    if (list_length(argl) != 1) {
+      object_free(&val);
+      val = arguments(argl, "force");
+      goto wrong_number_of_arguments;
+    }
+    goto ev_force;
+  }
   case PRIMITIVE_PROCEDURE_APPLY: {
     expr = car(argl);
     argl = cdrref(argl);
@@ -820,6 +869,11 @@ apply_dispatch:
     goto *cont.cont;
   }
   case PRIMITIVE_PROCEDURE_RAISE: {
+    if (list_length(argl) != 1) {
+      object_free(&val);
+      val = arguments(argl, "raise");
+      goto wrong_number_of_arguments;
+    }
     goto primitive_procedure_raise;
   }
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE: {
@@ -864,6 +918,41 @@ compound_apply:
   }
   unev = cdrref(cdrref(proc));
   goto ev_sequence;
+ev_force : {
+  unev = carref(argl);
+  if (unev.type == PROMISE) {
+    if (carref(unev).type == TRUE_TYPE) {
+      object_free(&val);
+      val = cdr(unev);
+      restore(&cont);
+      goto *cont.cont;
+    } else {
+      expr = cdr(unev);
+      save(unev);
+      cont.cont = &&ev_forced;
+      goto eval_dispatch;
+    }
+  } else {
+    object_free(&val);
+    val = object_copy(unev);
+    restore(&cont);
+    goto *cont.cont;
+  }
+}
+ev_forced : {
+  restore(&unev);
+  cars[unev.index] = true_obj;
+  cdrs[unev.index] = object_copy(val);
+  restore(&cont);
+  goto *cont.cont;
+}
+ev_make_promise : {
+  object_free(&val);
+  val = cons(false_obj, car(argl));
+  val.type = PROMISE;
+  restore(&cont);
+  goto *cont.cont;
+}
 ev_begin:
   unev = cdrref(expr);
   save(cont);
@@ -1021,6 +1110,19 @@ ev_or_loop_continue:
 ev_or_loop_last_exp:
   restore(&cont);
   goto eval_dispatch;
+ev_delay : {
+  object_free(&val);
+  val = cons(false_obj, carref(cdrref(expr)));
+  val.type = PROMISE;
+  goto *cont.cont;
+}
+ev_delay_force : {
+  expr = cons(carref(cdrref(expr)), empty);
+  expr = cons((Object){.type = PRIMITIVE_PROCEDURE_FORCE}, expr);
+  val = cons(false_obj, expr);
+  val.type = PROMISE;
+  goto *cont.cont;
+}
 print_result:
   printf("=> ");
   object_write(yyout, val);

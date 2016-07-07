@@ -4,6 +4,13 @@
 
 extern mpfr_prec_t const MPC_PREC;
 
+Object arguments(Object obj, char const *s);
+Object wrong_type(char const *prog_name, Object obj);
+
+/* Derived expression types */
+Object scm_promise_p(Object const args);
+/* Derived expression types end */
+
 /* Equivalence predicates */
 Object scm_eqv_p(Object const args);
 Object scm_eq_p(Object const args);

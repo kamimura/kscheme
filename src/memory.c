@@ -152,6 +152,7 @@ Object car(Object obj) {
   case PAIR:
   case STRING:
   case PROCEDURE:
+  case PROMISE:
   case CONTINUATION:
   case IMPLEMENTATION_DEFINED_OBJECT:
   case PORT_INPUT_TEXT:
@@ -171,6 +172,7 @@ Object cdr(Object obj) {
   case PAIR:
   case STRING:
   case PROCEDURE:
+  case PROMISE:
   case CONTINUATION:
   case IMPLEMENTATION_DEFINED_OBJECT:
   case PORT_INPUT_TEXT:
@@ -190,6 +192,7 @@ Object carref(Object obj) {
   case PAIR:
   case STRING:
   case PROCEDURE:
+  case PROMISE:
   case CONTINUATION:
   case IMPLEMENTATION_DEFINED_OBJECT:
   case PORT_INPUT_TEXT:
@@ -209,6 +212,7 @@ Object cdrref(Object obj) {
   case PAIR:
   case STRING:
   case PROCEDURE:
+  case PROMISE:
   case CONTINUATION:
   case IMPLEMENTATION_DEFINED_OBJECT:
   case PORT_INPUT_TEXT:

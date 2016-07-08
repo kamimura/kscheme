@@ -907,7 +907,6 @@ compound_apply:
   env = carref(proc);
   unev = carref(cdrref(proc));
   env = extend_environment();
-  /* env = extend_environment(unev, argl, env); */
   if (env.type == WRONG_NUMBER_OF_ARGUMENTS) {
     fprintf(yyout, "Error: ");
     object_write(yyout, proc);
@@ -918,17 +917,19 @@ compound_apply:
   }
   unev = cdrref(cdrref(proc));
   goto ev_sequence;
-ev_force : {
+ev_force:
   unev = carref(argl);
   if (unev.type == PROMISE) {
     if (carref(unev).type == TRUE_TYPE) {
       object_free(&val);
-      val = cdr(unev);
+      val = car(cdrref(unev));
       restore(&cont);
       goto *cont.cont;
     } else {
-      expr = cdr(unev);
+      expr = car(cdrref(unev));
       save(unev);
+      save(env);
+      env = cdrref(cdrref(unev));
       cont.cont = &&ev_forced;
       goto eval_dispatch;
     }
@@ -938,14 +939,14 @@ ev_force : {
     restore(&cont);
     goto *cont.cont;
   }
-}
-ev_forced : {
+ev_forced:
+  restore(&env);
   restore(&unev);
+  object_free(&cars[unev.index]);
   cars[unev.index] = true_obj;
-  cdrs[unev.index] = object_copy(val);
+  cars[cdrs[unev.index].index] = object_copy(val);
   restore(&cont);
   goto *cont.cont;
-}
 ev_make_promise : {
   object_free(&val);
   val = cons(false_obj, car(argl));
@@ -1110,19 +1111,19 @@ ev_or_loop_continue:
 ev_or_loop_last_exp:
   restore(&cont);
   goto eval_dispatch;
-ev_delay : {
+ev_delay:
   object_free(&val);
-  val = cons(false_obj, carref(cdrref(expr)));
+  val = cons(car(cdrref(expr)), env);
+  val = cons(false_obj, val);
   val.type = PROMISE;
   goto *cont.cont;
-}
-ev_delay_force : {
+ev_delay_force:
   expr = cons(carref(cdrref(expr)), empty);
   expr = cons((Object){.type = PRIMITIVE_PROCEDURE_FORCE}, expr);
-  val = cons(false_obj, expr);
+  val = cons(expr, env);
+  val = cons(false_obj, val);
   val.type = PROMISE;
   goto *cont.cont;
-}
 print_result:
   printf("=> ");
   object_write(yyout, val);

@@ -8,8 +8,12 @@ static Object make_frame() {
   Object vals = empty;
   for (; unev.type != EMPTY; unev = cdrref(unev), argl = cdrref(argl)) {
     if (unev.type == IDENTIFIER) {
+      save(vals);
       vars = cons(unev, vars);
+      restore(&vals);
+      save(vars);
       vals = cons(argl, vals);
+      restore(&vars);
       return cons(vars, vals);
     }
     if (argl.type == EMPTY) {
@@ -18,7 +22,9 @@ static Object make_frame() {
     save(vals);
     vars = cons(carref(unev), vars);
     restore(&vals);
+    save(vars);
     vals = cons(car(argl), vals);
+    restore(&vars);
   }
   if (argl.type != EMPTY) {
     return (Object){.type = WRONG_NUMBER_OF_ARGUMENTS};

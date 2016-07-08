@@ -438,7 +438,8 @@ void object_write(FILE *stream, Object obj) {
     if (carref(obj).type == TRUE_TYPE) {
       fprintf(stream, "(forced)>");
     } else {
-      object_write(stream, cdrref(obj));
+      object_write(stream, carref(cdrref(obj)));
+      /* object_write(stream, cdrref(obj)); */
       fprintf(stream, ">");
     }
     break;

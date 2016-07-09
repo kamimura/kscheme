@@ -947,13 +947,13 @@ ev_forced:
   cars[cdrs[unev.index].index] = object_copy(val);
   restore(&cont);
   goto *cont.cont;
-ev_make_promise : {
+ev_make_promise:
   object_free(&val);
-  val = cons(false_obj, car(argl));
+  val = cons(car(argl), env);
+  val = cons(false_obj, val);
   val.type = PROMISE;
   restore(&cont);
   goto *cont.cont;
-}
 ev_begin:
   unev = cdrref(expr);
   save(cont);

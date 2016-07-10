@@ -5123,6 +5123,16 @@ Object scm_vector_set(Object const args) {
   }
 }
 
+Object scm_list_tovector(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "list->vector");
+  }
+  Object obj = value(carref(args));
+  if (list_p(obj)) {
+    return list2vector(obj);
+  }
+  return wrong_type("list->vector", args);
+}
 /* Vectors end */
 /* Bytevectors */
 Object scm_bytevector_p(Object const args) {

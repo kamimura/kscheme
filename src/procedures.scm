@@ -78,9 +78,25 @@
                                                            (vector-ref y i))
                                                        (proc (+ i 1))))))
                                           (proc 0))))))))
-                      (if (string? x)
-                          (and (string? y) (string=? x y))
-                          (eqv? x y)))))))
+                      (if (bytevector? x)
+                          (and (vector? y)
+                               ((lambda ()
+                                  (define n (bytevector-length x))
+                                  (and
+                                   (= (bytevector-length y) n)
+                                   (or
+                                    (union-find table x y)
+                                    ((lambda ()
+                                       (define proc
+                                         (lambda (i)
+                                           (or (= i n)
+                                               (and (e? (bytevector-u8-ref x i)
+                                                        (bytevector-u8-ref y i))
+                                                    (proc (+ i 1))))))
+                                       (proc 0))))))))                        
+                          (if (string? x)
+                              (and (string? y) (string=? x y))
+                              (eqv? x y))))))))
       (e? obj1 obj2)))
 
   ;; Numbers
@@ -988,19 +1004,6 @@
                  (iter (+ i 1) (+ j 1)))))))
       (iter 0 start)))
 
-  (define list->vector
-    (lambda (items)
-      (define len (length items))
-      (define vect (make-vector len))
-      (define iter
-        (lambda (i items)
-          (if (= i len)
-              vect
-              ((lambda ()
-                 (vector-set! vect i (car items))
-                 (iter (+ i 1) (cdr items)))))))
-      (iter 0 items)))
-
   (define vector->string
     (lambda (vect . args)
       (define start (if (null? args) 0 (car args)))
@@ -1166,43 +1169,33 @@
   ;; Control features
   (define map
     (lambda (proc items . args)
-      (define heads
+      (define exist?
         (lambda (items)
-          (define iter
-            (lambda (result reversed)
-              (if (null? reversed)
-                  result
-                  ((lambda ()
-                     (define items (car reversed))
-                     (if (null? items)
-                         (iter '() '())
-                         (iter (cons (car items)
-                                     result)
-                               (cdr reversed))))))))
-          (iter '() (reverse items))))
-      (define tails
-        (lambda (items)
-          (define iter
-            (lambda (result reversed)
-              (if (null? reversed)
-                  result
-                  ((lambda ()
-                     (define items (car reversed))
-                     (if (null? items)
-                         (iter '() '())
-                         (iter (cons (cdr items)
-                                     result)
-                               (cdr reversed))))))))
-          (iter '() (reverse items))))
-      (define iter
-        (lambda (items rest)
+          (if (null? items)
+              #f
+              (if (list? (car items))
+                  #t
+                  (exist? (cdr items))))))
+      (define map0
+        (lambda (proc items)
           (if (null? items)
               '()
-              (cons (apply proc items)
-                    (iter (heads rest)
-                          (tails rest))))))
-      (iter (heads (cons items args))
-            (tails (cons items args)))))
+              (cons (proc (car items))
+                    (map0 proc (cdr items))))))
+      (define map1
+        (lambda (proc items)
+          (if (member '() items)
+              '()
+              (cons (apply proc (map0 car items))
+                    (map1 proc (map0 cdr items))))))
+      (if (null? args)
+          (if (exist? (list items))
+              (map0 proc items)
+              (error "(map) wrong type argument -- " (list proc items)))
+          (if (exist? (cons items args))
+              (map1 proc (cons items args))
+              (error "(map) wrong type argument -- "
+                     (cons proc (cons items args)))))))
 
   (define string-map
     (lambda (proc str . args)
@@ -1216,43 +1209,33 @@
 
   (define for-each
     (lambda (proc items . args)
-      (define heads
+      (define exist?
         (lambda (items)
-          (define iter
-            (lambda (result reversed)
-              (if (null? reversed)
-                  result
-                  ((lambda ()
-                     (define items (car reversed))
-                     (if (null? items)
-                         (iter '() '())
-                         (iter (cons (car items)
-                                     result)
-                               (cdr reversed))))))))
-          (iter '() (reverse items))))
-      (define tails
-        (lambda (items)
-          (define iter
-            (lambda (result reversed)
-              (if (null? reversed)
-                  result
-                  ((lambda ()
-                     (define items (car reversed))
-                     (if (null? items)
-                         (iter '() '())
-                         (iter (cons (cdr items)
-                                     result)
-                               (cdr reversed))))))))
-          (iter '() (reverse items))))
-      (define iter
-        (lambda (items rest)
+          (if (null? items)
+              #f
+              (if (list? (car items))
+                  #t
+                  (exist? (cdr items))))))      
+      (define for-each0
+        (lambda (proc items)
           (if (not (null? items))
               ((lambda ()
-                 (apply proc items)
-                 (iter (heads rest)
-                       (tails rest)))))))
-      (iter (heads (cons items args))
-            (tails (cons items args)))))
+                 (proc (car items))
+                 (for-each0 proc (cdr items)))))))
+      (define for-each1
+        (lambda (proc items)
+          (if (not (member '() items))
+              ((lambda ()
+                 (apply proc (map car items))
+                 (for-each1 proc (map cdr items)))))))
+      (if (null? args)
+          (if (exist? (list items))
+              (for-each0 proc items)
+              (eror "(for-each wrong type argument -- " (list proc items)))
+          (if (exist? (cons items args))
+              (for-each1 proc (cons items args))
+              (error "(for-each) wrong type argument -- "
+                     (cons proc (cons items args)))))))
 
   (define string-for-each
     (lambda (proc str . args)

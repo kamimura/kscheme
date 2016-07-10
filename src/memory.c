@@ -18,7 +18,7 @@ Object stack;
 Object global;
 
 static void gc_before(Object obj) {
-  puts("GC");
+  puts(";GC");
   root = empty;
   root = cons(unev, root);
   root = cons(argl, root);
@@ -30,7 +30,7 @@ static void gc_before(Object obj) {
   root = cons(stack, root);
   root = cons(global, root);
   root = cons(obj, root);
-  puts("gc_before");
+  puts(";gc_before");
 }
 static void gc_after(Object *ptr) {
   *ptr = car(root);
@@ -52,7 +52,7 @@ static void gc_after(Object *ptr) {
   argl = carref(root);
   root = cdrref(root);
   unev = car(root);
-  puts("gc_after");
+  puts(";gc_after");
 }
 
 void gc() {

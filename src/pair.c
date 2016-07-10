@@ -210,3 +210,32 @@ void pair_write_simple(FILE *stream, Object const obj) {
   }
   fprintf(stream, ")");
 }
+
+bool list_p(Object obj) {
+  if (obj.type == EMPTY) {
+    return true;
+  }
+  if (obj.type != PAIR) {
+    return false;
+  }
+  Object o1 = obj;
+  Object o2 = cdrref(obj);
+  while (o2.type != EMPTY) {
+    if (o2.type != PAIR) {
+      return false;
+    }
+    if (o1.index == o2.index) {
+      return false;
+    }
+    o1 = cdrref(o1);
+    o2 = cdrref(o2);
+    if (o2.type == EMPTY) {
+      return true;
+    }
+    if (o2.type != PAIR) {
+      return false;
+    }
+    o2 = cdrref(o2);
+  }
+  return true;
+}

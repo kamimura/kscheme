@@ -114,6 +114,7 @@ Object scm_vector(Object const args);
 Object scm_vector_length(Object const args);
 Object scm_vector_ref(Object const args);
 Object scm_vector_set(Object const args);
+Object scm_list_tovector(Object const args);
 /* Bytevectors */
 Object scm_bytevector_p(Object const args);
 Object scm_bytevector(Object const args);

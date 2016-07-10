@@ -35,35 +35,6 @@ size_t list_length(Object obj) {
   }
   return len;
 }
-#include <stdbool.h>
-bool list_p(Object obj) {
-  if (obj.type == EMPTY) {
-    return true;
-  }
-  if (obj.type != PAIR) {
-    return false;
-  }
-  Object o1 = obj;
-  Object o2 = cdrref(obj);
-  while (o2.type != EMPTY) {
-    if (o2.type != PAIR) {
-      return false;
-    }
-    if (o1.index == o2.index) {
-      return false;
-    }
-    o1 = cdrref(o1);
-    o2 = cdrref(o2);
-    if (o2.type == EMPTY) {
-      return true;
-    }
-    if (o2.type != PAIR) {
-      return false;
-    }
-    o2 = cdrref(o2);
-  }
-  return true;
-}
 bool list_last_list_p(Object obj) {
   size_t len = list_length(obj);
   Object o = obj;
@@ -414,6 +385,9 @@ int main() {
   define_variable(identifier_new("vector-set!"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_vector_set},
                   env);
+  define_variable(
+      identifier_new("list->vector"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_list_tovector}, env);
   /* Vectors end */
   /* Bytevectors */
   define_variable(
@@ -760,15 +734,20 @@ ev_lambda:
   goto *cont.cont;
 ev_application:
   save(cont);
-  save(env);
   unev = cdrref(expr);
-  save(unev);
   expr = carref(expr);
+  if (expr.type == IDENTIFIER || expr.type == IDENTIFIER_VERTICAL) {
+    cont.cont = &&ev_appl_did_operator_1;
+    goto ev_variable;
+  }
+  save(env);
+  save(unev);
   cont.cont = &&ev_appl_did_operator;
   goto eval_dispatch;
 ev_appl_did_operator:
   restore(&unev);
   restore(&env);
+ev_appl_did_operator_1:
   argl = empty;
   proc = val;
   if (unev.type == EMPTY) {

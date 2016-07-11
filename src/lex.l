@@ -13,14 +13,6 @@ extern int interactive_mode;
 
 GSList *sym_list = NULL;
 char sign_imag;
-mpfr_t real;
-mpfr_t imag;
-mpfr_t opfr;
-mpfr_t argopfr;
-mpfr_t sopfr;
-mpfr_t copfr;
-mpf_t opf;
-mpq_t opq;
 %}
 
 intraline_whitespace [ \t]
@@ -601,7 +593,7 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 }
 <IMAG>[nN][aA][nN]"."0[iI] {
   BEGIN INITIAL;
-  mpfr_t imag;
+  
   mpfr_set_nan(imag);
   yylval.obj.type = NUMBERC;
   mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -1225,7 +1217,7 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 }
 <IMAG_BIN>[nN][aA][nN]"."0[iI] {
   BEGIN INITIAL;
-  mpfr_t imag;
+  
   mpfr_set_nan(imag);
   yylval.obj.type = NUMBERC;
   mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -1609,7 +1601,7 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 }
 <IMAG_OCT>[nN][aA][nN]"."0[iI] {
   BEGIN INITIAL;
-  mpfr_t imag;
+  
   mpfr_set_nan(imag);
   yylval.obj.type = NUMBERC;
   mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -1994,7 +1986,6 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 }
 <IMAG_HEX>[nN][aA][nN]"."0[iI] {
   BEGIN INITIAL;
-  mpfr_t imag;
   mpfr_set_nan(imag);
   yylval.obj.type = NUMBERC;
   mpc_init2(yylval.obj.numberc, MPC_PREC);

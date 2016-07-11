@@ -6414,15 +6414,7 @@ extern int interactive_mode;
 
 GSList *sym_list = NULL;
 char sign_imag;
-mpfr_t real;
-mpfr_t imag;
-mpfr_t opfr;
-mpfr_t argopfr;
-mpfr_t sopfr;
-mpfr_t copfr;
-mpf_t opf;
-mpq_t opq;
-#line 7085 "lex.yy.c"
+#line 7077 "lex.yy.c"
 
 #define INITIAL 0
 #define IDENTIFIER_VERTICAL_LEX 1
@@ -6644,10 +6636,10 @@ YY_DECL {
   }
 
   {
-#line 40 "lex.l"
+#line 32 "lex.l"
 
 /* whitespace */
-#line 7317 "lex.yy.c"
+#line 7309 "lex.yy.c"
 
     while (/*CONSTCOND*/ 1) /* loops until end-of-file is reached */
     {
@@ -6710,14 +6702,14 @@ YY_DECL {
 
       case 1:
         YY_RULE_SETUP
-#line 42 "lex.l"
+#line 34 "lex.l"
         {
         }
         YY_BREAK
       case 2:
         /* rule 2 can match eol */
         YY_RULE_SETUP
-#line 43 "lex.l"
+#line 35 "lex.l"
         {
         }
         YY_BREAK
@@ -6725,7 +6717,7 @@ YY_DECL {
       case 3:
         /* rule 3 can match eol */
         YY_RULE_SETUP
-#line 46 "lex.l"
+#line 38 "lex.l"
         {
         }
         YY_BREAK
@@ -6733,7 +6725,7 @@ YY_DECL {
       /* ⟨initial⟩ ⟨subsequent⟩* */
       case 4:
         YY_RULE_SETUP
-#line 50 "lex.l"
+#line 42 "lex.l"
         {
           yylval.obj = identifier_new(yytext);
           return TOKEN_IDENTIFIER;
@@ -6742,7 +6734,7 @@ YY_DECL {
       /* |⟨initial⟩ ⟨subsequent⟩*| */
       case 5:
         YY_RULE_SETUP
-#line 55 "lex.l"
+#line 47 "lex.l"
         {
           yytext[yyleng - 1] = '\0';
           yytext++;
@@ -6753,7 +6745,7 @@ YY_DECL {
       /* | ⟨symbol element⟩* | */
       case 6:
         YY_RULE_SETUP
-#line 62 "lex.l"
+#line 54 "lex.l"
         {
           char *str = strdup("");
           yylval.obj = identifier_vertical_new(str);
@@ -6763,7 +6755,7 @@ YY_DECL {
         YY_BREAK
       case 7:
         YY_RULE_SETUP
-#line 69 "lex.l"
+#line 61 "lex.l"
         {
           BEGIN IDENTIFIER_VERTICAL_LEX;
           sym_list = NULL;
@@ -6771,7 +6763,7 @@ YY_DECL {
         YY_BREAK
       case 8:
         YY_RULE_SETUP
-#line 73 "lex.l"
+#line 65 "lex.l"
         {
           BEGIN INITIAL;
           sym_list = g_slist_reverse(sym_list);
@@ -6789,7 +6781,7 @@ YY_DECL {
       /* inline hex escape */
       case 9:
         YY_RULE_SETUP
-#line 87 "lex.l"
+#line 79 "lex.l"
         {
           yytext[yyleng - 1] = '\0';
           yytext += 2;
@@ -6804,7 +6796,7 @@ YY_DECL {
         YY_BREAK
       case 10:
         YY_RULE_SETUP
-#line 98 "lex.l"
+#line 90 "lex.l"
         {
           sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('|'));
         }
@@ -6812,35 +6804,35 @@ YY_DECL {
       /* mnemonic escape */
       case 11:
         YY_RULE_SETUP
-#line 102 "lex.l"
+#line 94 "lex.l"
         {
           sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('\a'));
         }
         YY_BREAK
       case 12:
         YY_RULE_SETUP
-#line 105 "lex.l"
+#line 97 "lex.l"
         {
           sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('\b'));
         }
         YY_BREAK
       case 13:
         YY_RULE_SETUP
-#line 108 "lex.l"
+#line 100 "lex.l"
         {
           sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('\t'));
         }
         YY_BREAK
       case 14:
         YY_RULE_SETUP
-#line 111 "lex.l"
+#line 103 "lex.l"
         {
           sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('\n'));
         }
         YY_BREAK
       case 15:
         YY_RULE_SETUP
-#line 114 "lex.l"
+#line 106 "lex.l"
         {
           sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER('\r'));
         }
@@ -6848,7 +6840,7 @@ YY_DECL {
       case 16:
         /* rule 16 can match eol */
         YY_RULE_SETUP
-#line 117 "lex.l"
+#line 109 "lex.l"
         {
           for (size_t i = 0; yytext[i] != '\0'; i++) {
             sym_list = g_slist_prepend(sym_list, GUINT_TO_POINTER(yytext[i]));
@@ -6858,7 +6850,7 @@ YY_DECL {
       /* explicit sign */
       case 17:
         YY_RULE_SETUP
-#line 124 "lex.l"
+#line 116 "lex.l"
         {
           yylval.obj = identifier_new(yytext);
           return TOKEN_IDENTIFIER;
@@ -6866,20 +6858,20 @@ YY_DECL {
         YY_BREAK
       /* boolean */
       case 18:
-#line 131 "lex.l"
+#line 123 "lex.l"
       case 19:
         YY_RULE_SETUP
-#line 131 "lex.l"
+#line 123 "lex.l"
         {
           yylval.obj = true_obj;
           return TOKEN_BOOLEAN;
         }
         YY_BREAK
       case 20:
-#line 133 "lex.l"
+#line 125 "lex.l"
       case 21:
         YY_RULE_SETUP
-#line 133 "lex.l"
+#line 125 "lex.l"
         {
           yylval.obj = false_obj;
           return TOKEN_BOOLEAN;
@@ -6888,10 +6880,10 @@ YY_DECL {
       /* number */
       /* radix 10 */
       case 22:
-#line 138 "lex.l"
+#line 130 "lex.l"
       case 23:
         YY_RULE_SETUP
-#line 138 "lex.l"
+#line 130 "lex.l"
         {
           yytext += 2;
           if (*yytext == '+')
@@ -6902,7 +6894,7 @@ YY_DECL {
         YY_BREAK
       case 24:
         YY_RULE_SETUP
-#line 144 "lex.l"
+#line 136 "lex.l"
         {
           yylval.obj.type = NUMBERQ;
           yytext += 2;
@@ -6916,7 +6908,7 @@ YY_DECL {
         YY_BREAK
       case 25:
         YY_RULE_SETUP
-#line 153 "lex.l"
+#line 145 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -6927,7 +6919,7 @@ YY_DECL {
         YY_BREAK
       case 26:
         YY_RULE_SETUP
-#line 159 "lex.l"
+#line 151 "lex.l"
         {
           yylval.obj.type = NUMBERQ;
           yytext += 4;
@@ -6941,7 +6933,7 @@ YY_DECL {
         YY_BREAK
       case 27:
         YY_RULE_SETUP
-#line 168 "lex.l"
+#line 160 "lex.l"
         {
           if (*yytext == '+')
             yytext++;
@@ -6951,7 +6943,7 @@ YY_DECL {
         YY_BREAK
       case 28:
         YY_RULE_SETUP
-#line 173 "lex.l"
+#line 165 "lex.l"
         {
           yytext += 2;
           if (*yytext == '+')
@@ -6961,14 +6953,14 @@ YY_DECL {
         }
         YY_BREAK
       case 29:
-#line 180 "lex.l"
+#line 172 "lex.l"
       case 30:
-#line 181 "lex.l"
+#line 173 "lex.l"
       case 31:
-#line 182 "lex.l"
+#line 174 "lex.l"
       case 32:
         YY_RULE_SETUP
-#line 182 "lex.l"
+#line 174 "lex.l"
         {
           yylval.obj.type = NUMBERQ;
           yytext += 2;
@@ -6982,7 +6974,7 @@ YY_DECL {
         YY_BREAK
       case 33:
         YY_RULE_SETUP
-#line 191 "lex.l"
+#line 183 "lex.l"
         {
           yytext += 2;
           if (*yytext == '+')
@@ -6993,7 +6985,7 @@ YY_DECL {
         YY_BREAK
       case 34:
         YY_RULE_SETUP
-#line 197 "lex.l"
+#line 189 "lex.l"
         {
           int sign = yytext[2] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -7004,7 +6996,7 @@ YY_DECL {
         YY_BREAK
       case 35:
         YY_RULE_SETUP
-#line 204 "lex.l"
+#line 196 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -7013,14 +7005,14 @@ YY_DECL {
         }
         YY_BREAK
       case 36:
-#line 211 "lex.l"
+#line 203 "lex.l"
       case 37:
-#line 212 "lex.l"
+#line 204 "lex.l"
       case 38:
-#line 213 "lex.l"
+#line 205 "lex.l"
       case 39:
         YY_RULE_SETUP
-#line 213 "lex.l"
+#line 205 "lex.l"
         {
           yylval.obj.type = NUMBERQ;
           yytext += 2;
@@ -7034,7 +7026,7 @@ YY_DECL {
         YY_BREAK
       case 40:
         YY_RULE_SETUP
-#line 222 "lex.l"
+#line 214 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -7045,7 +7037,7 @@ YY_DECL {
         YY_BREAK
       case 41:
         YY_RULE_SETUP
-#line 228 "lex.l"
+#line 220 "lex.l"
         {
           int sign = yytext[4] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -7056,7 +7048,7 @@ YY_DECL {
         YY_BREAK
       case 42:
         YY_RULE_SETUP
-#line 235 "lex.l"
+#line 227 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -7066,7 +7058,7 @@ YY_DECL {
         YY_BREAK
       case 43:
         YY_RULE_SETUP
-#line 241 "lex.l"
+#line 233 "lex.l"
         {
           if (*yytext == '+')
             yytext++;
@@ -7075,16 +7067,16 @@ YY_DECL {
         }
         YY_BREAK
       case 44:
-#line 247 "lex.l"
+#line 239 "lex.l"
       case 45:
-#line 248 "lex.l"
+#line 240 "lex.l"
       case 46:
-#line 249 "lex.l"
+#line 241 "lex.l"
       case 47:
-#line 250 "lex.l"
+#line 242 "lex.l"
       case 48:
         YY_RULE_SETUP
-#line 250 "lex.l"
+#line 242 "lex.l"
         {
           yytext += 2;
           if (*yytext == '+')
@@ -7095,7 +7087,7 @@ YY_DECL {
         YY_BREAK
       case 49:
         YY_RULE_SETUP
-#line 256 "lex.l"
+#line 248 "lex.l"
         {
           int sign = yytext[2] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -7106,7 +7098,7 @@ YY_DECL {
         YY_BREAK
       case 50:
         YY_RULE_SETUP
-#line 263 "lex.l"
+#line 255 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -7115,20 +7107,20 @@ YY_DECL {
         }
         YY_BREAK
       case 51:
-#line 270 "lex.l"
+#line 262 "lex.l"
       case 52:
-#line 271 "lex.l"
+#line 263 "lex.l"
       case 53:
-#line 272 "lex.l"
+#line 264 "lex.l"
       case 54:
-#line 273 "lex.l"
+#line 265 "lex.l"
       case 55:
-#line 274 "lex.l"
+#line 266 "lex.l"
       case 56:
-#line 275 "lex.l"
+#line 267 "lex.l"
       case 57:
         YY_RULE_SETUP
-#line 275 "lex.l"
+#line 267 "lex.l"
         {
           yytext += 2;
           if (*yytext == '+')
@@ -7139,7 +7131,7 @@ YY_DECL {
         YY_BREAK
       case 58:
         YY_RULE_SETUP
-#line 281 "lex.l"
+#line 273 "lex.l"
         {
           int sign = yytext[2] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -7150,7 +7142,7 @@ YY_DECL {
         YY_BREAK
       case 59:
         YY_RULE_SETUP
-#line 288 "lex.l"
+#line 280 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -7159,18 +7151,18 @@ YY_DECL {
         }
         YY_BREAK
       case 60:
-#line 295 "lex.l"
+#line 287 "lex.l"
       case 61:
-#line 296 "lex.l"
+#line 288 "lex.l"
       case 62:
-#line 297 "lex.l"
+#line 289 "lex.l"
       case 63:
-#line 298 "lex.l"
+#line 290 "lex.l"
       case 64:
-#line 299 "lex.l"
+#line 291 "lex.l"
       case 65:
         YY_RULE_SETUP
-#line 299 "lex.l"
+#line 291 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -7181,7 +7173,7 @@ YY_DECL {
         YY_BREAK
       case 66:
         YY_RULE_SETUP
-#line 305 "lex.l"
+#line 297 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           yytext += 4;
@@ -7194,7 +7186,7 @@ YY_DECL {
         YY_BREAK
       case 67:
         YY_RULE_SETUP
-#line 313 "lex.l"
+#line 305 "lex.l"
         {
           int sign = yytext[4] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -7205,7 +7197,7 @@ YY_DECL {
         YY_BREAK
       case 68:
         YY_RULE_SETUP
-#line 320 "lex.l"
+#line 312 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -7214,16 +7206,16 @@ YY_DECL {
         }
         YY_BREAK
       case 69:
-#line 327 "lex.l"
+#line 319 "lex.l"
       case 70:
-#line 328 "lex.l"
+#line 320 "lex.l"
       case 71:
-#line 329 "lex.l"
+#line 321 "lex.l"
       case 72:
-#line 330 "lex.l"
+#line 322 "lex.l"
       case 73:
         YY_RULE_SETUP
-#line 330 "lex.l"
+#line 322 "lex.l"
         {
           if (*yytext == '+')
             yytext++;
@@ -7233,7 +7225,7 @@ YY_DECL {
         YY_BREAK
       case 74:
         YY_RULE_SETUP
-#line 335 "lex.l"
+#line 327 "lex.l"
         {
           int sign = yytext[0] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -7244,7 +7236,7 @@ YY_DECL {
         YY_BREAK
       case 75:
         YY_RULE_SETUP
-#line 342 "lex.l"
+#line 334 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -7253,12 +7245,12 @@ YY_DECL {
         }
         YY_BREAK
       case 76:
-#line 349 "lex.l"
+#line 341 "lex.l"
       case 77:
-#line 350 "lex.l"
+#line 342 "lex.l"
       case 78:
         YY_RULE_SETUP
-#line 350 "lex.l"
+#line 342 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7270,10 +7262,10 @@ YY_DECL {
         }
         YY_BREAK
       case 79:
-#line 359 "lex.l"
+#line 351 "lex.l"
       case 80:
         YY_RULE_SETUP
-#line 359 "lex.l"
+#line 351 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7286,7 +7278,7 @@ YY_DECL {
         YY_BREAK
       case 81:
         YY_RULE_SETUP
-#line 367 "lex.l"
+#line 359 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7298,7 +7290,7 @@ YY_DECL {
         YY_BREAK
       case 82:
         YY_RULE_SETUP
-#line 374 "lex.l"
+#line 366 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7311,14 +7303,14 @@ YY_DECL {
         }
         YY_BREAK
       case 83:
-#line 384 "lex.l"
+#line 376 "lex.l"
       case 84:
-#line 385 "lex.l"
+#line 377 "lex.l"
       case 85:
-#line 386 "lex.l"
+#line 378 "lex.l"
       case 86:
         YY_RULE_SETUP
-#line 386 "lex.l"
+#line 378 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7331,7 +7323,7 @@ YY_DECL {
         YY_BREAK
       case 87:
         YY_RULE_SETUP
-#line 394 "lex.l"
+#line 386 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7345,7 +7337,7 @@ YY_DECL {
         YY_BREAK
       case 88:
         YY_RULE_SETUP
-#line 403 "lex.l"
+#line 395 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7355,7 +7347,7 @@ YY_DECL {
         YY_BREAK
       case 89:
         YY_RULE_SETUP
-#line 409 "lex.l"
+#line 401 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7363,14 +7355,14 @@ YY_DECL {
         }
         YY_BREAK
       case 90:
-#line 415 "lex.l"
+#line 407 "lex.l"
       case 91:
-#line 416 "lex.l"
+#line 408 "lex.l"
       case 92:
-#line 417 "lex.l"
+#line 409 "lex.l"
       case 93:
         YY_RULE_SETUP
-#line 417 "lex.l"
+#line 409 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7383,7 +7375,7 @@ YY_DECL {
         YY_BREAK
       case 94:
         YY_RULE_SETUP
-#line 425 "lex.l"
+#line 417 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7397,7 +7389,7 @@ YY_DECL {
         YY_BREAK
       case 95:
         YY_RULE_SETUP
-#line 434 "lex.l"
+#line 426 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7407,7 +7399,7 @@ YY_DECL {
         YY_BREAK
       case 96:
         YY_RULE_SETUP
-#line 440 "lex.l"
+#line 432 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7416,7 +7408,7 @@ YY_DECL {
         YY_BREAK
       case 97:
         YY_RULE_SETUP
-#line 445 "lex.l"
+#line 437 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7428,16 +7420,16 @@ YY_DECL {
         }
         YY_BREAK
       case 98:
-#line 454 "lex.l"
+#line 446 "lex.l"
       case 99:
-#line 455 "lex.l"
+#line 447 "lex.l"
       case 100:
-#line 456 "lex.l"
+#line 448 "lex.l"
       case 101:
-#line 457 "lex.l"
+#line 449 "lex.l"
       case 102:
         YY_RULE_SETUP
-#line 457 "lex.l"
+#line 449 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7450,7 +7442,7 @@ YY_DECL {
         YY_BREAK
       case 103:
         YY_RULE_SETUP
-#line 465 "lex.l"
+#line 457 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7461,7 +7453,7 @@ YY_DECL {
         YY_BREAK
       case 104:
         YY_RULE_SETUP
-#line 472 "lex.l"
+#line 464 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7470,18 +7462,18 @@ YY_DECL {
         }
         YY_BREAK
       case 105:
-#line 479 "lex.l"
+#line 471 "lex.l"
       case 106:
-#line 480 "lex.l"
+#line 472 "lex.l"
       case 107:
-#line 481 "lex.l"
+#line 473 "lex.l"
       case 108:
-#line 482 "lex.l"
+#line 474 "lex.l"
       case 109:
-#line 483 "lex.l"
+#line 475 "lex.l"
       case 110:
         YY_RULE_SETUP
-#line 483 "lex.l"
+#line 475 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7494,7 +7486,7 @@ YY_DECL {
         YY_BREAK
       case 111:
         YY_RULE_SETUP
-#line 491 "lex.l"
+#line 483 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7508,7 +7500,7 @@ YY_DECL {
         YY_BREAK
       case 112:
         YY_RULE_SETUP
-#line 500 "lex.l"
+#line 492 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7519,7 +7511,7 @@ YY_DECL {
         YY_BREAK
       case 113:
         YY_RULE_SETUP
-#line 507 "lex.l"
+#line 499 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7528,18 +7520,18 @@ YY_DECL {
         }
         YY_BREAK
       case 114:
-#line 515 "lex.l"
+#line 507 "lex.l"
       case 115:
-#line 516 "lex.l"
+#line 508 "lex.l"
       case 116:
-#line 517 "lex.l"
+#line 509 "lex.l"
       case 117:
-#line 518 "lex.l"
+#line 510 "lex.l"
       case 118:
-#line 519 "lex.l"
+#line 511 "lex.l"
       case 119:
         YY_RULE_SETUP
-#line 519 "lex.l"
+#line 511 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7552,7 +7544,7 @@ YY_DECL {
         YY_BREAK
       case 120:
         YY_RULE_SETUP
-#line 527 "lex.l"
+#line 519 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7566,7 +7558,7 @@ YY_DECL {
         YY_BREAK
       case 121:
         YY_RULE_SETUP
-#line 536 "lex.l"
+#line 528 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7577,7 +7569,7 @@ YY_DECL {
         YY_BREAK
       case 122:
         YY_RULE_SETUP
-#line 543 "lex.l"
+#line 535 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7586,12 +7578,12 @@ YY_DECL {
         }
         YY_BREAK
       case 123:
-#line 550 "lex.l"
+#line 542 "lex.l"
       case 124:
-#line 551 "lex.l"
+#line 543 "lex.l"
       case 125:
         YY_RULE_SETUP
-#line 551 "lex.l"
+#line 543 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7602,10 +7594,10 @@ YY_DECL {
         }
         YY_BREAK
       case 126:
-#line 559 "lex.l"
+#line 551 "lex.l"
       case 127:
         YY_RULE_SETUP
-#line 559 "lex.l"
+#line 551 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7617,7 +7609,7 @@ YY_DECL {
         YY_BREAK
       case 128:
         YY_RULE_SETUP
-#line 566 "lex.l"
+#line 558 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7628,7 +7620,7 @@ YY_DECL {
         YY_BREAK
       case 129:
         YY_RULE_SETUP
-#line 573 "lex.l"
+#line 565 "lex.l"
         {
           BEGIN IMAG;
           sign_imag = yytext[yyleng - 1];
@@ -7637,7 +7629,7 @@ YY_DECL {
         YY_BREAK
       case 130:
         YY_RULE_SETUP
-#line 578 "lex.l"
+#line 570 "lex.l"
         {
           BEGIN INITIAL;
           yytext[yyleng - 1] = '\0';
@@ -7652,7 +7644,7 @@ YY_DECL {
         YY_BREAK
       case 131:
         YY_RULE_SETUP
-#line 589 "lex.l"
+#line 581 "lex.l"
         {
           BEGIN INITIAL;
           yytext[yyleng - 1] = '\0';
@@ -7669,10 +7661,10 @@ YY_DECL {
         YY_BREAK
       case 132:
         YY_RULE_SETUP
-#line 602 "lex.l"
+#line 594 "lex.l"
         {
           BEGIN INITIAL;
-          mpfr_t imag;
+
           mpfr_set_nan(imag);
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7681,12 +7673,12 @@ YY_DECL {
         }
         YY_BREAK
       case 133:
-#line 612 "lex.l"
+#line 604 "lex.l"
       case 134:
-#line 613 "lex.l"
+#line 605 "lex.l"
       case 135:
         YY_RULE_SETUP
-#line 613 "lex.l"
+#line 605 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -7702,7 +7694,7 @@ YY_DECL {
         YY_BREAK
       case 136:
         YY_RULE_SETUP
-#line 625 "lex.l"
+#line 617 "lex.l"
         {
           BEGIN INITIAL;
           if (sign_imag == '+') {
@@ -7715,7 +7707,7 @@ YY_DECL {
         YY_BREAK
       case 137:
         YY_RULE_SETUP
-#line 634 "lex.l"
+#line 626 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -7728,14 +7720,14 @@ YY_DECL {
         YY_BREAK
       /* 0+imag */
       case 138:
-#line 645 "lex.l"
+#line 637 "lex.l"
       case 139:
-#line 646 "lex.l"
+#line 638 "lex.l"
       case 140:
-#line 647 "lex.l"
+#line 639 "lex.l"
       case 141:
         YY_RULE_SETUP
-#line 647 "lex.l"
+#line 639 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7750,7 +7742,7 @@ YY_DECL {
         YY_BREAK
       case 142:
         YY_RULE_SETUP
-#line 656 "lex.l"
+#line 648 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7765,7 +7757,7 @@ YY_DECL {
         YY_BREAK
       case 143:
         YY_RULE_SETUP
-#line 667 "lex.l"
+#line 659 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7780,7 +7772,7 @@ YY_DECL {
         YY_BREAK
       case 144:
         YY_RULE_SETUP
-#line 676 "lex.l"
+#line 668 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7796,7 +7788,7 @@ YY_DECL {
         YY_BREAK
       case 145:
         YY_RULE_SETUP
-#line 686 "lex.l"
+#line 678 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7810,12 +7802,12 @@ YY_DECL {
         }
         YY_BREAK
       case 146:
-#line 696 "lex.l"
+#line 688 "lex.l"
       case 147:
-#line 697 "lex.l"
+#line 689 "lex.l"
       case 148:
         YY_RULE_SETUP
-#line 697 "lex.l"
+#line 689 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7831,7 +7823,7 @@ YY_DECL {
         YY_BREAK
       case 149:
         YY_RULE_SETUP
-#line 707 "lex.l"
+#line 699 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7847,14 +7839,14 @@ YY_DECL {
         }
         YY_BREAK
       case 150:
-#line 719 "lex.l"
+#line 711 "lex.l"
       case 151:
-#line 720 "lex.l"
+#line 712 "lex.l"
       case 152:
-#line 721 "lex.l"
+#line 713 "lex.l"
       case 153:
         YY_RULE_SETUP
-#line 721 "lex.l"
+#line 713 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7870,7 +7862,7 @@ YY_DECL {
         YY_BREAK
       case 154:
         YY_RULE_SETUP
-#line 731 "lex.l"
+#line 723 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7887,7 +7879,7 @@ YY_DECL {
         YY_BREAK
       case 155:
         YY_RULE_SETUP
-#line 742 "lex.l"
+#line 734 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7899,7 +7891,7 @@ YY_DECL {
         YY_BREAK
       case 156:
         YY_RULE_SETUP
-#line 750 "lex.l"
+#line 742 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7909,18 +7901,18 @@ YY_DECL {
         }
         YY_BREAK
       case 157:
-#line 758 "lex.l"
+#line 750 "lex.l"
       case 158:
-#line 759 "lex.l"
+#line 751 "lex.l"
       case 159:
-#line 760 "lex.l"
+#line 752 "lex.l"
       case 160:
-#line 761 "lex.l"
+#line 753 "lex.l"
       case 161:
-#line 762 "lex.l"
+#line 754 "lex.l"
       case 162:
         YY_RULE_SETUP
-#line 762 "lex.l"
+#line 754 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7936,7 +7928,7 @@ YY_DECL {
         YY_BREAK
       case 163:
         YY_RULE_SETUP
-#line 772 "lex.l"
+#line 764 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7953,7 +7945,7 @@ YY_DECL {
         YY_BREAK
       case 164:
         YY_RULE_SETUP
-#line 783 "lex.l"
+#line 775 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7965,7 +7957,7 @@ YY_DECL {
         YY_BREAK
       case 165:
         YY_RULE_SETUP
-#line 791 "lex.l"
+#line 783 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -7976,12 +7968,12 @@ YY_DECL {
         YY_BREAK
       /* polar real@arg */
       case 166:
-#line 801 "lex.l"
+#line 793 "lex.l"
       case 167:
-#line 802 "lex.l"
+#line 794 "lex.l"
       case 168:
         YY_RULE_SETUP
-#line 802 "lex.l"
+#line 794 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -7992,10 +7984,10 @@ YY_DECL {
         }
         YY_BREAK
       case 169:
-#line 810 "lex.l"
+#line 802 "lex.l"
       case 170:
         YY_RULE_SETUP
-#line 810 "lex.l"
+#line 802 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8007,7 +7999,7 @@ YY_DECL {
         YY_BREAK
       case 171:
         YY_RULE_SETUP
-#line 817 "lex.l"
+#line 809 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8018,7 +8010,7 @@ YY_DECL {
         YY_BREAK
       case 172:
         YY_RULE_SETUP
-#line 823 "lex.l"
+#line 815 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8030,14 +8022,14 @@ YY_DECL {
         }
         YY_BREAK
       case 173:
-#line 832 "lex.l"
+#line 824 "lex.l"
       case 174:
-#line 833 "lex.l"
+#line 825 "lex.l"
       case 175:
-#line 834 "lex.l"
+#line 826 "lex.l"
       case 176:
         YY_RULE_SETUP
-#line 834 "lex.l"
+#line 826 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8049,7 +8041,7 @@ YY_DECL {
         YY_BREAK
       case 177:
         YY_RULE_SETUP
-#line 841 "lex.l"
+#line 833 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8062,7 +8054,7 @@ YY_DECL {
         YY_BREAK
       case 178:
         YY_RULE_SETUP
-#line 849 "lex.l"
+#line 841 "lex.l"
         {
           BEGIN IMAG_POLAR;
           int sign = yytext[2] == '+' ? 1 : -1;
@@ -8071,21 +8063,21 @@ YY_DECL {
         YY_BREAK
       case 179:
         YY_RULE_SETUP
-#line 854 "lex.l"
+#line 846 "lex.l"
         {
           BEGIN IMAG_POLAR;
           mpfr_set_nan(real);
         }
         YY_BREAK
       case 180:
-#line 859 "lex.l"
+#line 851 "lex.l"
       case 181:
-#line 860 "lex.l"
+#line 852 "lex.l"
       case 182:
-#line 861 "lex.l"
+#line 853 "lex.l"
       case 183:
         YY_RULE_SETUP
-#line 861 "lex.l"
+#line 853 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8097,7 +8089,7 @@ YY_DECL {
         YY_BREAK
       case 184:
         YY_RULE_SETUP
-#line 868 "lex.l"
+#line 860 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8110,7 +8102,7 @@ YY_DECL {
         YY_BREAK
       case 185:
         YY_RULE_SETUP
-#line 876 "lex.l"
+#line 868 "lex.l"
         {
           BEGIN IMAG_POLAR;
           int sign = yytext[4] == '+' ? 1 : -1;
@@ -8119,7 +8111,7 @@ YY_DECL {
         YY_BREAK
       case 186:
         YY_RULE_SETUP
-#line 881 "lex.l"
+#line 873 "lex.l"
         {
           BEGIN IMAG_POLAR;
           mpfr_set_nan(real);
@@ -8127,7 +8119,7 @@ YY_DECL {
         YY_BREAK
       case 187:
         YY_RULE_SETUP
-#line 885 "lex.l"
+#line 877 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8138,16 +8130,16 @@ YY_DECL {
         }
         YY_BREAK
       case 188:
-#line 893 "lex.l"
+#line 885 "lex.l"
       case 189:
-#line 894 "lex.l"
+#line 886 "lex.l"
       case 190:
-#line 895 "lex.l"
+#line 887 "lex.l"
       case 191:
-#line 896 "lex.l"
+#line 888 "lex.l"
       case 192:
         YY_RULE_SETUP
-#line 896 "lex.l"
+#line 888 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8159,7 +8151,7 @@ YY_DECL {
         YY_BREAK
       case 193:
         YY_RULE_SETUP
-#line 903 "lex.l"
+#line 895 "lex.l"
         {
           BEGIN IMAG_POLAR;
           int sign = yytext[2] == '+' ? 1 : -1;
@@ -8168,25 +8160,25 @@ YY_DECL {
         YY_BREAK
       case 194:
         YY_RULE_SETUP
-#line 908 "lex.l"
+#line 900 "lex.l"
         {
           BEGIN IMAG_POLAR;
           mpfr_set_nan(real);
         }
         YY_BREAK
       case 195:
-#line 913 "lex.l"
+#line 905 "lex.l"
       case 196:
-#line 914 "lex.l"
+#line 906 "lex.l"
       case 197:
-#line 915 "lex.l"
+#line 907 "lex.l"
       case 198:
-#line 916 "lex.l"
+#line 908 "lex.l"
       case 199:
-#line 917 "lex.l"
+#line 909 "lex.l"
       case 200:
         YY_RULE_SETUP
-#line 917 "lex.l"
+#line 909 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8198,7 +8190,7 @@ YY_DECL {
         YY_BREAK
       case 201:
         YY_RULE_SETUP
-#line 924 "lex.l"
+#line 916 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8211,7 +8203,7 @@ YY_DECL {
         YY_BREAK
       case 202:
         YY_RULE_SETUP
-#line 932 "lex.l"
+#line 924 "lex.l"
         {
           BEGIN IMAG_POLAR;
           int sign = yytext[2] == '+' ? 1 : -1;
@@ -8220,25 +8212,25 @@ YY_DECL {
         YY_BREAK
       case 203:
         YY_RULE_SETUP
-#line 937 "lex.l"
+#line 929 "lex.l"
         {
           BEGIN IMAG_POLAR;
           mpfr_set_nan(real);
         }
         YY_BREAK
       case 204:
-#line 943 "lex.l"
+#line 935 "lex.l"
       case 205:
-#line 944 "lex.l"
+#line 936 "lex.l"
       case 206:
-#line 945 "lex.l"
+#line 937 "lex.l"
       case 207:
-#line 946 "lex.l"
+#line 938 "lex.l"
       case 208:
-#line 947 "lex.l"
+#line 939 "lex.l"
       case 209:
         YY_RULE_SETUP
-#line 947 "lex.l"
+#line 939 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8250,7 +8242,7 @@ YY_DECL {
         YY_BREAK
       case 210:
         YY_RULE_SETUP
-#line 954 "lex.l"
+#line 946 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8263,7 +8255,7 @@ YY_DECL {
         YY_BREAK
       case 211:
         YY_RULE_SETUP
-#line 962 "lex.l"
+#line 954 "lex.l"
         {
           BEGIN IMAG_POLAR;
           int sign = yytext[4] == '+' ? 1 : -1;
@@ -8272,23 +8264,23 @@ YY_DECL {
         YY_BREAK
       case 212:
         YY_RULE_SETUP
-#line 967 "lex.l"
+#line 959 "lex.l"
         {
           BEGIN IMAG_POLAR;
           mpfr_set_nan(real);
         }
         YY_BREAK
       case 213:
-#line 972 "lex.l"
+#line 964 "lex.l"
       case 214:
-#line 973 "lex.l"
+#line 965 "lex.l"
       case 215:
-#line 974 "lex.l"
+#line 966 "lex.l"
       case 216:
-#line 975 "lex.l"
+#line 967 "lex.l"
       case 217:
         YY_RULE_SETUP
-#line 975 "lex.l"
+#line 967 "lex.l"
         {
           BEGIN IMAG_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8299,7 +8291,7 @@ YY_DECL {
         YY_BREAK
       case 218:
         YY_RULE_SETUP
-#line 981 "lex.l"
+#line 973 "lex.l"
         {
           BEGIN IMAG_POLAR;
           int sign = yytext[0] == '+' ? 1 : -1;
@@ -8308,25 +8300,25 @@ YY_DECL {
         YY_BREAK
       case 219:
         YY_RULE_SETUP
-#line 986 "lex.l"
+#line 978 "lex.l"
         {
           BEGIN IMAG_POLAR;
           mpfr_set_nan(real);
         }
         YY_BREAK
       case 220:
-#line 991 "lex.l"
+#line 983 "lex.l"
       case 221:
-#line 992 "lex.l"
+#line 984 "lex.l"
       case 222:
-#line 993 "lex.l"
+#line 985 "lex.l"
       case 223:
-#line 994 "lex.l"
+#line 986 "lex.l"
       case 224:
-#line 995 "lex.l"
+#line 987 "lex.l"
       case 225:
         YY_RULE_SETUP
-#line 995 "lex.l"
+#line 987 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -8344,7 +8336,7 @@ YY_DECL {
         YY_BREAK
       case 226:
         YY_RULE_SETUP
-#line 1007 "lex.l"
+#line 999 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -8363,7 +8355,7 @@ YY_DECL {
         YY_BREAK
       case 227:
         YY_RULE_SETUP
-#line 1020 "lex.l"
+#line 1012 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -8379,7 +8371,7 @@ YY_DECL {
         YY_BREAK
       case 228:
         YY_RULE_SETUP
-#line 1032 "lex.l"
+#line 1024 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -8395,7 +8387,7 @@ YY_DECL {
       /* number radix 2 */
       case 229:
         YY_RULE_SETUP
-#line 1045 "lex.l"
+#line 1037 "lex.l"
         {
           yytext += 2;
           if (*yytext == '+')
@@ -8406,7 +8398,7 @@ YY_DECL {
         YY_BREAK
       case 230:
         YY_RULE_SETUP
-#line 1051 "lex.l"
+#line 1043 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -8417,7 +8409,7 @@ YY_DECL {
         YY_BREAK
       case 231:
         YY_RULE_SETUP
-#line 1057 "lex.l"
+#line 1049 "lex.l"
         {
           yytext += 2;
           if (*yytext == '+')
@@ -8428,7 +8420,7 @@ YY_DECL {
         YY_BREAK
       case 232:
         YY_RULE_SETUP
-#line 1063 "lex.l"
+#line 1055 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -8439,7 +8431,7 @@ YY_DECL {
         YY_BREAK
       case 233:
         YY_RULE_SETUP
-#line 1069 "lex.l"
+#line 1061 "lex.l"
         {
           int sign = yytext[4] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -8450,7 +8442,7 @@ YY_DECL {
         YY_BREAK
       case 234:
         YY_RULE_SETUP
-#line 1076 "lex.l"
+#line 1068 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -8460,7 +8452,7 @@ YY_DECL {
         YY_BREAK
       case 235:
         YY_RULE_SETUP
-#line 1082 "lex.l"
+#line 1074 "lex.l"
         {
           int sign = yytext[2] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -8471,7 +8463,7 @@ YY_DECL {
         YY_BREAK
       case 236:
         YY_RULE_SETUP
-#line 1089 "lex.l"
+#line 1081 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -8481,7 +8473,7 @@ YY_DECL {
         YY_BREAK
       case 237:
         YY_RULE_SETUP
-#line 1095 "lex.l"
+#line 1087 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -8492,7 +8484,7 @@ YY_DECL {
         YY_BREAK
       case 238:
         YY_RULE_SETUP
-#line 1101 "lex.l"
+#line 1093 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           yytext += 4;
@@ -8505,7 +8497,7 @@ YY_DECL {
         YY_BREAK
       case 239:
         YY_RULE_SETUP
-#line 1109 "lex.l"
+#line 1101 "lex.l"
         {
           int sign = yytext[4] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -8516,7 +8508,7 @@ YY_DECL {
         YY_BREAK
       case 240:
         YY_RULE_SETUP
-#line 1116 "lex.l"
+#line 1108 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -8527,7 +8519,7 @@ YY_DECL {
       /* real+imag */
       case 241:
         YY_RULE_SETUP
-#line 1123 "lex.l"
+#line 1115 "lex.l"
         {
           BEGIN IMAG_BIN;
           sign_imag = yytext[yyleng - 1];
@@ -8539,10 +8531,10 @@ YY_DECL {
         }
         YY_BREAK
       case 242:
-#line 1132 "lex.l"
+#line 1124 "lex.l"
       case 243:
         YY_RULE_SETUP
-#line 1132 "lex.l"
+#line 1124 "lex.l"
         {
           BEGIN IMAG_BIN;
           sign_imag = yytext[yyleng - 1];
@@ -8555,7 +8547,7 @@ YY_DECL {
         YY_BREAK
       case 244:
         YY_RULE_SETUP
-#line 1140 "lex.l"
+#line 1132 "lex.l"
         {
           BEGIN IMAG_BIN;
           sign_imag = yytext[yyleng - 1];
@@ -8568,10 +8560,10 @@ YY_DECL {
         }
         YY_BREAK
       case 245:
-#line 1150 "lex.l"
+#line 1142 "lex.l"
       case 246:
         YY_RULE_SETUP
-#line 1150 "lex.l"
+#line 1142 "lex.l"
         {
           BEGIN IMAG_BIN;
           sign_imag = yytext[yyleng - 1];
@@ -8585,7 +8577,7 @@ YY_DECL {
         YY_BREAK
       case 247:
         YY_RULE_SETUP
-#line 1159 "lex.l"
+#line 1151 "lex.l"
         {
           BEGIN IMAG_BIN;
           sign_imag = yytext[yyleng - 1];
@@ -8594,12 +8586,12 @@ YY_DECL {
         }
         YY_BREAK
       case 248:
-#line 1166 "lex.l"
+#line 1158 "lex.l"
       case 249:
-#line 1167 "lex.l"
+#line 1159 "lex.l"
       case 250:
         YY_RULE_SETUP
-#line 1167 "lex.l"
+#line 1159 "lex.l"
         {
           BEGIN IMAG_BIN;
           sign_imag = yytext[yyleng - 1];
@@ -8608,7 +8600,7 @@ YY_DECL {
         YY_BREAK
       case 251:
         YY_RULE_SETUP
-#line 1172 "lex.l"
+#line 1164 "lex.l"
         {
           BEGIN IMAG_BIN;
           sign_imag = yytext[yyleng - 1];
@@ -8618,7 +8610,7 @@ YY_DECL {
         YY_BREAK
       case 252:
         YY_RULE_SETUP
-#line 1178 "lex.l"
+#line 1170 "lex.l"
         {
           BEGIN IMAG_BIN;
           sign_imag = yytext[yyleng - 1];
@@ -8628,7 +8620,7 @@ YY_DECL {
         YY_BREAK
       case 253:
         YY_RULE_SETUP
-#line 1185 "lex.l"
+#line 1177 "lex.l"
         {
           BEGIN INITIAL;
           yytext[yyleng - 1] = '\0';
@@ -8642,7 +8634,7 @@ YY_DECL {
         YY_BREAK
       case 254:
         YY_RULE_SETUP
-#line 1195 "lex.l"
+#line 1187 "lex.l"
         {
           BEGIN INITIAL;
           yytext[yyleng - 1] = '\0';
@@ -8659,7 +8651,7 @@ YY_DECL {
         YY_BREAK
       case 255:
         YY_RULE_SETUP
-#line 1208 "lex.l"
+#line 1200 "lex.l"
         {
           BEGIN INITIAL;
           if (sign_imag == '+') {
@@ -8672,7 +8664,7 @@ YY_DECL {
         YY_BREAK
       case 256:
         YY_RULE_SETUP
-#line 1217 "lex.l"
+#line 1209 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -8685,10 +8677,10 @@ YY_DECL {
         YY_BREAK
       case 257:
         YY_RULE_SETUP
-#line 1226 "lex.l"
+#line 1218 "lex.l"
         {
           BEGIN INITIAL;
-          mpfr_t imag;
+
           mpfr_set_nan(imag);
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -8699,7 +8691,7 @@ YY_DECL {
       /* #b0+imag */
       case 258:
         YY_RULE_SETUP
-#line 1236 "lex.l"
+#line 1228 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -8715,7 +8707,7 @@ YY_DECL {
         YY_BREAK
       case 259:
         YY_RULE_SETUP
-#line 1248 "lex.l"
+#line 1240 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -8730,10 +8722,10 @@ YY_DECL {
         }
         YY_BREAK
       case 260:
-#line 1259 "lex.l"
+#line 1251 "lex.l"
       case 261:
         YY_RULE_SETUP
-#line 1259 "lex.l"
+#line 1251 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -8749,7 +8741,7 @@ YY_DECL {
         YY_BREAK
       case 262:
         YY_RULE_SETUP
-#line 1269 "lex.l"
+#line 1261 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -8765,10 +8757,10 @@ YY_DECL {
         }
         YY_BREAK
       case 263:
-#line 1281 "lex.l"
+#line 1273 "lex.l"
       case 264:
         YY_RULE_SETUP
-#line 1281 "lex.l"
+#line 1273 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -8785,7 +8777,7 @@ YY_DECL {
         YY_BREAK
       case 265:
         YY_RULE_SETUP
-#line 1292 "lex.l"
+#line 1284 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -8797,7 +8789,7 @@ YY_DECL {
         YY_BREAK
       case 266:
         YY_RULE_SETUP
-#line 1300 "lex.l"
+#line 1292 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -8807,10 +8799,10 @@ YY_DECL {
         }
         YY_BREAK
       case 267:
-#line 1308 "lex.l"
+#line 1300 "lex.l"
       case 268:
         YY_RULE_SETUP
-#line 1308 "lex.l"
+#line 1300 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -8821,10 +8813,10 @@ YY_DECL {
         }
         YY_BREAK
       case 269:
-#line 1317 "lex.l"
+#line 1309 "lex.l"
       case 270:
         YY_RULE_SETUP
-#line 1317 "lex.l"
+#line 1309 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -8836,7 +8828,7 @@ YY_DECL {
       /* polar radix 2 */
       case 271:
         YY_RULE_SETUP
-#line 1326 "lex.l"
+#line 1318 "lex.l"
         {
           BEGIN IMAG_BIN_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8847,10 +8839,10 @@ YY_DECL {
         }
         YY_BREAK
       case 272:
-#line 1334 "lex.l"
+#line 1326 "lex.l"
       case 273:
         YY_RULE_SETUP
-#line 1334 "lex.l"
+#line 1326 "lex.l"
         {
           BEGIN IMAG_BIN_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8862,7 +8854,7 @@ YY_DECL {
         YY_BREAK
       case 274:
         YY_RULE_SETUP
-#line 1341 "lex.l"
+#line 1333 "lex.l"
         {
           BEGIN IMAG_BIN_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8874,10 +8866,10 @@ YY_DECL {
         }
         YY_BREAK
       case 275:
-#line 1350 "lex.l"
+#line 1342 "lex.l"
       case 276:
         YY_RULE_SETUP
-#line 1350 "lex.l"
+#line 1342 "lex.l"
         {
           BEGIN IMAG_BIN_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -8890,7 +8882,7 @@ YY_DECL {
         YY_BREAK
       case 277:
         YY_RULE_SETUP
-#line 1358 "lex.l"
+#line 1350 "lex.l"
         {
           BEGIN IMAG_BIN_POLAR;
           int sign = yytext[4] == '+' ? 1 : -1;
@@ -8898,12 +8890,12 @@ YY_DECL {
         }
         YY_BREAK
       case 278:
-#line 1364 "lex.l"
+#line 1356 "lex.l"
       case 279:
-#line 1365 "lex.l"
+#line 1357 "lex.l"
       case 280:
         YY_RULE_SETUP
-#line 1365 "lex.l"
+#line 1357 "lex.l"
         {
           BEGIN IMAG_BIN_POLAR;
           mpfr_set_nan(real);
@@ -8911,7 +8903,7 @@ YY_DECL {
         YY_BREAK
       case 281:
         YY_RULE_SETUP
-#line 1369 "lex.l"
+#line 1361 "lex.l"
         {
           BEGIN IMAG_BIN_POLAR;
           int sign = yytext[2] == '+' ? 1 : -1;
@@ -8920,7 +8912,7 @@ YY_DECL {
         YY_BREAK
       case 282:
         YY_RULE_SETUP
-#line 1374 "lex.l"
+#line 1366 "lex.l"
         {
           BEGIN IMAG_BIN_POLAR;
           int sign = yytext[4] == '+' ? 1 : -1;
@@ -8929,7 +8921,7 @@ YY_DECL {
         YY_BREAK
       case 283:
         YY_RULE_SETUP
-#line 1380 "lex.l"
+#line 1372 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -8947,7 +8939,7 @@ YY_DECL {
         YY_BREAK
       case 284:
         YY_RULE_SETUP
-#line 1392 "lex.l"
+#line 1384 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -8966,7 +8958,7 @@ YY_DECL {
         YY_BREAK
       case 285:
         YY_RULE_SETUP
-#line 1405 "lex.l"
+#line 1397 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -8982,7 +8974,7 @@ YY_DECL {
         YY_BREAK
       case 286:
         YY_RULE_SETUP
-#line 1417 "lex.l"
+#line 1409 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -8998,7 +8990,7 @@ YY_DECL {
       /* number radix 8  */
       case 287:
         YY_RULE_SETUP
-#line 1429 "lex.l"
+#line 1421 "lex.l"
         {
           yytext += 2;
           if (*yytext == '+')
@@ -9009,7 +9001,7 @@ YY_DECL {
         YY_BREAK
       case 288:
         YY_RULE_SETUP
-#line 1435 "lex.l"
+#line 1427 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -9020,7 +9012,7 @@ YY_DECL {
         YY_BREAK
       case 289:
         YY_RULE_SETUP
-#line 1441 "lex.l"
+#line 1433 "lex.l"
         {
           yytext += 2;
           if (*yytext == '+')
@@ -9031,7 +9023,7 @@ YY_DECL {
         YY_BREAK
       case 290:
         YY_RULE_SETUP
-#line 1447 "lex.l"
+#line 1439 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -9042,7 +9034,7 @@ YY_DECL {
         YY_BREAK
       case 291:
         YY_RULE_SETUP
-#line 1453 "lex.l"
+#line 1445 "lex.l"
         {
           int sign = yytext[4] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -9053,7 +9045,7 @@ YY_DECL {
         YY_BREAK
       case 292:
         YY_RULE_SETUP
-#line 1460 "lex.l"
+#line 1452 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -9063,7 +9055,7 @@ YY_DECL {
         YY_BREAK
       case 293:
         YY_RULE_SETUP
-#line 1466 "lex.l"
+#line 1458 "lex.l"
         {
           int sign = yytext[2] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -9074,7 +9066,7 @@ YY_DECL {
         YY_BREAK
       case 294:
         YY_RULE_SETUP
-#line 1473 "lex.l"
+#line 1465 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -9084,7 +9076,7 @@ YY_DECL {
         YY_BREAK
       case 295:
         YY_RULE_SETUP
-#line 1479 "lex.l"
+#line 1471 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -9095,7 +9087,7 @@ YY_DECL {
         YY_BREAK
       case 296:
         YY_RULE_SETUP
-#line 1485 "lex.l"
+#line 1477 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           yytext += 4;
@@ -9108,7 +9100,7 @@ YY_DECL {
         YY_BREAK
       case 297:
         YY_RULE_SETUP
-#line 1493 "lex.l"
+#line 1485 "lex.l"
         {
           int sign = yytext[4] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -9119,7 +9111,7 @@ YY_DECL {
         YY_BREAK
       case 298:
         YY_RULE_SETUP
-#line 1500 "lex.l"
+#line 1492 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -9130,7 +9122,7 @@ YY_DECL {
       /* real+imag */
       case 299:
         YY_RULE_SETUP
-#line 1507 "lex.l"
+#line 1499 "lex.l"
         {
           BEGIN IMAG_OCT;
           sign_imag = yytext[yyleng - 1];
@@ -9142,10 +9134,10 @@ YY_DECL {
         }
         YY_BREAK
       case 300:
-#line 1516 "lex.l"
+#line 1508 "lex.l"
       case 301:
         YY_RULE_SETUP
-#line 1516 "lex.l"
+#line 1508 "lex.l"
         {
           BEGIN IMAG_OCT;
           sign_imag = yytext[yyleng - 1];
@@ -9158,7 +9150,7 @@ YY_DECL {
         YY_BREAK
       case 302:
         YY_RULE_SETUP
-#line 1524 "lex.l"
+#line 1516 "lex.l"
         {
           BEGIN IMAG_OCT;
           sign_imag = yytext[yyleng - 1];
@@ -9171,10 +9163,10 @@ YY_DECL {
         }
         YY_BREAK
       case 303:
-#line 1534 "lex.l"
+#line 1526 "lex.l"
       case 304:
         YY_RULE_SETUP
-#line 1534 "lex.l"
+#line 1526 "lex.l"
         {
           BEGIN IMAG_OCT;
           sign_imag = yytext[yyleng - 1];
@@ -9188,7 +9180,7 @@ YY_DECL {
         YY_BREAK
       case 305:
         YY_RULE_SETUP
-#line 1543 "lex.l"
+#line 1535 "lex.l"
         {
           BEGIN IMAG_OCT;
           sign_imag = yytext[yyleng - 1];
@@ -9197,12 +9189,12 @@ YY_DECL {
         }
         YY_BREAK
       case 306:
-#line 1550 "lex.l"
+#line 1542 "lex.l"
       case 307:
-#line 1551 "lex.l"
+#line 1543 "lex.l"
       case 308:
         YY_RULE_SETUP
-#line 1551 "lex.l"
+#line 1543 "lex.l"
         {
           BEGIN IMAG_OCT;
           sign_imag = yytext[yyleng - 1];
@@ -9211,7 +9203,7 @@ YY_DECL {
         YY_BREAK
       case 309:
         YY_RULE_SETUP
-#line 1556 "lex.l"
+#line 1548 "lex.l"
         {
           BEGIN IMAG_OCT;
           sign_imag = yytext[yyleng - 1];
@@ -9221,7 +9213,7 @@ YY_DECL {
         YY_BREAK
       case 310:
         YY_RULE_SETUP
-#line 1562 "lex.l"
+#line 1554 "lex.l"
         {
           BEGIN IMAG_OCT;
           sign_imag = yytext[yyleng - 1];
@@ -9231,7 +9223,7 @@ YY_DECL {
         YY_BREAK
       case 311:
         YY_RULE_SETUP
-#line 1569 "lex.l"
+#line 1561 "lex.l"
         {
           BEGIN INITIAL;
           yytext[yyleng - 1] = '\0';
@@ -9245,7 +9237,7 @@ YY_DECL {
         YY_BREAK
       case 312:
         YY_RULE_SETUP
-#line 1579 "lex.l"
+#line 1571 "lex.l"
         {
           BEGIN INITIAL;
           yytext[yyleng - 1] = '\0';
@@ -9262,7 +9254,7 @@ YY_DECL {
         YY_BREAK
       case 313:
         YY_RULE_SETUP
-#line 1592 "lex.l"
+#line 1584 "lex.l"
         {
           BEGIN INITIAL;
           if (sign_imag == '+') {
@@ -9275,7 +9267,7 @@ YY_DECL {
         YY_BREAK
       case 314:
         YY_RULE_SETUP
-#line 1601 "lex.l"
+#line 1593 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -9288,10 +9280,10 @@ YY_DECL {
         YY_BREAK
       case 315:
         YY_RULE_SETUP
-#line 1610 "lex.l"
+#line 1602 "lex.l"
         {
           BEGIN INITIAL;
-          mpfr_t imag;
+
           mpfr_set_nan(imag);
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9302,7 +9294,7 @@ YY_DECL {
       /* #o0+imag */
       case 316:
         YY_RULE_SETUP
-#line 1620 "lex.l"
+#line 1612 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -9318,7 +9310,7 @@ YY_DECL {
         YY_BREAK
       case 317:
         YY_RULE_SETUP
-#line 1632 "lex.l"
+#line 1624 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9333,10 +9325,10 @@ YY_DECL {
         }
         YY_BREAK
       case 318:
-#line 1643 "lex.l"
+#line 1635 "lex.l"
       case 319:
         YY_RULE_SETUP
-#line 1643 "lex.l"
+#line 1635 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9352,7 +9344,7 @@ YY_DECL {
         YY_BREAK
       case 320:
         YY_RULE_SETUP
-#line 1653 "lex.l"
+#line 1645 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9368,10 +9360,10 @@ YY_DECL {
         }
         YY_BREAK
       case 321:
-#line 1665 "lex.l"
+#line 1657 "lex.l"
       case 322:
         YY_RULE_SETUP
-#line 1665 "lex.l"
+#line 1657 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9388,7 +9380,7 @@ YY_DECL {
         YY_BREAK
       case 323:
         YY_RULE_SETUP
-#line 1676 "lex.l"
+#line 1668 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9400,7 +9392,7 @@ YY_DECL {
         YY_BREAK
       case 324:
         YY_RULE_SETUP
-#line 1684 "lex.l"
+#line 1676 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9410,10 +9402,10 @@ YY_DECL {
         }
         YY_BREAK
       case 325:
-#line 1692 "lex.l"
+#line 1684 "lex.l"
       case 326:
         YY_RULE_SETUP
-#line 1692 "lex.l"
+#line 1684 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9424,10 +9416,10 @@ YY_DECL {
         }
         YY_BREAK
       case 327:
-#line 1701 "lex.l"
+#line 1693 "lex.l"
       case 328:
         YY_RULE_SETUP
-#line 1701 "lex.l"
+#line 1693 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9439,7 +9431,7 @@ YY_DECL {
       /* polar  */
       case 329:
         YY_RULE_SETUP
-#line 1710 "lex.l"
+#line 1702 "lex.l"
         {
           BEGIN IMAG_OCT_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -9450,10 +9442,10 @@ YY_DECL {
         }
         YY_BREAK
       case 330:
-#line 1718 "lex.l"
+#line 1710 "lex.l"
       case 331:
         YY_RULE_SETUP
-#line 1718 "lex.l"
+#line 1710 "lex.l"
         {
           BEGIN IMAG_OCT_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -9465,7 +9457,7 @@ YY_DECL {
         YY_BREAK
       case 332:
         YY_RULE_SETUP
-#line 1725 "lex.l"
+#line 1717 "lex.l"
         {
           BEGIN IMAG_OCT_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -9477,10 +9469,10 @@ YY_DECL {
         }
         YY_BREAK
       case 333:
-#line 1734 "lex.l"
+#line 1726 "lex.l"
       case 334:
         YY_RULE_SETUP
-#line 1734 "lex.l"
+#line 1726 "lex.l"
         {
           BEGIN IMAG_OCT_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -9493,7 +9485,7 @@ YY_DECL {
         YY_BREAK
       case 335:
         YY_RULE_SETUP
-#line 1742 "lex.l"
+#line 1734 "lex.l"
         {
           BEGIN IMAG_OCT_POLAR;
           int sign = yytext[4] == '+' ? 1 : -1;
@@ -9501,12 +9493,12 @@ YY_DECL {
         }
         YY_BREAK
       case 336:
-#line 1748 "lex.l"
+#line 1740 "lex.l"
       case 337:
-#line 1749 "lex.l"
+#line 1741 "lex.l"
       case 338:
         YY_RULE_SETUP
-#line 1749 "lex.l"
+#line 1741 "lex.l"
         {
           BEGIN IMAG_OCT_POLAR;
           mpfr_set_nan(real);
@@ -9514,7 +9506,7 @@ YY_DECL {
         YY_BREAK
       case 339:
         YY_RULE_SETUP
-#line 1753 "lex.l"
+#line 1745 "lex.l"
         {
           BEGIN IMAG_OCT_POLAR;
           int sign = yytext[2] == '+' ? 1 : -1;
@@ -9523,7 +9515,7 @@ YY_DECL {
         YY_BREAK
       case 340:
         YY_RULE_SETUP
-#line 1758 "lex.l"
+#line 1750 "lex.l"
         {
           BEGIN IMAG_OCT_POLAR;
           int sign = yytext[4] == '+' ? 1 : -1;
@@ -9532,7 +9524,7 @@ YY_DECL {
         YY_BREAK
       case 341:
         YY_RULE_SETUP
-#line 1764 "lex.l"
+#line 1756 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -9550,7 +9542,7 @@ YY_DECL {
         YY_BREAK
       case 342:
         YY_RULE_SETUP
-#line 1776 "lex.l"
+#line 1768 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -9569,7 +9561,7 @@ YY_DECL {
         YY_BREAK
       case 343:
         YY_RULE_SETUP
-#line 1789 "lex.l"
+#line 1781 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -9585,7 +9577,7 @@ YY_DECL {
         YY_BREAK
       case 344:
         YY_RULE_SETUP
-#line 1801 "lex.l"
+#line 1793 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -9601,7 +9593,7 @@ YY_DECL {
       /* number radix 16 */
       case 345:
         YY_RULE_SETUP
-#line 1813 "lex.l"
+#line 1805 "lex.l"
         {
           yytext += 2;
           if (*yytext == '+')
@@ -9612,7 +9604,7 @@ YY_DECL {
         YY_BREAK
       case 346:
         YY_RULE_SETUP
-#line 1819 "lex.l"
+#line 1811 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -9623,7 +9615,7 @@ YY_DECL {
         YY_BREAK
       case 347:
         YY_RULE_SETUP
-#line 1825 "lex.l"
+#line 1817 "lex.l"
         {
           yytext += 2;
           if (*yytext == '+')
@@ -9634,7 +9626,7 @@ YY_DECL {
         YY_BREAK
       case 348:
         YY_RULE_SETUP
-#line 1831 "lex.l"
+#line 1823 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -9645,7 +9637,7 @@ YY_DECL {
         YY_BREAK
       case 349:
         YY_RULE_SETUP
-#line 1837 "lex.l"
+#line 1829 "lex.l"
         {
           int sign = yytext[4] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -9656,7 +9648,7 @@ YY_DECL {
         YY_BREAK
       case 350:
         YY_RULE_SETUP
-#line 1844 "lex.l"
+#line 1836 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -9666,7 +9658,7 @@ YY_DECL {
         YY_BREAK
       case 351:
         YY_RULE_SETUP
-#line 1850 "lex.l"
+#line 1842 "lex.l"
         {
           int sign = yytext[2] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -9677,7 +9669,7 @@ YY_DECL {
         YY_BREAK
       case 352:
         YY_RULE_SETUP
-#line 1857 "lex.l"
+#line 1849 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -9687,7 +9679,7 @@ YY_DECL {
         YY_BREAK
       case 353:
         YY_RULE_SETUP
-#line 1863 "lex.l"
+#line 1855 "lex.l"
         {
           yytext += 4;
           if (*yytext == '+')
@@ -9698,7 +9690,7 @@ YY_DECL {
         YY_BREAK
       case 354:
         YY_RULE_SETUP
-#line 1869 "lex.l"
+#line 1861 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           yytext += 4;
@@ -9711,7 +9703,7 @@ YY_DECL {
         YY_BREAK
       case 355:
         YY_RULE_SETUP
-#line 1877 "lex.l"
+#line 1869 "lex.l"
         {
           int sign = yytext[4] == '+' ? 1 : -1;
           yylval.obj.type = NUMBERR;
@@ -9722,7 +9714,7 @@ YY_DECL {
         YY_BREAK
       case 356:
         YY_RULE_SETUP
-#line 1884 "lex.l"
+#line 1876 "lex.l"
         {
           yylval.obj.type = NUMBERR;
           mpfr_init(yylval.obj.numberr);
@@ -9733,7 +9725,7 @@ YY_DECL {
       /* real+imag */
       case 357:
         YY_RULE_SETUP
-#line 1891 "lex.l"
+#line 1883 "lex.l"
         {
           BEGIN IMAG_HEX;
           sign_imag = yytext[yyleng - 1];
@@ -9745,10 +9737,10 @@ YY_DECL {
         }
         YY_BREAK
       case 358:
-#line 1900 "lex.l"
+#line 1892 "lex.l"
       case 359:
         YY_RULE_SETUP
-#line 1900 "lex.l"
+#line 1892 "lex.l"
         {
           BEGIN IMAG_HEX;
           sign_imag = yytext[yyleng - 1];
@@ -9761,7 +9753,7 @@ YY_DECL {
         YY_BREAK
       case 360:
         YY_RULE_SETUP
-#line 1908 "lex.l"
+#line 1900 "lex.l"
         {
           BEGIN IMAG_HEX;
           sign_imag = yytext[yyleng - 1];
@@ -9774,10 +9766,10 @@ YY_DECL {
         }
         YY_BREAK
       case 361:
-#line 1918 "lex.l"
+#line 1910 "lex.l"
       case 362:
         YY_RULE_SETUP
-#line 1918 "lex.l"
+#line 1910 "lex.l"
         {
           BEGIN IMAG_HEX;
           sign_imag = yytext[yyleng - 1];
@@ -9791,7 +9783,7 @@ YY_DECL {
         YY_BREAK
       case 363:
         YY_RULE_SETUP
-#line 1927 "lex.l"
+#line 1919 "lex.l"
         {
           BEGIN IMAG_HEX;
           sign_imag = yytext[yyleng - 1];
@@ -9800,12 +9792,12 @@ YY_DECL {
         }
         YY_BREAK
       case 364:
-#line 1934 "lex.l"
+#line 1926 "lex.l"
       case 365:
-#line 1935 "lex.l"
+#line 1927 "lex.l"
       case 366:
         YY_RULE_SETUP
-#line 1935 "lex.l"
+#line 1927 "lex.l"
         {
           BEGIN IMAG_HEX;
           sign_imag = yytext[yyleng - 1];
@@ -9814,7 +9806,7 @@ YY_DECL {
         YY_BREAK
       case 367:
         YY_RULE_SETUP
-#line 1940 "lex.l"
+#line 1932 "lex.l"
         {
           BEGIN IMAG_HEX;
           sign_imag = yytext[yyleng - 1];
@@ -9824,7 +9816,7 @@ YY_DECL {
         YY_BREAK
       case 368:
         YY_RULE_SETUP
-#line 1946 "lex.l"
+#line 1938 "lex.l"
         {
           BEGIN IMAG_HEX;
           sign_imag = yytext[yyleng - 1];
@@ -9834,7 +9826,7 @@ YY_DECL {
         YY_BREAK
       case 369:
         YY_RULE_SETUP
-#line 1953 "lex.l"
+#line 1945 "lex.l"
         {
           BEGIN INITIAL;
           yytext[yyleng - 1] = '\0';
@@ -9848,7 +9840,7 @@ YY_DECL {
         YY_BREAK
       case 370:
         YY_RULE_SETUP
-#line 1963 "lex.l"
+#line 1955 "lex.l"
         {
           BEGIN INITIAL;
           yytext[yyleng - 1] = '\0';
@@ -9865,7 +9857,7 @@ YY_DECL {
         YY_BREAK
       case 371:
         YY_RULE_SETUP
-#line 1976 "lex.l"
+#line 1968 "lex.l"
         {
           BEGIN INITIAL;
           if (sign_imag == '+') {
@@ -9878,7 +9870,7 @@ YY_DECL {
         YY_BREAK
       case 372:
         YY_RULE_SETUP
-#line 1986 "lex.l"
+#line 1978 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -9891,10 +9883,9 @@ YY_DECL {
         YY_BREAK
       case 373:
         YY_RULE_SETUP
-#line 1995 "lex.l"
+#line 1987 "lex.l"
         {
           BEGIN INITIAL;
-          mpfr_t imag;
           mpfr_set_nan(imag);
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9905,7 +9896,7 @@ YY_DECL {
       /* #x0+imag */
       case 374:
         YY_RULE_SETUP
-#line 2005 "lex.l"
+#line 1996 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -9921,7 +9912,7 @@ YY_DECL {
         YY_BREAK
       case 375:
         YY_RULE_SETUP
-#line 2017 "lex.l"
+#line 2008 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9936,10 +9927,10 @@ YY_DECL {
         }
         YY_BREAK
       case 376:
-#line 2028 "lex.l"
+#line 2019 "lex.l"
       case 377:
         YY_RULE_SETUP
-#line 2028 "lex.l"
+#line 2019 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9955,7 +9946,7 @@ YY_DECL {
         YY_BREAK
       case 378:
         YY_RULE_SETUP
-#line 2038 "lex.l"
+#line 2029 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9971,10 +9962,10 @@ YY_DECL {
         }
         YY_BREAK
       case 379:
-#line 2050 "lex.l"
+#line 2041 "lex.l"
       case 380:
         YY_RULE_SETUP
-#line 2050 "lex.l"
+#line 2041 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -9991,7 +9982,7 @@ YY_DECL {
         YY_BREAK
       case 381:
         YY_RULE_SETUP
-#line 2061 "lex.l"
+#line 2052 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -10003,7 +9994,7 @@ YY_DECL {
         YY_BREAK
       case 382:
         YY_RULE_SETUP
-#line 2069 "lex.l"
+#line 2060 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -10013,10 +10004,10 @@ YY_DECL {
         }
         YY_BREAK
       case 383:
-#line 2077 "lex.l"
+#line 2068 "lex.l"
       case 384:
         YY_RULE_SETUP
-#line 2077 "lex.l"
+#line 2068 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -10027,10 +10018,10 @@ YY_DECL {
         }
         YY_BREAK
       case 385:
-#line 2086 "lex.l"
+#line 2077 "lex.l"
       case 386:
         YY_RULE_SETUP
-#line 2086 "lex.l"
+#line 2077 "lex.l"
         {
           yylval.obj.type = NUMBERC;
           mpc_init2(yylval.obj.numberc, MPC_PREC);
@@ -10042,7 +10033,7 @@ YY_DECL {
       /* polar  */
       case 387:
         YY_RULE_SETUP
-#line 2095 "lex.l"
+#line 2086 "lex.l"
         {
           BEGIN IMAG_HEX_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -10053,10 +10044,10 @@ YY_DECL {
         }
         YY_BREAK
       case 388:
-#line 2103 "lex.l"
+#line 2094 "lex.l"
       case 389:
         YY_RULE_SETUP
-#line 2103 "lex.l"
+#line 2094 "lex.l"
         {
           BEGIN IMAG_HEX_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -10068,7 +10059,7 @@ YY_DECL {
         YY_BREAK
       case 390:
         YY_RULE_SETUP
-#line 2110 "lex.l"
+#line 2101 "lex.l"
         {
           BEGIN IMAG_HEX_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -10080,10 +10071,10 @@ YY_DECL {
         }
         YY_BREAK
       case 391:
-#line 2119 "lex.l"
+#line 2110 "lex.l"
       case 392:
         YY_RULE_SETUP
-#line 2119 "lex.l"
+#line 2110 "lex.l"
         {
           BEGIN IMAG_HEX_POLAR;
           yytext[yyleng - 1] = '\0';
@@ -10096,7 +10087,7 @@ YY_DECL {
         YY_BREAK
       case 393:
         YY_RULE_SETUP
-#line 2127 "lex.l"
+#line 2118 "lex.l"
         {
           BEGIN IMAG_HEX_POLAR;
           int sign = yytext[4] == '+' ? 1 : -1;
@@ -10104,12 +10095,12 @@ YY_DECL {
         }
         YY_BREAK
       case 394:
-#line 2133 "lex.l"
+#line 2124 "lex.l"
       case 395:
-#line 2134 "lex.l"
+#line 2125 "lex.l"
       case 396:
         YY_RULE_SETUP
-#line 2134 "lex.l"
+#line 2125 "lex.l"
         {
           BEGIN IMAG_HEX_POLAR;
           mpfr_set_nan(real);
@@ -10117,7 +10108,7 @@ YY_DECL {
         YY_BREAK
       case 397:
         YY_RULE_SETUP
-#line 2138 "lex.l"
+#line 2129 "lex.l"
         {
           BEGIN IMAG_HEX_POLAR;
           int sign = yytext[2] == '+' ? 1 : -1;
@@ -10126,7 +10117,7 @@ YY_DECL {
         YY_BREAK
       case 398:
         YY_RULE_SETUP
-#line 2143 "lex.l"
+#line 2134 "lex.l"
         {
           BEGIN IMAG_HEX_POLAR;
           int sign = yytext[4] == '+' ? 1 : -1;
@@ -10135,7 +10126,7 @@ YY_DECL {
         YY_BREAK
       case 399:
         YY_RULE_SETUP
-#line 2149 "lex.l"
+#line 2140 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -10153,7 +10144,7 @@ YY_DECL {
         YY_BREAK
       case 400:
         YY_RULE_SETUP
-#line 2161 "lex.l"
+#line 2152 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -10172,7 +10163,7 @@ YY_DECL {
         YY_BREAK
       case 401:
         YY_RULE_SETUP
-#line 2174 "lex.l"
+#line 2165 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -10188,7 +10179,7 @@ YY_DECL {
         YY_BREAK
       case 402:
         YY_RULE_SETUP
-#line 2186 "lex.l"
+#line 2177 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj.type = NUMBERC;
@@ -10204,7 +10195,7 @@ YY_DECL {
       case 403:
         /* rule 403 can match eol */
         YY_RULE_SETUP
-#line 2198 "lex.l"
+#line 2189 "lex.l"
         {
           yytext += 2;
           yylval.obj = character_new(yytext);
@@ -10214,7 +10205,7 @@ YY_DECL {
       /* character name */
       case 404:
         YY_RULE_SETUP
-#line 2204 "lex.l"
+#line 2195 "lex.l"
         {
           yylval.obj = character_new("\x7");
           return TOKEN_CHARACTER;
@@ -10222,7 +10213,7 @@ YY_DECL {
         YY_BREAK
       case 405:
         YY_RULE_SETUP
-#line 2205 "lex.l"
+#line 2196 "lex.l"
         {
           yylval.obj = character_new("\x8");
           return TOKEN_CHARACTER;
@@ -10230,7 +10221,7 @@ YY_DECL {
         YY_BREAK
       case 406:
         YY_RULE_SETUP
-#line 2206 "lex.l"
+#line 2197 "lex.l"
         {
           yylval.obj = character_new("\x7f");
           return TOKEN_CHARACTER;
@@ -10238,7 +10229,7 @@ YY_DECL {
         YY_BREAK
       case 407:
         YY_RULE_SETUP
-#line 2207 "lex.l"
+#line 2198 "lex.l"
         {
           yylval.obj = character_new("\x1b");
           return TOKEN_CHARACTER;
@@ -10246,7 +10237,7 @@ YY_DECL {
         YY_BREAK
       case 408:
         YY_RULE_SETUP
-#line 2208 "lex.l"
+#line 2199 "lex.l"
         {
           yylval.obj = character_new("\xa");
           return TOKEN_CHARACTER;
@@ -10254,7 +10245,7 @@ YY_DECL {
         YY_BREAK
       case 409:
         YY_RULE_SETUP
-#line 2209 "lex.l"
+#line 2200 "lex.l"
         {
           yylval.obj = character_new("\x0");
           return TOKEN_CHARACTER;
@@ -10262,7 +10253,7 @@ YY_DECL {
         YY_BREAK
       case 410:
         YY_RULE_SETUP
-#line 2210 "lex.l"
+#line 2201 "lex.l"
         {
           yylval.obj = character_new("\xd");
           return TOKEN_CHARACTER;
@@ -10270,7 +10261,7 @@ YY_DECL {
         YY_BREAK
       case 411:
         YY_RULE_SETUP
-#line 2211 "lex.l"
+#line 2202 "lex.l"
         {
           yylval.obj = character_new(" ");
           return TOKEN_CHARACTER;
@@ -10278,7 +10269,7 @@ YY_DECL {
         YY_BREAK
       case 412:
         YY_RULE_SETUP
-#line 2212 "lex.l"
+#line 2203 "lex.l"
         {
           yylval.obj = character_new("\x9");
           return TOKEN_CHARACTER;
@@ -10286,7 +10277,7 @@ YY_DECL {
         YY_BREAK
       case 413:
         YY_RULE_SETUP
-#line 2213 "lex.l"
+#line 2204 "lex.l"
         {
           yytext += 3;
           char *endptr = NULL;
@@ -10298,7 +10289,7 @@ YY_DECL {
       /* string */
       case 414:
         YY_RULE_SETUP
-#line 2222 "lex.l"
+#line 2213 "lex.l"
         {
           yylval.obj = string_empty;
           return TOKEN_STRING_EMPTY;
@@ -10306,14 +10297,14 @@ YY_DECL {
         YY_BREAK
       case 415:
         YY_RULE_SETUP
-#line 2223 "lex.l"
+#line 2214 "lex.l"
         {
           BEGIN STRING_ELEMENT;
         }
         YY_BREAK
       case 416:
         YY_RULE_SETUP
-#line 2226 "lex.l"
+#line 2217 "lex.l"
         {
           BEGIN INITIAL;
           yylval.obj = string_empty;
@@ -10323,7 +10314,7 @@ YY_DECL {
       case 417:
         /* rule 417 can match eol */
         YY_RULE_SETUP
-#line 2231 "lex.l"
+#line 2222 "lex.l"
         {
           yylval.obj = character_new(yytext);
           return TOKEN_STRING_ELEMENT;
@@ -10331,7 +10322,7 @@ YY_DECL {
         YY_BREAK
       case 418:
         YY_RULE_SETUP
-#line 2235 "lex.l"
+#line 2226 "lex.l"
         {
           yylval.obj = character_new("\a");
           return TOKEN_STRING_ELEMENT;
@@ -10339,7 +10330,7 @@ YY_DECL {
         YY_BREAK
       case 419:
         YY_RULE_SETUP
-#line 2239 "lex.l"
+#line 2230 "lex.l"
         {
           yylval.obj = character_new("\b");
           return TOKEN_STRING_ELEMENT;
@@ -10347,7 +10338,7 @@ YY_DECL {
         YY_BREAK
       case 420:
         YY_RULE_SETUP
-#line 2243 "lex.l"
+#line 2234 "lex.l"
         {
           yylval.obj = character_new("\t");
           return TOKEN_STRING_ELEMENT;
@@ -10355,7 +10346,7 @@ YY_DECL {
         YY_BREAK
       case 421:
         YY_RULE_SETUP
-#line 2247 "lex.l"
+#line 2238 "lex.l"
         {
           yylval.obj = character_new("\n");
           return TOKEN_STRING_ELEMENT;
@@ -10363,7 +10354,7 @@ YY_DECL {
         YY_BREAK
       case 422:
         YY_RULE_SETUP
-#line 2251 "lex.l"
+#line 2242 "lex.l"
         {
           yylval.obj = character_new("\r");
           return TOKEN_STRING_ELEMENT;
@@ -10371,7 +10362,7 @@ YY_DECL {
         YY_BREAK
       case 423:
         YY_RULE_SETUP
-#line 2255 "lex.l"
+#line 2246 "lex.l"
         {
           yylval.obj = character_new("\"");
           return TOKEN_STRING_ELEMENT;
@@ -10379,7 +10370,7 @@ YY_DECL {
         YY_BREAK
       case 424:
         YY_RULE_SETUP
-#line 2259 "lex.l"
+#line 2250 "lex.l"
         {
           yylval.obj = character_new("\\");
           return TOKEN_STRING_ELEMENT;
@@ -10388,13 +10379,13 @@ YY_DECL {
       case 425:
         /* rule 425 can match eol */
         YY_RULE_SETUP
-#line 2263 "lex.l"
+#line 2254 "lex.l"
         {
         }
         YY_BREAK
       case 426:
         YY_RULE_SETUP
-#line 2264 "lex.l"
+#line 2255 "lex.l"
         {
           yytext[yyleng - 1] = '\0';
           yytext += 2;
@@ -10405,32 +10396,32 @@ YY_DECL {
         }
         YY_BREAK
       case 427:
-#line 2273 "lex.l"
+#line 2264 "lex.l"
       case 428:
-#line 2274 "lex.l"
+#line 2265 "lex.l"
       case 429:
-#line 2275 "lex.l"
+#line 2266 "lex.l"
       case 430:
-#line 2276 "lex.l"
+#line 2267 "lex.l"
       case 431:
-#line 2277 "lex.l"
+#line 2268 "lex.l"
       case 432:
         YY_RULE_SETUP
-#line 2277 "lex.l"
+#line 2268 "lex.l"
         {
           return yytext[0];
         }
         YY_BREAK
       case 433:
         YY_RULE_SETUP
-#line 2279 "lex.l"
+#line 2270 "lex.l"
         {
           return TOKEN_SHARP_OP;
         }
         YY_BREAK
       case 434:
         YY_RULE_SETUP
-#line 2280 "lex.l"
+#line 2271 "lex.l"
         {
           return TOKEN_SHARP_U_EIGHT_OP;
         }
@@ -10447,7 +10438,7 @@ YY_DECL {
       case YY_STATE_EOF(IMAG_OCT_POLAR):
       case YY_STATE_EOF(IMAG_HEX_POLAR):
       case YY_STATE_EOF(STRING_ELEMENT):
-#line 2281 "lex.l"
+#line 2272 "lex.l"
       {
         if (interactive_mode) {
           exit(0);
@@ -10458,7 +10449,7 @@ YY_DECL {
         YY_BREAK
       case 435:
         YY_RULE_SETUP
-#line 2288 "lex.l"
+#line 2279 "lex.l"
         {
           yyunput(1, yytext);
           input();
@@ -10467,10 +10458,10 @@ YY_DECL {
         YY_BREAK
       case 436:
         YY_RULE_SETUP
-#line 2293 "lex.l"
+#line 2284 "lex.l"
         ECHO;
         YY_BREAK
-#line 10951 "lex.yy.c"
+#line 10942 "lex.yy.c"
 
       case YY_END_OF_BUFFER: {
         /* Amount of text matched not including the EOB char. */
@@ -11388,7 +11379,7 @@ void yyfree(void *ptr) {
 
 #define YYTABLES_NAME "yytables"
 
-#line 2293 "lex.l"
+#line 2284 "lex.l"
 
 #include <stdbool.h>
 bool syntax_error = true;

@@ -320,30 +320,18 @@ Object scm_rational_p(Object const args) {
   case NUMBERQ:
     return true_obj;
   case NUMBERR: {
-    mpf_t op;
-    mpf_init(op);
-    mpfr_get_f(op, obj.numberr, MPFR_RNDN);
-    mpq_t opq;
-    mpq_init(opq);
-    mpq_set_f(opq, op);
-    mpf_clear(op);
+    mpfr_get_f(opf, obj.numberr, MPFR_RNDN);
+    mpq_set_f(opq, opf);
     Object out = mpfr_cmp_q(obj.numberr, opq) == 0 ? true_obj : false_obj;
-    mpq_clear(opq);
     return out;
   }
   case NUMBERC: {
     if (!mpfr_zero_p(mpc_imagref(obj.numberc))) {
       return false_obj;
     }
-    mpf_t op;
-    mpf_init(op);
-    mpfr_get_f(op, mpc_realref(obj.numberc), MPFR_RNDN);
-    mpq_t opq;
-    mpq_init(opq);
-    mpq_set_f(opq, op);
-    mpf_clear(op);
+    mpfr_get_f(opf, mpc_realref(obj.numberc), MPFR_RNDN);
+    mpq_set_f(opq, opf);
     Object out = mpfr_cmp_q(obj.numberr, opq) == 0 ? true_obj : false_obj;
-    mpq_clear(opq);
     return out;
   }
   case NONE:
@@ -366,22 +354,16 @@ Object scm_integer_p(Object const args) {
     return mpz_cmp_ui(mpq_denref(obj.numberq), 1) == 0 ? true_obj : false_obj;
   }
   case NUMBERR: {
-    mpfr_t op;
-    mpfr_init(op);
-    mpfr_round(op, obj.numberr);
-    int b = mpfr_equal_p(obj.numberr, op);
-    mpfr_clear(op);
+    mpfr_round(opfr, obj.numberr);
+    int b = mpfr_equal_p(obj.numberr, opfr);
     return b ? true_obj : false_obj;
   }
   case NUMBERC: {
     if (!mpfr_zero_p(mpc_imagref(obj.numberc))) {
       return false_obj;
     }
-    mpfr_t op;
-    mpfr_init(op);
-    mpfr_round(op, obj.numberr);
-    int b = mpfr_equal_p(mpc_realref(obj.numberc), op);
-    mpfr_clear(op);
+    mpfr_round(opfr, obj.numberr);
+    int b = mpfr_equal_p(mpc_realref(obj.numberc), opfr);
     return b ? true_obj : false_obj;
   }
   case NONE:
@@ -777,14 +759,7 @@ Object scm_negative_p(Object const args) {
 }
 
 Object scm_add(Object const args) {
-  mpz_t opz;
-  mpq_t opq, opq1;
-  mpfr_t opfr;
-  mpc_t opc;
-  mpz_init_set_ui(opz, 0);
-  mpq_inits(opq, opq1, NULL);
-  mpfr_init(opfr);
-  mpc_init2(opc, MPC_PREC);
+  mpz_set_ui(opz, 0);
   Type type = NUMBERZ;
   for (Object a = args; a.type != EMPTY; a = cdrref(a)) {
     Object arg = value(carref(a));
@@ -813,10 +788,6 @@ Object scm_add(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
         return wrong_type("+", args);
       }
       break;
@@ -843,10 +814,6 @@ Object scm_add(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
         return wrong_type("+", args);
       }
       break;
@@ -871,10 +838,7 @@ Object scm_add(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
+
         return wrong_type("+", args);
       }
       break;
@@ -900,19 +864,11 @@ Object scm_add(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
         return wrong_type("+", args);
       }
       break;
     }
     default:
-      mpz_clear(opz);
-      mpq_clears(opq, opq1, NULL);
-      mpfr_clear(opfr);
-      mpc_clear(opc);
       return wrong_type("+", args);
     }
   }
@@ -945,22 +901,11 @@ Object scm_add(Object const args) {
     error("scm_add");
     break;
   }
-  mpz_clear(opz);
-  mpq_clears(opq, opq1, NULL);
-  mpfr_clear(opfr);
-  mpc_clear(opc);
   return out;
 }
 
 Object scm_mul(Object const args) {
-  mpz_t opz;
-  mpq_t opq, opq1;
-  mpfr_t opfr;
-  mpc_t opc;
-  mpz_init_set_ui(opz, 1);
-  mpq_inits(opq, opq1, NULL);
-  mpfr_init(opfr);
-  mpc_init2(opc, MPC_PREC);
+  mpz_set_ui(opz, 1);
   Type type = NUMBERZ;
   for (Object a = args; a.type != EMPTY; a = cdrref(a)) {
     Object arg = value(carref(a));
@@ -989,10 +934,6 @@ Object scm_mul(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
         return wrong_type("*", args);
       }
       break;
@@ -1019,10 +960,6 @@ Object scm_mul(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
         return wrong_type("*", args);
       }
       break;
@@ -1047,10 +984,6 @@ Object scm_mul(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
         return wrong_type("*", args);
       }
       break;
@@ -1076,19 +1009,11 @@ Object scm_mul(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
         return wrong_type("*", args);
       }
       break;
     }
     default:
-      mpz_clear(opz);
-      mpq_clears(opq, opq1, NULL);
-      mpfr_clear(opfr);
-      mpc_clear(opc);
       return wrong_type("*", args);
     }
   }
@@ -1121,10 +1046,6 @@ Object scm_mul(Object const args) {
     error("scm_mul");
     break;
   }
-  mpz_clear(opz);
-  mpq_clears(opq, opq1, NULL);
-  mpfr_clear(opfr);
-  mpc_clear(opc);
   return out;
 }
 
@@ -1135,15 +1056,7 @@ Object scm_sub(Object const args) {
   Object out = none;
   size_t len = args_length(args);
   Object obj1 = value(carref(args));
-  mpz_t opz;
-  mpq_t opq, opq1;
-  mpfr_t opfr;
-  mpc_t opc;
   Type type = obj1.type;
-  mpz_init(opz);
-  mpq_inits(opq, opq1, NULL);
-  mpfr_init(opfr);
-  mpc_init2(opc, MPC_PREC);
   switch (type) {
   case NUMBERZ: {
     mpz_set(opz, obj1.numberz);
@@ -1194,10 +1107,6 @@ Object scm_sub(Object const args) {
     default:
       return wrong_type("-", args);
     }
-    mpz_clear(opz);
-    mpq_clears(opq, opq1, NULL);
-    mpfr_clear(opfr);
-    mpc_clear(opc);
     return out;
   }
   for (Object a = cdrref(args); a.type != EMPTY; a = cdrref(a)) {
@@ -1229,10 +1138,6 @@ Object scm_sub(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
         return wrong_type("-", args);
       }
       break;
@@ -1261,10 +1166,6 @@ Object scm_sub(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
         return wrong_type("-", args);
       }
       break;
@@ -1290,10 +1191,6 @@ Object scm_sub(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
         return wrong_type("-", args);
       }
       break;
@@ -1319,19 +1216,11 @@ Object scm_sub(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
         return wrong_type("-", args);
       }
       break;
     }
     default:
-      mpz_clear(opz);
-      mpq_clears(opq, opq1, NULL);
-      mpfr_clear(opfr);
-      mpc_clear(opc);
       return wrong_type("-", args);
     }
   }
@@ -1363,10 +1252,6 @@ Object scm_sub(Object const args) {
     error("scm_sub");
     break;
   }
-  mpz_clear(opz);
-  mpq_clears(opq, opq1, NULL);
-  mpfr_clear(opfr);
-  mpc_clear(opc);
   return out;
 }
 Object scm_div(Object const args) {
@@ -1376,15 +1261,7 @@ Object scm_div(Object const args) {
   Object out = none;
   size_t len = args_length(args);
   Object obj1 = value(carref(args));
-  mpz_t opz;
-  mpq_t opq, opq1;
-  mpfr_t opfr;
-  mpc_t opc;
   Type type = obj1.type;
-  mpz_init(opz);
-  mpq_inits(opq, opq1, NULL);
-  mpfr_init(opfr);
-  mpc_init2(opc, MPC_PREC);
   switch (type) {
   case NUMBERZ: {
     mpz_set(opz, obj1.numberz);
@@ -1437,10 +1314,7 @@ Object scm_div(Object const args) {
     default:
       return wrong_type("/", args);
     }
-    mpz_clear(opz);
-    mpq_clears(opq, opq1, NULL);
-    mpfr_clear(opfr);
-    mpc_clear(opc);
+
     return out;
   }
   for (Object a = cdrref(args); a.type != EMPTY; a = cdrref(a)) {
@@ -1474,10 +1348,7 @@ Object scm_div(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
+
         return wrong_type("/", args);
       }
       break;
@@ -1506,10 +1377,7 @@ Object scm_div(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
+
         return wrong_type("/", args);
       }
       break;
@@ -1535,10 +1403,7 @@ Object scm_div(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
+
         return wrong_type("/", args);
       }
       break;
@@ -1564,19 +1429,13 @@ Object scm_div(Object const args) {
         break;
       }
       default:
-        mpz_clear(opz);
-        mpq_clears(opq, opq1, NULL);
-        mpfr_clear(opfr);
-        mpc_clear(opc);
+
         return wrong_type("/", args);
       }
       break;
     }
     default:
-      mpz_clear(opz);
-      mpq_clears(opq, opq1, NULL);
-      mpfr_clear(opfr);
-      mpc_clear(opc);
+
       return wrong_type("/", args);
     }
   }
@@ -1608,10 +1467,6 @@ Object scm_div(Object const args) {
     error("scm_div");
     break;
   }
-  mpz_clear(opz);
-  mpq_clears(opq, opq1, NULL);
-  mpfr_clear(opfr);
-  mpc_clear(opc);
   return out;
 }
 
@@ -1665,32 +1520,20 @@ Object scm_numerator(Object const args) {
     if (scm_rational_p(args).type == FALSE_TYPE) {
       return wrong_type("numberator", args);
     }
-    mpf_t op;
-    mpf_init(op);
-    mpfr_get_f(op, obj.numberr, MPFR_RNDN);
-    mpq_t opq;
-    mpq_init(opq);
-    mpq_set_f(opq, op);
-    mpf_clear(op);
+    mpfr_get_f(opf, obj.numberr, MPFR_RNDN);
+    mpq_set_f(opq, opf);
     Object out = {.type = NUMBERR};
     mpfr_set_z(out.numberr, mpq_numref(opq), MPFR_RNDN);
-    mpq_clear(opq);
     return out;
   }
   case NUMBERC: {
     if (scm_rational_p(args).type == FALSE_TYPE) {
       return wrong_type("numerator", args);
     }
-    mpf_t op;
-    mpf_init(op);
-    mpfr_get_f(op, mpc_realref(obj.numberc), MPFR_RNDN);
-    mpq_t opq;
-    mpq_init(opq);
-    mpq_set_f(opq, op);
-    mpf_clear(op);
+    mpfr_get_f(opf, mpc_realref(obj.numberc), MPFR_RNDN);
+    mpq_set_f(opq, opf);
     Object out = {.type = NUMBERR};
     mpfr_set_z(out.numberr, mpq_numref(opq), MPFR_RNDN);
-    mpq_clear(opq);
     return out;
   }
   default:
@@ -1715,32 +1558,20 @@ Object scm_denominator(Object const args) {
     if (scm_rational_p(args).type == FALSE_TYPE) {
       return wrong_type("denominator", args);
     }
-    mpf_t op;
-    mpf_init(op);
-    mpfr_get_f(op, obj.numberr, MPFR_RNDN);
-    mpq_t opq;
-    mpq_init(opq);
-    mpq_set_f(opq, op);
-    mpf_clear(op);
+    mpfr_get_f(opf, obj.numberr, MPFR_RNDN);
+    mpq_set_f(opq, opf);
     Object out = {.type = NUMBERR};
     mpfr_init_set_z(out.numberr, mpq_denref(opq), MPFR_RNDN);
-    mpq_clear(opq);
     return out;
   }
   case NUMBERC: {
     if (scm_rational_p(args).type == FALSE_TYPE) {
       return wrong_type("denominator", args);
     }
-    mpf_t op;
-    mpf_init(op);
-    mpfr_get_f(op, mpc_realref(obj.numberc), MPFR_RNDN);
-    mpq_t opq;
-    mpq_init(opq);
-    mpq_set_f(opq, op);
-    mpf_clear(op);
+    mpfr_get_f(opf, mpc_realref(obj.numberc), MPFR_RNDN);
+    mpq_set_f(opq, opf);
     Object out = {.type = NUMBERR};
     mpfr_set_z(out.numberr, mpq_denref(opq), MPFR_RNDN);
-    mpq_clear(opq);
     return out;
   }
   default:
@@ -1865,24 +1696,20 @@ Object scm_exp(Object const args) {
     if (mpz_sgn(obj.numberz) == 0) {
       return numberz_new("1", 10);
     }
-    mpfr_t op;
-    mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
+    mpfr_set_z(opfr, obj.numberz, MPFR_RNDN);
     Object out = {.type = NUMBERR};
     mpfr_init(out.numberr);
-    mpfr_exp(out.numberr, op, MPFR_RNDN);
-    mpfr_clear(op);
+    mpfr_exp(out.numberr, opfr, MPFR_RNDN);
     return out;
   }
   case NUMBERQ: {
     if (mpq_sgn(obj.numberq) == 0) {
       return numberz_new("1", 10);
     }
-    mpfr_t op;
-    mpfr_init_set_q(op, obj.numberq, MPFR_RNDN);
+    mpfr_set_q(opfr, obj.numberq, MPFR_RNDN);
     Object out = {.type = NUMBERR};
     mpfr_init(out.numberr);
-    mpfr_exp(out.numberr, op, MPFR_RNDN);
-    mpfr_clear(op);
+    mpfr_exp(out.numberr, opfr, MPFR_RNDN);
     return out;
   }
   case NUMBERR: {
@@ -1913,36 +1740,27 @@ Object scm_log(Object const args) {
       if (mpz_cmp_ui(obj.numberz, 1) == 0) {
         return numberz_new("0", 10);
       }
-      mpc_t op;
-      mpc_init2(op, MPC_PREC);
-      mpc_set_z(op, obj.numberz, MPC_RNDNN);
+      mpc_set_z(opc, obj.numberz, MPC_RNDNN);
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_log(out.numberc, op, MPC_RNDNN);
-      mpc_clear(op);
+      mpc_log(out.numberc, opc, MPC_RNDNN);
       return out;
     }
     case NUMBERQ: {
       if (mpq_cmp_ui(obj.numberq, 1, 1) == 0) {
         return numberz_new("0", 10);
       }
-      mpc_t op;
-      mpc_init2(op, MPC_PREC);
-      mpc_set_q(op, obj.numberq, MPC_RNDNN);
+      mpc_set_q(opc, obj.numberq, MPC_RNDNN);
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_log(out.numberc, op, MPC_RNDNN);
-      mpc_clear(op);
+      mpc_log(out.numberc, opc, MPC_RNDNN);
       return out;
     }
     case NUMBERR: {
-      mpc_t op;
-      mpc_init2(op, MPC_PREC);
-      mpc_set_fr(op, obj.numberr, MPC_RNDNN);
+      mpc_set_fr(opc, obj.numberr, MPC_RNDNN);
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_log(out.numberc, op, MPC_RNDNN);
-      mpc_clear(op);
+      mpc_log(out.numberc, opc, MPC_RNDNN);
       return out;
     }
     case NUMBERC: {
@@ -1967,85 +1785,51 @@ Object scm_log(Object const args) {
         if (mpz_cmp_ui(obj1.numberz, 1) == 0) {
           return numberz_new("0", 10);
         }
-        mpc_t op1, op2, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_z(op1, obj1.numberz, MPC_RNDNN);
-        mpc_set_z(op2, obj2.numberz, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_z(opc, obj1.numberz, MPC_RNDNN);
+        mpc_set_z(opc1, obj2.numberz, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERQ: {
         if (mpz_cmp_ui(obj1.numberz, 1) == 0) {
           return numberz_new("0", 10);
         }
-        mpc_t op1, op2, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_z(op1, obj1.numberz, MPC_RNDNN);
-        mpc_set_q(op2, obj2.numberq, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_z(opc, obj1.numberz, MPC_RNDNN);
+        mpc_set_q(opc1, obj2.numberq, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERR: {
         if (mpz_cmp_ui(obj1.numberz, 1) == 0) {
           return numberz_new("0", 10);
         }
-        mpc_t op1, op2, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_z(op1, obj1.numberz, MPC_RNDNN);
-        mpc_set_fr(op2, obj2.numberr, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_z(opc, obj1.numberz, MPC_RNDNN);
+        mpc_set_fr(opc1, obj2.numberr, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERC: {
         if (mpz_cmp_ui(obj1.numberz, 1) == 0) {
           return numberz_new("0", 10);
         }
-        mpc_t op1, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_z(op1, obj1.numberz, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, obj2.numberc, MPC_RNDNN);
+        mpc_set_z(opc, obj1.numberz, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, obj2.numberc, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NONE:
@@ -2060,85 +1844,51 @@ Object scm_log(Object const args) {
         if (mpq_cmp_ui(obj1.numberq, 1, 1) == 0) {
           return numberz_new("0", 10);
         }
-        mpc_t op1, op2, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_q(op1, obj1.numberq, MPC_RNDNN);
-        mpc_set_z(op2, obj2.numberz, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_q(opc, obj1.numberq, MPC_RNDNN);
+        mpc_set_z(opc1, obj2.numberz, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERQ: {
         if (mpq_cmp_ui(obj1.numberq, 1, 1) == 0) {
           return numberz_new("0", 10);
         }
-        mpc_t op1, op2, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_q(op1, obj1.numberq, MPC_RNDNN);
-        mpc_set_q(op2, obj2.numberq, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_q(opc, obj1.numberq, MPC_RNDNN);
+        mpc_set_q(opc1, obj2.numberq, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERR: {
         if (mpq_cmp_ui(obj1.numberq, 1, 1) == 0) {
           return numberz_new("0", 10);
         }
-        mpc_t op1, op2, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_q(op1, obj1.numberq, MPC_RNDNN);
-        mpc_set_fr(op2, obj2.numberr, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_q(opc, obj1.numberq, MPC_RNDNN);
+        mpc_set_fr(opc1, obj2.numberr, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERC: {
         if (mpq_cmp_ui(obj1.numberq, 1, 1) == 0) {
           return numberz_new("0", 10);
         }
-        mpc_t op1, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_q(op1, obj1.numberq, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, obj2.numberc, MPC_RNDNN);
+        mpc_set_q(opc, obj1.numberq, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, obj2.numberc, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NONE:
@@ -2150,76 +1900,42 @@ Object scm_log(Object const args) {
     case NUMBERR: {
       switch (obj2.type) {
       case NUMBERZ: {
-        mpc_t op1, op2, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_fr(op1, obj1.numberr, MPC_RNDNN);
-        mpc_set_z(op2, obj2.numberz, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_fr(opc, obj1.numberr, MPC_RNDNN);
+        mpc_set_z(opc1, obj2.numberz, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERQ: {
-        mpc_t op1, op2, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_fr(op1, obj1.numberr, MPC_RNDNN);
-        mpc_set_q(op2, obj2.numberq, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_fr(opc, obj1.numberr, MPC_RNDNN);
+        mpc_set_q(opc1, obj2.numberq, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERR: {
-        mpc_t op1, op2, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_fr(op1, obj1.numberr, MPC_RNDNN);
-        mpc_set_fr(op2, obj2.numberr, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_fr(opc, obj1.numberr, MPC_RNDNN);
+        mpc_set_fr(opc1, obj2.numberr, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERC: {
-        mpc_t op1, rop1, rop2;
-        mpc_init2(op1, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_fr(op1, obj1.numberr, MPC_RNDNN);
-        mpc_log(rop1, op1, MPC_RNDNN);
-        mpc_log(rop2, obj2.numberc, MPC_RNDNN);
+        mpc_set_fr(opc, obj1.numberr, MPC_RNDNN);
+        mpc_log(opc2, opc, MPC_RNDNN);
+        mpc_log(opc3, obj2.numberc, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op1);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NONE:
@@ -2231,64 +1947,38 @@ Object scm_log(Object const args) {
     case NUMBERC: {
       switch (obj2.type) {
       case NUMBERZ: {
-        mpc_t op2, rop1, rop2;
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_z(op2, obj2.numberz, MPC_RNDNN);
-        mpc_log(rop1, obj1.numberc, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_z(opc1, obj2.numberz, MPC_RNDNN);
+        mpc_log(opc2, obj1.numberc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERQ: {
-        mpc_t op2, rop1, rop2;
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_q(op2, obj2.numberq, MPC_RNDNN);
-        mpc_log(rop1, obj1.numberc, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_q(opc1, obj2.numberq, MPC_RNDNN);
+        mpc_log(opc2, obj1.numberc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERR: {
-        mpc_t op2, rop1, rop2;
-        mpc_init2(op2, MPC_PREC);
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_set_fr(op2, obj2.numberr, MPC_RNDNN);
-        mpc_log(rop1, obj1.numberc, MPC_RNDNN);
-        mpc_log(rop2, op2, MPC_RNDNN);
+        mpc_set_fr(opc1, obj2.numberr, MPC_RNDNN);
+        mpc_log(opc2, obj1.numberc, MPC_RNDNN);
+        mpc_log(opc3, opc1, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(op2);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NUMBERC: {
-        mpc_t rop1, rop2;
-        mpc_init2(rop1, MPC_PREC);
-        mpc_init2(rop2, MPC_PREC);
-        mpc_log(rop1, obj1.numberc, MPC_RNDNN);
-        mpc_log(rop2, obj2.numberc, MPC_RNDNN);
+        mpc_log(opc2, obj1.numberc, MPC_RNDNN);
+        mpc_log(opc3, obj2.numberc, MPC_RNDNN);
         Object out = {.type = NUMBERC};
         mpc_init2(out.numberc, MPC_PREC);
-        mpc_div(out.numberc, rop1, rop2, MPC_RNDNN);
-        mpc_clear(rop1);
-        mpc_clear(rop2);
+        mpc_div(out.numberc, opc2, opc3, MPC_RNDNN);
         return out;
       }
       case NONE:
@@ -2319,24 +2009,20 @@ Object scm_sin(Object const args) {
     if (mpz_sgn(obj.numberz) == 0) {
       return numberz_new("0", 10);
     }
-    mpfr_t op;
-    mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
+    mpfr_set_z(opfr, obj.numberz, MPFR_RNDN);
     Object out = {.type = NUMBERR};
     mpfr_init(out.numberr);
-    mpfr_sin(out.numberr, op, MPFR_RNDN);
-    mpfr_clear(op);
+    mpfr_sin(out.numberr, opfr, MPFR_RNDN);
     return out;
   }
   case NUMBERQ: {
     if (mpq_sgn(obj.numberq) == 0) {
       return numberz_new("0", 0);
     }
-    mpfr_t op;
-    mpfr_init_set_q(op, obj.numberq, MPFR_RNDN);
+    mpfr_set_q(opfr, obj.numberq, MPFR_RNDN);
     Object out = {.type = NUMBERR};
     mpfr_init(out.numberr);
-    mpfr_sin(out.numberr, op, MPFR_RNDN);
-    mpfr_clear(op);
+    mpfr_sin(out.numberr, opfr, MPFR_RNDN);
     return out;
   }
   case NUMBERR: {
@@ -2367,24 +2053,20 @@ Object scm_cos(Object const args) {
     if (mpz_sgn(obj.numberz) == 0) {
       return numberz_new("1", 10);
     }
-    mpfr_t op;
-    mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
+    mpfr_set_z(opfr, obj.numberz, MPFR_RNDN);
     Object out = {.type = NUMBERR};
     mpfr_init(out.numberr);
-    mpfr_cos(out.numberr, op, MPFR_RNDN);
-    mpfr_clear(op);
+    mpfr_cos(out.numberr, opfr, MPFR_RNDN);
     return out;
   }
   case NUMBERQ: {
     if (mpq_sgn(obj.numberq) == 0) {
       return numberz_new("1", 0);
     }
-    mpfr_t op;
-    mpfr_init_set_q(op, obj.numberq, MPFR_RNDN);
+    mpfr_set_q(opfr, obj.numberq, MPFR_RNDN);
     Object out = {.type = NUMBERR};
     mpfr_init(out.numberr);
-    mpfr_cos(out.numberr, op, MPFR_RNDN);
-    mpfr_clear(op);
+    mpfr_cos(out.numberr, opfr, MPFR_RNDN);
     return out;
   }
   case NUMBERR: {
@@ -2412,21 +2094,17 @@ Object scm_tan(Object const args) {
   Object obj = value(carref(args));
   switch (obj.type) {
   case NUMBERZ: {
-    mpfr_t op;
-    mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
+    mpfr_set_z(opfr, obj.numberz, MPFR_RNDN);
     Object out = {.type = NUMBERR};
     mpfr_init(out.numberr);
-    mpfr_tan(out.numberr, op, MPFR_RNDN);
-    mpfr_clear(op);
+    mpfr_tan(out.numberr, opfr, MPFR_RNDN);
     return out;
   }
   case NUMBERQ: {
-    mpfr_t op;
-    mpfr_init_set_q(op, obj.numberq, MPFR_RNDN);
+    mpfr_set_q(opfr, obj.numberq, MPFR_RNDN);
     Object out = {.type = NUMBERR};
     mpfr_init(out.numberr);
-    mpfr_tan(out.numberr, op, MPFR_RNDN);
-    mpfr_clear(op);
+    mpfr_tan(out.numberr, opfr, MPFR_RNDN);
     return out;
   }
   case NUMBERR: {
@@ -2457,36 +2135,29 @@ Object scm_asin(Object const args) {
     if (mpz_sgn(obj.numberz) == 0) {
       return numberz_new("0", 0);
     }
-    mpc_t op;
-    mpc_init2(op, MPC_PREC);
-    mpc_set_z(op, obj.numberz, MPC_RNDNN);
+    mpc_set_z(opc, obj.numberz, MPC_RNDNN);
     Object out = {.type = NUMBERC};
     mpc_init2(out.numberc, MPC_PREC);
-    mpc_asin(out.numberc, op, MPC_RNDNN);
-    mpc_clear(op);
+    mpc_asin(out.numberc, opc, MPC_RNDNN);
+
     return out;
   }
   case NUMBERQ: {
     if (mpq_sgn(obj.numberq) == 0) {
       return numberz_new("0", 0);
     }
-    mpc_t op;
-    mpc_init2(op, MPC_PREC);
-    mpc_set_q(op, obj.numberq, MPC_RNDNN);
+    mpc_set_q(opc, obj.numberq, MPC_RNDNN);
     Object out = {.type = NUMBERC};
     mpc_init2(out.numberc, MPC_PREC);
-    mpc_asin(out.numberc, op, MPC_RNDNN);
-    mpc_clear(op);
+    mpc_asin(out.numberc, opc, MPC_RNDNN);
+
     return out;
   }
   case NUMBERR: {
-    mpc_t op;
-    mpc_init2(op, MPC_PREC);
-    mpc_set_fr(op, obj.numberr, MPC_RNDNN);
+    mpc_set_fr(opc, obj.numberr, MPC_RNDNN);
     Object out = {.type = NUMBERC};
     mpc_init2(out.numberc, MPC_PREC);
-    mpc_asin(out.numberc, op, MPC_RNDNN);
-    mpc_clear(op);
+    mpc_asin(out.numberc, opc, MPC_RNDNN);
     return out;
   }
   case NUMBERC: {
@@ -2511,36 +2182,29 @@ Object scm_acos(Object const args) {
     if (mpz_cmp_ui(obj.numberz, 1) == 0) {
       return numberz_new("0", 0);
     }
-    mpc_t op;
-    mpc_init2(op, MPC_PREC);
-    mpc_set_z(op, obj.numberz, MPC_RNDNN);
+    mpc_set_z(opc, obj.numberz, MPC_RNDNN);
     Object out = {.type = NUMBERC};
     mpc_init2(out.numberc, MPC_PREC);
-    mpc_acos(out.numberc, op, MPC_RNDNN);
-    mpc_clear(op);
+    mpc_acos(out.numberc, opc, MPC_RNDNN);
+
     return out;
   }
   case NUMBERQ: {
     if (mpq_cmp_ui(obj.numberq, 1, 1) == 0) {
       return numberz_new("0", 0);
     }
-    mpc_t op;
-    mpc_init2(op, MPC_PREC);
-    mpc_set_q(op, obj.numberq, MPC_RNDNN);
+    mpc_set_q(opc, obj.numberq, MPC_RNDNN);
     Object out = {.type = NUMBERC};
     mpc_init2(out.numberc, MPC_PREC);
-    mpc_acos(out.numberc, op, MPC_RNDNN);
-    mpc_clear(op);
+    mpc_acos(out.numberc, opc, MPC_RNDNN);
+
     return out;
   }
   case NUMBERR: {
-    mpc_t op;
-    mpc_init2(op, MPC_PREC);
-    mpc_set_fr(op, obj.numberr, MPC_RNDNN);
+    mpc_set_fr(opc, obj.numberr, MPC_RNDNN);
     Object out = {.type = NUMBERC};
     mpc_init2(out.numberc, MPC_PREC);
-    mpc_asin(out.numberc, op, MPC_RNDNN);
-    mpc_clear(op);
+    mpc_asin(out.numberc, opc, MPC_RNDNN);
     return out;
   }
   case NUMBERC: {
@@ -2566,24 +2230,20 @@ Object scm_atan(Object const args) {
       if (mpz_sgn(obj.numberz) == 0) {
         return numberz_new("0", 10);
       }
-      mpfr_t op;
-      mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
+      mpfr_init_set_z(opfr, obj.numberz, MPFR_RNDN);
       Object out = {.type = NUMBERR};
       mpfr_init(out.numberr);
-      mpfr_atan(out.numberr, op, MPC_RNDNN);
-      mpfr_clear(op);
+      mpfr_atan(out.numberr, opfr, MPC_RNDNN);
       return out;
     }
     case NUMBERQ: {
       if (mpq_sgn(obj.numberq) == 0) {
         return numberz_new("0", 10);
       }
-      mpfr_t op;
-      mpfr_init_set_q(op, obj.numberq, MPFR_RNDN);
+      mpfr_set_q(opfr, obj.numberq, MPFR_RNDN);
       Object out = {.type = NUMBERR};
       mpfr_init(out.numberr);
-      mpfr_atan(out.numberr, op, MPC_RNDNN);
-      mpfr_clear(op);
+      mpfr_atan(out.numberr, opfr, MPC_RNDNN);
       return out;
     }
     case NUMBERR: {
@@ -2617,11 +2277,10 @@ Object scm_atan(Object const args) {
         }
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpc_set_z_z(rop, obj2.numberz, obj1.numberz, MPC_RNDNN);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+
+        mpc_set_z_z(opc, obj2.numberz, obj1.numberz, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
+
         return out;
       }
       case NUMBERQ: {
@@ -2630,28 +2289,17 @@ Object scm_atan(Object const args) {
         }
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpq_t op1;
-        mpq_init(op1);
-        mpq_set_z(op1, obj1.numberz);
-        mpc_set_q_q(rop, obj2.numberq, op1, MPC_RNDNN);
-        mpq_clear(op1);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpq_set_z(opq, obj1.numberz);
+        mpc_set_q_q(opc, obj2.numberq, opq, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NUMBERR: {
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_z(op1, obj1.numberz, MPFR_RNDN);
-        mpc_set_fr_fr(rop, obj2.numberr, op1, MPC_RNDNN);
-        mpfr_clear(op1);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpfr_set_z(opfr, obj1.numberz, MPFR_RNDN);
+        mpc_set_fr_fr(opc, obj2.numberr, opfr, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NUMBERC: {
@@ -2660,14 +2308,9 @@ Object scm_atan(Object const args) {
         }
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_z(op1, obj1.numberz, MPFR_RNDN);
-        mpc_set_fr_fr(rop, mpc_realref(obj2.numberc), op1, MPC_RNDNN);
-        mpfr_clear(op1);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpfr_set_z(opfr, obj1.numberz, MPFR_RNDN);
+        mpc_set_fr_fr(opc, mpc_realref(obj2.numberc), opfr, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NONE:
@@ -2685,15 +2328,9 @@ Object scm_atan(Object const args) {
         }
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpq_t op2;
-        mpq_init(op2);
-        mpq_set_z(op2, obj2.numberz);
-        mpc_set_q_q(rop, op2, obj1.numberq, MPC_RNDNN);
-        mpq_clear(op2);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpq_set_z(opq, obj2.numberz);
+        mpc_set_q_q(opc, opq, obj1.numberq, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NUMBERQ: {
@@ -2702,24 +2339,16 @@ Object scm_atan(Object const args) {
         }
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpc_set_q_q(rop, obj2.numberq, obj1.numberq, MPC_RNDNN);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpc_set_q_q(opc, obj2.numberq, obj1.numberq, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NUMBERR: {
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_q(op1, obj1.numberq, MPFR_RNDN);
-        mpc_set_fr_fr(rop, obj2.numberr, op1, MPC_RNDNN);
-        mpfr_clear(op1);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpfr_set_q(opfr, obj1.numberq, MPFR_RNDN);
+        mpc_set_fr_fr(opc, obj2.numberr, opfr, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NUMBERC: {
@@ -2728,14 +2357,9 @@ Object scm_atan(Object const args) {
         }
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpfr_t op1;
-        mpfr_init_set_q(op1, obj1.numberq, MPFR_RNDN);
-        mpc_set_fr_fr(rop, mpc_realref(obj2.numberc), op1, MPC_RNDNN);
-        mpfr_clear(op1);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpfr_set_q(opfr, obj1.numberq, MPFR_RNDN);
+        mpc_set_fr_fr(opc, mpc_realref(obj2.numberc), opfr, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NONE:
@@ -2749,37 +2373,24 @@ Object scm_atan(Object const args) {
       case NUMBERZ: {
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpfr_t op2;
-        mpfr_init_set_z(op2, obj2.numberz, MPFR_RNDN);
-        mpc_set_fr_fr(rop, op2, obj1.numberr, MPC_RNDNN);
-        mpfr_clear(op2);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpfr_set_z(opfr, obj2.numberz, MPFR_RNDN);
+        mpc_set_fr_fr(opc, opfr, obj1.numberr, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NUMBERQ: {
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpfr_t op2;
-        mpfr_init_set_q(op2, obj2.numberq, MPFR_RNDN);
-        mpc_set_fr_fr(rop, op2, obj1.numberr, MPC_RNDNN);
-        mpfr_clear(op2);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpfr_set_q(opfr, obj2.numberq, MPFR_RNDN);
+        mpc_set_fr_fr(opc, opfr, obj1.numberr, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NUMBERR: {
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpc_set_fr_fr(rop, obj2.numberr, obj1.numberr, MPC_RNDNN);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpc_set_fr_fr(opc, obj2.numberr, obj1.numberr, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NUMBERC: {
@@ -2788,11 +2399,8 @@ Object scm_atan(Object const args) {
         }
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpc_set_fr_fr(rop, mpc_realref(obj2.numberc), obj1.numberr, MPC_RNDNN);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpc_set_fr_fr(opc, mpc_realref(obj2.numberc), obj1.numberr, MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NONE:
@@ -2809,36 +2417,24 @@ Object scm_atan(Object const args) {
       case NUMBERZ: {
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpfr_t op2;
-        mpfr_init_set_z(op2, obj2.numberz, MPFR_RNDN);
-        mpc_set_fr_fr(rop, op2, mpc_realref(obj1.numberc), MPC_RNDNN);
-        mpfr_clear(op2);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpfr_set_z(opfr, obj2.numberz, MPFR_RNDN);
+        mpc_set_fr_fr(opc, opfr, mpc_realref(obj1.numberc), MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NUMBERQ: {
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_init2(rop, MPC_PREC);
-        mpfr_t op2;
-        mpfr_init_set_q(op2, obj2.numberq, MPFR_RNDN);
-        mpc_set_fr_fr(rop, op2, mpc_realref(obj1.numberc), MPC_RNDNN);
-        mpfr_clear(op2);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpfr_set_q(opfr, obj2.numberq, MPFR_RNDN);
+        mpc_set_fr_fr(opc, opfr, mpc_realref(obj1.numberc), MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NUMBERR: {
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_set_fr_fr(rop, obj2.numberr, mpc_realref(obj1.numberc), MPC_RNDNN);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpc_set_fr_fr(opc, obj2.numberr, mpc_realref(obj1.numberc), MPC_RNDNN);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NUMBERC: {
@@ -2847,11 +2443,9 @@ Object scm_atan(Object const args) {
         }
         Object out = {.type = NUMBERR};
         mpfr_init(out.numberr);
-        mpc_t rop;
-        mpc_set_fr_fr(rop, mpc_realref(obj2.numberc), mpc_realref(obj1.numberc),
+        mpc_set_fr_fr(opc, mpc_realref(obj2.numberc), mpc_realref(obj1.numberc),
                       MPC_RNDNN);
-        mpc_arg(out.numberr, rop, MPFR_RNDN);
-        mpc_clear(rop);
+        mpc_arg(out.numberr, opc, MPFR_RNDN);
         return out;
       }
       case NONE:
@@ -2919,12 +2513,10 @@ Object scm_sqrt(Object const args) {
       mpz_sqrt(out.numberz, obj.numberz);
       return out;
     }
-    mpfr_t op;
-    mpfr_init_set_z(op, obj.numberz, MPFR_RNDN);
+    mpfr_set_z(opfr, obj.numberz, MPFR_RNDN);
     Object out = {.type = NUMBERR};
     mpfr_init(out.numberr);
-    mpfr_sqrt(out.numberr, op, MPFR_RNDN);
-    mpfr_clear(op);
+    mpfr_sqrt(out.numberr, opfr, MPFR_RNDN);
     return out;
   }
   case NUMBERQ: {
@@ -3007,31 +2599,22 @@ Object scm_expt(Object const args) {
         fprintf(yyout, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
-      mpfr_t op1, rop;
-      mpfr_init_set_z(op1, obj1.numberz, MPFR_RNDN);
-      mpfr_init(rop);
+      mpfr_set_z(opfr, obj1.numberz, MPFR_RNDN);
       Object out;
       if (sign2 > 0) {
         out.type = NUMBERZ;
-        mpfr_pow_z(rop, op1, obj2.numberz, MPFR_RNDN);
+        mpfr_pow_z(opfr1, opfr, obj2.numberz, MPFR_RNDN);
         mpz_init(out.numberz);
-        mpfr_get_z(out.numberz, rop, MPFR_RNDN);
+        mpfr_get_z(out.numberz, opfr1, MPFR_RNDN);
       } else {
         out.type = NUMBERQ;
-        mpz_t op2;
-        mpz_init(op2);
-        mpz_neg(op2, obj2.numberz);
-        mpfr_pow_z(rop, op1, op2, MPFR_RNDN);
-        mpz_clear(op2);
-        mpz_t op3;
-        mpz_init(op3);
-        mpfr_get_z(op3, rop, MPFR_RNDN);
+        mpz_neg(opz, obj2.numberz);
+        mpfr_pow_z(opfr, opfr, opz, MPFR_RNDN);
+        mpfr_get_z(opz1, opfr, MPFR_RNDN);
         mpq_init(out.numberq);
         mpz_set_ui(mpq_numref(out.numberq), 1);
-        mpz_set(mpq_denref(out.numberq), op3);
-        mpz_clear(op3);
+        mpz_set(mpq_denref(out.numberq), opz1);
       }
-      mpfr_clears(op1, rop, NULL);
       return out;
     }
     case NUMBERQ: {
@@ -3050,17 +2633,11 @@ Object scm_expt(Object const args) {
         fprintf(yyout, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
-      mpc_t op1;
-      mpfr_t op2;
       Object out = {.type = NUMBERC};
-      mpc_init2(op1, MPC_PREC);
-      mpfr_init(op2);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_z(op1, obj1.numberz, MPC_RNDNN);
-      mpfr_set_q(op2, obj2.numberq, MPFR_RNDN);
-      mpc_pow_fr(out.numberc, op1, op2, MPFR_RNDN);
-      mpc_clear(op1);
-      mpfr_clear(op2);
+      mpc_set_z(opc, obj1.numberz, MPC_RNDNN);
+      mpfr_set_q(opfr, obj2.numberq, MPFR_RNDN);
+      mpc_pow_fr(out.numberc, opc, opfr, MPFR_RNDN);
       return out;
     }
     case NUMBERR: {
@@ -3079,13 +2656,11 @@ Object scm_expt(Object const args) {
         fprintf(yyout, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
-      mpc_t op1;
       Object out = {.type = NUMBERC};
-      mpc_init2(op1, MPC_PREC);
+      mpc_init2(opc, MPC_PREC);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_z(op1, obj1.numberz, MPC_RNDNN);
-      mpc_pow_fr(out.numberc, op1, obj2.numberr, MPFR_RNDN);
-      mpc_clear(op1);
+      mpc_set_z(opc, obj1.numberz, MPC_RNDNN);
+      mpc_pow_fr(out.numberc, opc, obj2.numberr, MPFR_RNDN);
       return out;
     }
     case NUMBERC: {
@@ -3105,13 +2680,10 @@ Object scm_expt(Object const args) {
         fprintf(yyout, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
-      mpc_t op1;
-      mpc_init2(op1, MPC_PREC);
-      mpc_set_z(op1, obj1.numberz, MPC_RNDNN);
+      mpc_set_z(opc, obj1.numberz, MPC_RNDNN);
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_pow(out.numberc, op1, obj2.numberc, MPC_RNDNN);
-      mpc_clear(op1);
+      mpc_pow(out.numberc, opc, obj2.numberc, MPC_RNDNN);
       return out;
     }
     case NONE:
@@ -3141,26 +2713,20 @@ Object scm_expt(Object const args) {
       }
       Object out = {.type = NUMBERQ};
       mpq_init(out.numberq);
-      mpfr_t op1_num, op1_den, rop_num, rop_den;
-      mpfr_inits(op1_num, op1_den, rop_num, rop_den, NULL);
-      mpfr_set_z(op1_num, mpq_numref(obj1.numberq), MPFR_RNDN);
-      mpfr_set_z(op1_den, mpq_denref(obj1.numberq), MPFR_RNDN);
+      mpfr_set_z(opfr, mpq_numref(obj1.numberq), MPFR_RNDN);
+      mpfr_set_z(opfr1, mpq_denref(obj1.numberq), MPFR_RNDN);
       if (sign2 > 0) {
-        mpfr_pow_z(rop_num, op1_num, obj2.numberz, MPFR_RNDN);
-        mpfr_pow_z(rop_den, op1_den, obj2.numberz, MPFR_RNDN);
-        mpfr_get_z(mpq_numref(out.numberq), rop_num, MPFR_RNDN);
-        mpfr_get_z(mpq_denref(out.numberq), rop_den, MPFR_RNDN);
+        mpfr_pow_z(opfr2, opfr, obj2.numberz, MPFR_RNDN);
+        mpfr_pow_z(opfr3, opfr1, obj2.numberz, MPFR_RNDN);
+        mpfr_get_z(mpq_numref(out.numberq), opfr2, MPFR_RNDN);
+        mpfr_get_z(mpq_denref(out.numberq), opfr3, MPFR_RNDN);
       } else {
-        mpz_t op2;
-        mpz_init(op2);
-        mpz_abs(op2, obj2.numberz);
-        mpfr_pow_z(rop_num, op1_num, op2, MPFR_RNDN);
-        mpfr_pow_z(rop_den, op1_den, op2, MPFR_RNDN);
-        mpz_clear(op2);
-        mpfr_get_z(mpq_numref(out.numberq), rop_den, MPFR_RNDN);
-        mpfr_get_z(mpq_denref(out.numberq), rop_num, MPFR_RNDN);
+        mpz_abs(opz, obj2.numberz);
+        mpfr_pow_z(opfr2, opfr, opz, MPFR_RNDN);
+        mpfr_pow_z(opfr3, opfr1, opz, MPFR_RNDN);
+        mpfr_get_z(mpq_numref(out.numberq), opfr3, MPFR_RNDN);
+        mpfr_get_z(mpq_denref(out.numberq), opfr2, MPFR_RNDN);
       }
-      mpfr_clears(op1_num, op1_den, rop_num, rop_den, NULL);
       return out;
     }
     case NUMBERQ: {
@@ -3179,17 +2745,11 @@ Object scm_expt(Object const args) {
         fprintf(yyout, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
-      mpc_t op1;
-      mpfr_t op2;
       Object out = {.type = NUMBERC};
-      mpc_init2(op1, MPC_PREC);
-      mpfr_init(op2);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_q(op1, obj1.numberq, MPC_RNDNN);
-      mpfr_set_q(op2, obj2.numberq, MPFR_RNDN);
-      mpc_pow_fr(out.numberc, op1, op2, MPC_PREC);
-      mpc_clear(op1);
-      mpfr_clear(op2);
+      mpc_set_q(opc, obj1.numberq, MPC_RNDNN);
+      mpfr_set_q(opfr, obj2.numberq, MPFR_RNDN);
+      mpc_pow_fr(out.numberc, opc, opfr, MPC_PREC);
       return out;
     }
     case NUMBERR: {
@@ -3208,13 +2768,10 @@ Object scm_expt(Object const args) {
         fprintf(yyout, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
-      mpc_t op1;
       Object out = {.type = NUMBERC};
-      mpc_init2(op1, MPC_PREC);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_q(op1, obj1.numberq, MPC_RNDNN);
-      mpc_pow_fr(out.numberc, op1, obj2.numberr, MPFR_RNDN);
-      mpc_clear(op1);
+      mpc_set_q(opc, obj1.numberq, MPC_RNDNN);
+      mpc_pow_fr(out.numberc, opc, obj2.numberr, MPFR_RNDN);
       return out;
     }
     case NUMBERC: {
@@ -3234,13 +2791,10 @@ Object scm_expt(Object const args) {
         fprintf(yyout, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
-      mpc_t op1;
       Object out = {.type = NUMBERC};
-      mpc_init2(op1, MPC_PREC);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_q(op1, obj1.numberq, MPC_RNDNN);
-      mpc_pow(out.numberc, op1, obj2.numberc, MPFR_RNDN);
-      mpc_clear(op1);
+      mpc_set_q(opc, obj1.numberq, MPC_RNDNN);
+      mpc_pow(out.numberc, opc, obj2.numberc, MPFR_RNDN);
       return out;
     }
     case NONE:
@@ -3289,17 +2843,11 @@ Object scm_expt(Object const args) {
         fprintf(yyout, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
-      mpc_t op1;
-      mpfr_t op2;
       Object out = {.type = NUMBERC};
-      mpc_init2(op1, MPC_PREC);
-      mpfr_init(op2);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr(op1, obj1.numberr, MPC_RNDNN);
-      mpfr_set_q(op2, obj2.numberq, MPFR_RNDN);
-      mpc_pow_fr(out.numberc, op1, op2, MPC_RNDNN);
-      mpc_clear(op1);
-      mpfr_clear(op2);
+      mpc_set_fr(opc, obj1.numberr, MPC_RNDNN);
+      mpfr_set_q(opfr, obj2.numberq, MPFR_RNDN);
+      mpc_pow_fr(out.numberc, opc, opfr, MPC_RNDNN);
       return out;
     }
     case NUMBERR: {
@@ -3318,13 +2866,10 @@ Object scm_expt(Object const args) {
         fprintf(yyout, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
-      mpc_t op1;
       Object out = {.type = NUMBERC};
-      mpc_init2(op1, MPC_PREC);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr(op1, obj1.numberr, MPC_RNDNN);
-      mpc_pow_fr(out.numberc, op1, obj2.numberr, MPC_RNDNN);
-      mpc_clear(op1);
+      mpc_set_fr(opc, obj1.numberr, MPC_RNDNN);
+      mpc_pow_fr(out.numberc, opc, obj2.numberr, MPC_RNDNN);
       return out;
     }
     case NUMBERC: {
@@ -3344,13 +2889,10 @@ Object scm_expt(Object const args) {
         fprintf(yyout, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
-      mpc_t op1;
       Object out = {.type = NUMBERC};
-      mpc_init2(op1, MPC_PREC);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr(op1, obj1.numberr, MPC_RNDNN);
-      mpc_pow(out.numberc, op1, obj2.numberc, MPC_RNDNN);
-      mpc_clear(op1);
+      mpc_set_fr(opc, obj1.numberr, MPC_RNDNN);
+      mpc_pow(out.numberc, opc, obj2.numberc, MPC_RNDNN);
       return out;
     }
     case NONE:
@@ -3400,12 +2942,10 @@ Object scm_expt(Object const args) {
         fprintf(yyout, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
-      mpfr_t op2;
-      mpfr_init_set_q(op2, obj2.numberq, MPFR_RNDN);
+      mpfr_init_set_q(opfr, obj2.numberq, MPFR_RNDN);
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_pow_fr(out.numberc, obj1.numberc, op2, MPC_RNDNN);
-      mpfr_clear(op2);
+      mpc_pow_fr(out.numberc, obj1.numberc, opfr, MPC_RNDNN);
       return out;
     }
     case NUMBERR: {
@@ -3487,20 +3027,15 @@ Object scm_make_rectangular(Object const args) {
       }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpq_t op1;
-      mpq_init(op1);
-      mpq_set_z(op1, obj1.numberz);
-      mpc_set_q_q(out.numberc, op1, obj2.numberq, MPC_RNDNN);
-      mpq_clear(op1);
+      mpq_set_z(opq, obj1.numberz);
+      mpc_set_q_q(out.numberc, opq, obj2.numberq, MPC_RNDNN);
       return out;
     }
     case NUMBERR: {
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpfr_t op1;
-      mpfr_init_set_z(op1, obj1.numberz, MPFR_RNDN);
-      mpc_set_fr_fr(out.numberc, op1, obj2.numberr, MPC_RNDNN);
-      mpfr_clear(op1);
+      mpfr_set_z(opfr, obj1.numberz, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, opfr, obj2.numberr, MPC_RNDNN);
       return out;
     }
     case NUMBERC: {
@@ -3509,10 +3044,8 @@ Object scm_make_rectangular(Object const args) {
       }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpfr_t op1;
-      mpfr_init_set_z(op1, obj1.numberz, MPFR_RNDN);
-      mpc_set_fr_fr(out.numberc, op1, mpc_realref(obj2.numberc), MPC_RNDNN);
-      mpfr_clear(op1);
+      mpfr_set_z(opfr, obj1.numberz, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, opfr, mpc_realref(obj2.numberc), MPC_RNDNN);
       return out;
     }
     case NONE:
@@ -3529,11 +3062,8 @@ Object scm_make_rectangular(Object const args) {
       }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpq_t op2;
-      mpq_init(op2);
-      mpq_set_z(op2, obj2.numberz);
-      mpc_set_q_q(out.numberc, obj1.numberq, op2, MPC_RNDNN);
-      mpq_clear(op2);
+      mpq_set_z(opq, obj2.numberz);
+      mpc_set_q_q(out.numberc, obj1.numberq, opq, MPC_RNDNN);
       return out;
     }
     case NUMBERQ: {
@@ -3548,10 +3078,8 @@ Object scm_make_rectangular(Object const args) {
     case NUMBERR: {
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpfr_t op1;
-      mpfr_init_set_q(op1, obj1.numberq, MPFR_RNDN);
-      mpc_set_fr_fr(out.numberc, op1, obj2.numberr, MPC_RNDNN);
-      mpfr_clear(op1);
+      mpfr_set_q(opfr, obj1.numberq, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, opfr, obj2.numberr, MPC_RNDNN);
       return out;
     }
     case NUMBERC: {
@@ -3560,10 +3088,8 @@ Object scm_make_rectangular(Object const args) {
       }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpfr_t op1;
-      mpfr_init_set_q(op1, obj1.numberq, MPFR_RNDN);
-      mpc_set_fr_fr(out.numberc, op1, mpc_realref(obj2.numberc), MPC_RNDNN);
-      mpfr_clear(op1);
+      mpfr_set_q(opfr, obj1.numberq, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, opfr, mpc_realref(obj2.numberc), MPC_RNDNN);
       return out;
     }
     case NONE:
@@ -3580,10 +3106,8 @@ Object scm_make_rectangular(Object const args) {
       }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpfr_t op2;
-      mpfr_init_set_z(op2, obj2.numberz, MPFR_RNDN);
-      mpc_set_fr_fr(out.numberc, obj1.numberr, op2, MPC_RNDNN);
-      mpfr_clear(op2);
+      mpfr_set_z(opfr, obj2.numberz, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, obj1.numberr, opfr, MPC_RNDNN);
       return out;
     }
     case NUMBERQ: {
@@ -3592,10 +3116,8 @@ Object scm_make_rectangular(Object const args) {
       }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpfr_t op2;
-      mpfr_init_set_q(op2, obj2.numberq, MPFR_RNDN);
-      mpc_set_fr_fr(out.numberc, obj1.numberr, op2, MPC_RNDNN);
-      mpfr_clear(op2);
+      mpfr_set_q(opfr, obj2.numberq, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, obj1.numberr, opfr, MPC_RNDNN);
       return out;
     }
     case NUMBERR: {
@@ -3631,10 +3153,8 @@ Object scm_make_rectangular(Object const args) {
       }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpfr_t op2;
-      mpfr_init_set_z(op2, obj2.numberz, MPFR_RNDN);
-      mpc_set_fr_fr(out.numberc, mpc_realref(obj1.numberc), op2, MPC_RNDNN);
-      mpfr_clear(op2);
+      mpfr_set_z(opfr, obj2.numberz, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, mpc_realref(obj1.numberc), opfr, MPC_RNDNN);
       return out;
     }
     case NUMBERQ: {
@@ -3643,10 +3163,8 @@ Object scm_make_rectangular(Object const args) {
       }
       Object out = {.type = NUMBERC};
       mpc_init2(out.numberc, MPC_PREC);
-      mpfr_t op2;
-      mpfr_init_set_q(op2, obj2.numberq, MPFR_RNDN);
-      mpc_set_fr_fr(out.numberc, mpc_realref(obj1.numberc), op2, MPC_RNDNN);
-      mpfr_clear(op2);
+      mpfr_set_q(opfr, obj2.numberq, MPFR_RNDN);
+      mpc_set_fr_fr(out.numberc, mpc_realref(obj1.numberc), opfr, MPC_RNDNN);
       return out;
     }
     case NUMBERR: {
@@ -3689,40 +3207,32 @@ Object scm_make_polar(Object const args) {
     switch (obj2.type) {
     case NUMBERZ: {
       Object out = {.type = NUMBERC};
-      mpfr_t op, sop, cop, op1, op2;
-      mpfr_inits(op, sop, cop, op1, op2, NULL);
-      mpfr_set_z(op, obj2.numberz, MPFR_RNDN);
-      mpfr_sin_cos(sop, cop, op, MPFR_RNDN);
-      mpfr_mul_z(op1, cop, obj1.numberz, MPFR_RNDN);
-      mpfr_mul_z(op2, sop, obj1.numberz, MPFR_RNDN);
+      mpfr_set_z(opfr, obj2.numberz, MPFR_RNDN);
+      mpfr_sin_cos(opfr1, opfr2, opfr, MPFR_RNDN);
+      mpfr_mul_z(opfr3, opfr2, obj1.numberz, MPFR_RNDN);
+      mpfr_mul_z(opfr4, opfr1, obj1.numberz, MPFR_RNDN);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr_fr(out.numberc, op1, op2, MPC_RNDNN);
-      mpfr_clears(op, sop, cop, op1, op2, NULL);
+      mpc_set_fr_fr(out.numberc, opfr3, opfr4, MPC_RNDNN);
+      mpfr_clears(opfr, opfr1, opfr2, opfr3, opfr4, NULL);
       return out;
     }
     case NUMBERQ: {
       Object out = {.type = NUMBERC};
-      mpfr_t op, sop, cop, op1, op2;
-      mpfr_inits(op, sop, cop, op1, op2, NULL);
-      mpfr_set_q(op, obj2.numberq, MPFR_RNDN);
-      mpfr_sin_cos(sop, cop, op, MPFR_RNDN);
-      mpfr_mul_z(op1, cop, obj1.numberz, MPFR_RNDN);
-      mpfr_mul_z(op2, sop, obj1.numberz, MPFR_RNDN);
+      mpfr_set_q(opfr, obj2.numberq, MPFR_RNDN);
+      mpfr_sin_cos(opfr1, opfr2, opfr, MPFR_RNDN);
+      mpfr_mul_z(opfr3, opfr2, obj1.numberz, MPFR_RNDN);
+      mpfr_mul_z(opfr4, opfr1, obj1.numberz, MPFR_RNDN);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr_fr(out.numberc, op1, op2, MPC_RNDNN);
-      mpfr_clears(op, sop, cop, op1, op2, NULL);
+      mpc_set_fr_fr(out.numberc, opfr3, opfr4, MPC_RNDNN);
       return out;
     }
     case NUMBERR: {
       Object out = {.type = NUMBERC};
-      mpfr_t sop, cop, op1, op2;
-      mpfr_inits(sop, cop, op1, op2, NULL);
-      mpfr_sin_cos(sop, cop, obj2.numberr, MPFR_RNDN);
-      mpfr_mul_z(op1, cop, obj1.numberz, MPFR_RNDN);
-      mpfr_mul_z(op2, sop, obj1.numberz, MPFR_RNDN);
+      mpfr_sin_cos(opfr, opfr1, obj2.numberr, MPFR_RNDN);
+      mpfr_mul_z(opfr2, opfr1, obj1.numberz, MPFR_RNDN);
+      mpfr_mul_z(opfr3, opfr, obj1.numberz, MPFR_RNDN);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr_fr(out.numberc, op1, op2, MPC_RNDNN);
-      mpfr_clears(sop, cop, op1, op2, NULL);
+      mpc_set_fr_fr(out.numberc, opfr2, opfr3, MPC_RNDNN);
       return out;
     }
     case NONE:
@@ -3735,40 +3245,31 @@ Object scm_make_polar(Object const args) {
     switch (obj2.type) {
     case NUMBERZ: {
       Object out = {.type = NUMBERC};
-      mpfr_t op, sop, cop, op1, op2;
-      mpfr_inits(op, sop, cop, op1, op2, NULL);
-      mpfr_set_z(op, obj2.numberz, MPFR_RNDN);
-      mpfr_sin_cos(sop, cop, op, MPFR_RNDN);
-      mpfr_mul_q(op1, cop, obj1.numberq, MPFR_RNDN);
-      mpfr_mul_q(op2, sop, obj1.numberq, MPFR_RNDN);
+      mpfr_set_z(opfr, obj2.numberz, MPFR_RNDN);
+      mpfr_sin_cos(opfr1, opfr2, opfr, MPFR_RNDN);
+      mpfr_mul_q(opfr3, opfr2, obj1.numberq, MPFR_RNDN);
+      mpfr_mul_q(opfr4, opfr1, obj1.numberq, MPFR_RNDN);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr_fr(out.numberc, op1, op2, MPC_RNDNN);
-      mpfr_clears(op, sop, cop, op1, op2, NULL);
+      mpc_set_fr_fr(out.numberc, opfr3, opfr4, MPC_RNDNN);
       return out;
     }
     case NUMBERQ: {
       Object out = {.type = NUMBERC};
-      mpfr_t op, sop, cop, op1, op2;
-      mpfr_inits(op, sop, cop, op1, op2, NULL);
-      mpfr_set_q(op, obj2.numberq, MPFR_RNDN);
-      mpfr_sin_cos(sop, cop, op, MPFR_RNDN);
-      mpfr_mul_q(op1, cop, obj1.numberq, MPFR_RNDN);
-      mpfr_mul_q(op2, sop, obj1.numberq, MPFR_RNDN);
+      mpfr_set_q(opfr, obj2.numberq, MPFR_RNDN);
+      mpfr_sin_cos(opfr1, opfr2, opfr, MPFR_RNDN);
+      mpfr_mul_q(opfr3, opfr2, obj1.numberq, MPFR_RNDN);
+      mpfr_mul_q(opfr4, opfr1, obj1.numberq, MPFR_RNDN);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr_fr(out.numberc, op1, op2, MPC_RNDNN);
-      mpfr_clears(op, sop, cop, op1, op2, NULL);
+      mpc_set_fr_fr(out.numberc, opfr3, opfr4, MPC_RNDNN);
       return out;
     }
     case NUMBERR: {
       Object out = {.type = NUMBERC};
-      mpfr_t sop, cop, op1, op2;
-      mpfr_inits(sop, cop, op1, op2, NULL);
-      mpfr_sin_cos(sop, cop, obj2.numberr, MPFR_RNDN);
-      mpfr_mul_q(op1, cop, obj1.numberq, MPFR_RNDN);
-      mpfr_mul_q(op2, sop, obj1.numberq, MPFR_RNDN);
+      mpfr_sin_cos(opfr, opfr1, obj2.numberr, MPFR_RNDN);
+      mpfr_mul_q(opfr2, opfr1, obj1.numberq, MPFR_RNDN);
+      mpfr_mul_q(opfr3, opfr, obj1.numberq, MPFR_RNDN);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr_fr(out.numberc, op1, op2, MPC_RNDNN);
-      mpfr_clears(sop, cop, op1, op2, NULL);
+      mpc_set_fr_fr(out.numberc, opfr2, opfr3, MPC_RNDNN);
       return out;
     }
     case NONE:
@@ -3781,40 +3282,31 @@ Object scm_make_polar(Object const args) {
     switch (obj2.type) {
     case NUMBERZ: {
       Object out = {.type = NUMBERC};
-      mpfr_t op, sop, cop, op1, op2;
-      mpfr_inits(op, sop, cop, op1, op2, NULL);
-      mpfr_set_z(op, obj2.numberz, MPFR_RNDN);
-      mpfr_sin_cos(sop, cop, op, MPFR_RNDN);
-      mpfr_mul(op1, cop, obj1.numberr, MPFR_RNDN);
-      mpfr_mul(op2, sop, obj1.numberr, MPFR_RNDN);
+      mpfr_set_z(opfr, obj2.numberz, MPFR_RNDN);
+      mpfr_sin_cos(opfr1, opfr2, opfr, MPFR_RNDN);
+      mpfr_mul(opfr3, opfr2, obj1.numberr, MPFR_RNDN);
+      mpfr_mul(opfr4, opfr1, obj1.numberr, MPFR_RNDN);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr_fr(out.numberc, op1, op2, MPC_RNDNN);
-      mpfr_clears(op, sop, cop, op1, op2, NULL);
+      mpc_set_fr_fr(out.numberc, opfr3, opfr4, MPC_RNDNN);
       return out;
     }
     case NUMBERQ: {
       Object out = {.type = NUMBERC};
-      mpfr_t op, sop, cop, op1, op2;
-      mpfr_inits(op, sop, cop, op1, op2, NULL);
-      mpfr_set_q(op, obj2.numberq, MPFR_RNDN);
-      mpfr_sin_cos(sop, cop, op, MPFR_RNDN);
-      mpfr_mul(op1, cop, obj1.numberr, MPFR_RNDN);
-      mpfr_mul(op2, sop, obj1.numberr, MPFR_RNDN);
+      mpfr_set_q(opfr, obj2.numberq, MPFR_RNDN);
+      mpfr_sin_cos(opfr1, opfr2, opfr, MPFR_RNDN);
+      mpfr_mul(opfr3, opfr2, obj1.numberr, MPFR_RNDN);
+      mpfr_mul(opfr4, opfr1, obj1.numberr, MPFR_RNDN);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr_fr(out.numberc, op1, op2, MPC_RNDNN);
-      mpfr_clears(op, sop, cop, op1, op2, NULL);
+      mpc_set_fr_fr(out.numberc, opfr3, opfr4, MPC_RNDNN);
       return out;
     }
     case NUMBERR: {
       Object out = {.type = NUMBERC};
-      mpfr_t sop, cop, op1, op2;
-      mpfr_inits(sop, cop, op1, op2, NULL);
-      mpfr_sin_cos(sop, cop, obj2.numberr, MPFR_RNDN);
-      mpfr_mul(op1, cop, obj1.numberr, MPFR_RNDN);
-      mpfr_mul(op2, sop, obj1.numberr, MPFR_RNDN);
+      mpfr_sin_cos(opfr, opfr1, obj2.numberr, MPFR_RNDN);
+      mpfr_mul(opfr2, opfr1, obj1.numberr, MPFR_RNDN);
+      mpfr_mul(opfr3, opfr, obj1.numberr, MPFR_RNDN);
       mpc_init2(out.numberc, MPC_PREC);
-      mpc_set_fr_fr(out.numberc, op1, op2, MPC_RNDNN);
-      mpfr_clears(sop, cop, op1, op2, NULL);
+      mpc_set_fr_fr(out.numberc, opfr2, opfr3, MPC_RNDNN);
       return out;
     }
     case NONE:
@@ -3989,11 +3481,8 @@ Object scm_exact(Object const args) {
   case NUMBERR: {
     Object out = {.type = NUMBERQ};
     mpq_init(out.numberq);
-    mpf_t op;
-    mpf_init(op);
-    mpfr_get_f(op, obj.numberr, MPFR_RNDN);
-    mpq_set_f(out.numberq, op);
-    mpf_clear(op);
+    mpfr_get_f(opf, obj.numberr, MPFR_RNDN);
+    mpq_set_f(out.numberq, opf);
     return out;
   }
   case NUMBERC: {

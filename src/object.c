@@ -89,14 +89,11 @@ void object_write(FILE *stream, Object obj) {
       fprintf(stream, "inf.0");
     } else {
       mpfr_fprintf(stream, "%.16Rg", obj.numberr);
-      mpfr_t op;
-      mpfr_init(op);
-      mpfr_trunc(op, obj.numberr);
-      mpfr_sub(op, obj.numberr, op, MPFR_RNDN);
-      if (mpfr_zero_p(op)) {
+      mpfr_trunc(opfr, obj.numberr);
+      mpfr_sub(opfr, obj.numberr, opfr, MPFR_RNDN);
+      if (mpfr_zero_p(opfr)) {
         fprintf(stream, ".0");
       }
-      mpfr_clear(op);
     }
     break;
   }
@@ -112,14 +109,11 @@ void object_write(FILE *stream, Object obj) {
       fprintf(stream, "inf.0");
     } else {
       mpfr_fprintf(stream, "%.16Rg", mpc_realref(obj.numberc));
-      mpfr_t op;
-      mpfr_init(op);
-      mpfr_trunc(op, mpc_realref(obj.numberc));
-      mpfr_sub(op, mpc_realref(obj.numberc), op, MPFR_RNDN);
-      if (mpfr_zero_p(op)) {
+      mpfr_trunc(opfr, mpc_realref(obj.numberc));
+      mpfr_sub(opfr, mpc_realref(obj.numberc), opfr, MPFR_RNDN);
+      if (mpfr_zero_p(opfr)) {
         fprintf(stream, ".0");
       }
-      mpfr_clear(op);
     }
     if (mpfr_zero_p(mpc_imagref(obj.numberc))) {
       break;
@@ -134,14 +128,11 @@ void object_write(FILE *stream, Object obj) {
       if (mpfr_inf_p(mpc_imagref(obj.numberc))) {
         fprintf(stream, ".0");
       } else {
-        mpfr_t op;
-        mpfr_init(op);
-        mpfr_trunc(op, mpc_imagref(obj.numberc));
-        mpfr_sub(op, mpc_imagref(obj.numberc), op, MPFR_RNDN);
-        if (mpfr_zero_p(op)) {
+        mpfr_trunc(opfr, mpc_imagref(obj.numberc));
+        mpfr_sub(opfr, mpc_imagref(obj.numberc), opfr, MPFR_RNDN);
+        if (mpfr_zero_p(opfr)) {
           fprintf(stream, ".0");
         }
-        mpfr_clear(op);
       }
     }
     fprintf(stream, "i");

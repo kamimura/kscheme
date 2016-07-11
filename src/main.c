@@ -73,22 +73,18 @@ bool list_last_list_p(Object obj) {
 extern int yylineno;
 extern FILE *yyin;
 extern FILE *yyout;
-/* lex */
-extern mpfr_t real;
-extern mpfr_t imag;
-extern mpfr_t opfr;
-extern mpfr_t argopfr;
-extern mpfr_t sopfr;
-extern mpfr_t copfr;
-extern mpf_t opf;
-extern mpq_t opq;
-/* lex end */
 int main() {
-  /* lex */
-  mpfr_inits(real, imag, opfr, argopfr, sopfr, copfr, NULL);
+  /* lex, procedures */
+  mpz_inits(opz, opz1, NULL);
+  mpq_inits(opq, opq1, NULL);
   mpf_init(opf);
-  mpq_init(opq);
-  /* lex end */
+  mpfr_inits(real, imag, opfr, opfr1, opfr2, opfr3, opfr4, argopfr, sopfr,
+             copfr, NULL);
+  mpc_init2(opc, MPC_PREC);
+  mpc_init2(opc1, MPC_PREC);
+  mpc_init2(opc2, MPC_PREC);
+  mpc_init2(opc3, MPC_PREC);
+  /* lex, procedures end */
   stack = empty;
   cars = memory_from[0];
   cdrs = memory_from[1];

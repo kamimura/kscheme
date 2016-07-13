@@ -183,6 +183,10 @@ int main() {
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_div}, env);
   define_variable(identifier_new("abs"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_abs}, env);
+  define_variable(identifier_new("gcd"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_gcd}, env);
+  define_variable(identifier_new("lcm"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_lcm}, env);
   define_variable(identifier_new("numerator"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_numerator},
                   env);
@@ -197,6 +201,9 @@ int main() {
                   env);
   define_variable(identifier_new("truncate"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_truncate},
+                  env);
+  define_variable(identifier_new("round"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_round},
                   env);
   define_variable(identifier_new("exp"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_exp}, env);
@@ -286,8 +293,17 @@ int main() {
   define_variable(identifier_new("null?"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_null_p},
                   env);
+  define_variable(identifier_new("list?"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_list_p},
+                  env);
+  define_variable(identifier_new("make-list"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_make_list},
+                  env);
   define_variable(identifier_new("list"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_list}, env);
+  define_variable(identifier_new("length"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_length},
+                  env);
   /* Pairs and lists end */
   /* Symbols */
   define_variable(identifier_new("symbol?"),
@@ -466,6 +482,9 @@ int main() {
   define_variable(
       identifier_new("binary-port?"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_binary_port_p}, env);
+  define_variable(identifier_new("port?"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_port_p},
+                  env);
   define_variable(
       identifier_new("input-port-open?"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_input_port_open_p},
@@ -473,6 +492,18 @@ int main() {
   define_variable(
       identifier_new("output-port-open?"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_output_port_open_p},
+      env);
+  define_variable(
+      identifier_new("current-input-port"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_current_input_port},
+      env);
+  define_variable(
+      identifier_new("current-output-port"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_current_output_port},
+      env);
+  define_variable(
+      identifier_new("current-error-port"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_current_error_port},
       env);
   define_variable(
       identifier_new("open-input-file"),
@@ -531,6 +562,12 @@ int main() {
   /* yyin = stdin; */
   yyrestart(stdin);
   yyout = stdout;
+  cur_in = cons((Object){.port = yyin}, empty);
+  cur_in.type = PORT_INPUT_TEXT;
+  cur_out = cons((Object){.port = yyout}, empty);
+  cur_out.type = PORT_OUTPUT_TEXT;
+  cur_err = cons((Object){.port = stderr}, empty);
+  cur_err.type = PORT_OUTPUT_TEXT;
   char *prompt = "ksi>";
   Object tmp;
 read_eval_print_loop:

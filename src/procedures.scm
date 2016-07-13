@@ -246,62 +246,6 @@
   (define remainder truncate-remainder)
   (define modulo floor-remainder)
 
-  (define gcd
-    (lambda args
-      (define euclidean
-        (lambda (n1 n2)
-          (define q (floor-quotient n1 n2))
-          (define r (floor-remainder n1 n2))
-          (if (zero? n1)
-              n2
-              (if (zero? n2)
-                  n1
-                  (if (zero? r)
-                      n2
-                      (euclidean n2 r))))))
-      (define iter
-        (lambda (n rest)
-          (if (null? rest)
-              n
-              (if (integer? (car rest))
-                  (iter (euclidean n (abs (car rest)))
-                        (cdr rest))
-                  (error "(gcd) wrong type argument --" args)))))
-      (if (null? args)
-          0
-          (if (integer? (car args))
-              (iter (abs (car args)) (cdr args))
-              (error "(gcd) wrong type argument --" args)))))
-  (define lcm
-    (lambda args
-      (define iter
-        (lambda (n args)
-          (if (null? args)
-              n
-              (if (integer? (car args))
-                  (iter (/ (* n (abs (car args)))
-                           (gcd n (car args)))
-                        (cdr args))
-                  #f))))
-      (if (null? args)
-          1
-          (if (integer? (car args))
-              (iter (abs (car args)) (cdr args))
-              #f))))
-  (define round
-    (lambda (x)
-      ((lambda (n)
-         ((lambda (m)
-            (if (< m 1/2)
-                n
-                (if (> m 1/2)
-                    (ceiling x)
-                    (if (even? n)
-                        n
-                        (ceiling x)))))
-          (- x n)))
-       (floor x))))
-
   ;; Stern-Brocot tree
   (define rationalize
     (lambda (x y)
@@ -314,28 +258,30 @@
              (define proc (if (and (exact? x) (exact? y)) exact inexact))
              (if (<= (* low high) 0)
                  (proc 0)
-                 ((lambda ()
-                    (define sign (if (positive? x) 1 -1))
-                    (define low0 (if (positive? sign) low (abs high)))
-                    (define high0 (if (positive? sign) high (abs low)))
-                    (define between? (lambda (x) (and (<= low0 x) (<= x high0))))
-                    (define stern-brocot-tree
-                      (lambda (pnum pden qnum qden)
-                        (define a (/ (+ pnum qnum)
-                                     (+ pden qden)))
-                        (if (between? a)
-                            a
-                            (if (< high0 a)
-                                (stern-brocot-tree pnum
-                                                   pden
-                                                   (numerator a)
-                                                   (denominator a))
-                                (stern-brocot-tree (numerator a)
-                                                   (denominator a)
-                                                   qnum
-                                                   qden)))))
-                    (proc (* sign (stern-brocot-tree 0 1 1 0)))))))))))
-
+                 (if (= low high)
+                     (proc low)
+                     ((lambda ()
+                        (define sign (if (positive? x) 1 -1))
+                        (define low0 (if (positive? sign) low (abs high)))
+                        (define high0 (if (positive? sign) high (abs low)))
+                        (define between?
+                          (lambda (x) (and (<= low0 x) (<= x high0))))
+                        (define stern-brocot-tree
+                          (lambda (pnum pden qnum qden)
+                            (define a (/ (+ pnum qnum)
+                                         (+ pden qden)))
+                            (if (between? a)
+                                a
+                                ((lambda ()
+                                   (define num (numerator a))
+                                   (define den (denominator a))
+                                   (if (< high0 a)
+                                       (stern-brocot-tree pnum pden
+                                                          num den)
+                                       (stern-brocot-tree num den
+                                                          qnum qden)))))))
+                        (proc (* sign (stern-brocot-tree 0 1 1 0))))))))))))
+  
   ;; Numbers end
 
   ;; Booleans
@@ -371,50 +317,7 @@
   (define cddadr (lambda (pair) (cdr (cdr (car (cdr pair))))))
   (define cdddar (lambda (pair) (cdr (cdr (cdr (car pair))))))
   (define cddddr (lambda (pair) (cdr (cdr (cdr (cdr pair))))))
-
-  (define list?
-    (lambda (obj)
-      (define iter
-        (lambda (a b)
-          (if (eq? a b)
-              #f
-              (if (null? b)
-                  #t
-                  (if (not (pair? b))
-                      #f
-                      (if (null? (cdr b))
-                          #t
-                          (if (not (pair? (cdr b)))
-                              #f
-                              (iter (cdr a) (cddr b)))))))))
-      (if (null? obj)
-          #t
-          (if (not (pair? obj))
-              #f
-              (iter obj (cdr obj))))))
   
-  (define make-list
-    (lambda (k . fill)    
-      (define iter      
-        (lambda (n fill items)
-          (if (= n 0)
-              items
-              (iter (- n 1) fill (cons fill items)))))
-      (if (null? fill)
-          (iter k '() '())
-          (iter k (car fill) '()))))
-
-  (define length
-    (lambda (items)
-      (define iter
-        (lambda (items)
-          (if (null? items)
-              0
-              (+ 1 (iter (cdr items))))))
-      (if (list? items)
-          (iter items)
-          (error "(length) wrong type argument -- " (cons items '())))))
-
   (define append
     (lambda args
       (if (null? args)
@@ -983,9 +886,17 @@
   ;; Vectors
   (define make-vector
     (lambda (k . args)
-      (if (null? args)
-          (list->vector (make-list k))
-          (list->vector (make-list k (car args))))))
+      (if (and (exact-integer? k) (>= k 0))
+          ((lambda ()
+             (define len (length args))
+             (define fill (if (= len 0)
+                              #f
+                              (if (= len 1)
+                                  (car args)
+                                  (error "(make-vector) wrong type argument -- "
+                                         (cons k args)))))
+              (list->vector (make-list k fill))))
+          (error "(make-vector) wrong type argument -- " (cons k args)))))
   (define vector->list
     (lambda (vect . args)
       (define start (if (null? args) 0 (car args)))
@@ -1002,8 +913,11 @@
               ((lambda ()
                  (list-set! items i (vector-ref vect j))
                  (iter (+ i 1) (+ j 1)))))))
-      (iter 0 start)))
-
+      (if (and (vector? vect)
+               (exact-integer? start) (>= start 0)
+               (exact-integer? end) (> end start) (<= end (vector-length vect)))
+          (iter 0 start)
+          (error "(vector->list) wrong type argument -- " (cons vect args)))))
   (define vector->string
     (lambda (vect . args)
       (define start (if (null? args) 0 (car args)))
@@ -1020,7 +934,11 @@
               ((lambda ()
                  (string-set! s i (vector-ref vect j))
                  (iter (+ i 1) (+ j 1)))))))
-      (iter 0 start)))
+      (if (and (vector? vect)
+               (exact-integer? start) (>= start 0)
+               (exact-integer? end) (> end start) (<= end (vector-length vect)))
+          (iter 0 start)
+          (error "(vector->string) wrong type argument -- " (cons vect args)))))
   (define string->vector
     (lambda (s . args)
       (define start (if (null? args) 0 (car args)))
@@ -1360,7 +1278,7 @@
   ;; Environments and evaluation end
 
   ;; Input and output
-  (define call-wtih-port
+  (define call-with-port
     (lambda (proc port)
       (define v (proc port))
       (close-port port)
@@ -1373,23 +1291,179 @@
     (lambda (str proc)
       (call-with-port proc (open-output-port str))))
 
-  (define port?
-    (lambda (obj)
-      (if (input-port? obj)
-          #t
-          (if (output-port? obj)
-              #t
-              #f))))
+  (define with-input-from-file
+    (lambda (s thunk)
+      (if (and (string? s) (procedure? thunk))
+          ((lambda ()
+             (define port (open-input-file s))
+             (define primitive-read read)
+             (define primitive-read-char read-char)
+             (define primitive-peek-char peek-char)
+             (define primitive-read-line read-line)
+             (define primitive-char-ready? char-ready?)
+             (define primitive-read-string read-string)
+             (define primitive-read-u8 read-u8)
+             (define primitive-peek-u8 peek-u8)
+             (define primitive-u8-ready? u8-ready?)
+             (define primitive-read-bytevector read-bytevector)
+             (define primitive-read-bytevector! read-bytevector!)
+             (set! read
+                   (lambda args
+                     (primitive-read (if (null? args) port (car args)))))
+             (set! read-char
+                   (lambda args
+                     (primitive-reac-char (if (null? args) port (car args)))))
+             (set! peek-char
+                   (lambda args
+                     (primitive-peek-char (if (null? args) port (car args)))))
+             (set! read-line
+                   (lambda args
+                     (primitive-read-line (if (null? args) port (car args)))))
+             (set! char-ready?
+                   (lambda args
+                     (primitive-char-ready (if (null? args) port (car args)))))
+             (set! read-string
+                   (lambda (k . args)
+                     (primitive-read-string k (if (null? args)
+                                                  port
+                                                  (car args)))))
+             (set! read-u8
+                   (lambda args
+                     (primitive-read-u8 (if (null? args) port (car args)))))
+             (set! peek-u8
+                   (lambda args
+                     (primitive-peek-u8 (if (null? args) port (car args)))))
+             (set! u8-ready?
+                   (lambda args
+                     (primitive-u8-read? (if (null? args) port (car args)))))
+             (set! read-bytevector
+                   (lambda (k . args)
+                     (primitive-read k (if (null? args) port (car args)))))
+             (set! read-bytevector!
+                   (lambda (bytevector . args)
+                     (define len (length args))
+                     (define p (if (= 0 len) port (car args)))
+                     (define start (if (< len 2) 0 (cadr args)))
+                     (define end (if (< len 3)
+                                     (bytevector-length bytevector)
+                                     (caddr args)))
+                     (primitive-read bytevector bytevector p start end)))
+             (dynamic-wind
+                 (lambda () 'before)
+                 thunk
+                 (lambda ()
+                   (close-port port)
+                   (set! read primitive-read)
+                   (set! read-char primitive-read-char)
+                   (set! peek-char primitive-peek-char)
+                   (set! read-line primitive-read-line)
+                   (set! char-ready? primitive-char-ready?)
+                   (set! read-string primitive-read-string)
+                   (set! read-u8 primitive-read-u8)
+                   (set! peek-u8 primitive-peek-u8)
+                   (set! u8-ready? primitive-u8-ready?)
+                   (set! read-bytevector primitive-read-bytevector)
+                   (set! read-bytevector! primitive-read-bytevector!)))))
+          (error "(with-input-from-file) wrong type argument -- "
+                 (list s thunk)))))
+
+  (define with-output-from-file
+    (lambda (s thunk)
+      (if (and (string? s) (procedure? thunk))
+          ((lambda ()
+             (define port (open-output-file s))
+             (define primitive-write write)
+             (define primitive-write-shared write-shared)
+             (define primitive-write-simple write-simple)
+             (define primitive-display display)
+             (define primitive-newline newline)
+             (define primitive-write-char write-char)
+             (define primitive-write-string write-string)
+             (define primitive-write-u8 write-u8)
+             (define primitive-write-bytevector write-bytevector)
+             (define primitive-flush-output-port flush-output-port)
+             (set! write
+                   (lambda args
+                     (primitive-write (if (null? args) port (car args)))))
+             (set! write-shared
+                   (lambda args
+                     (primitive-write-shared (if (null? args) port
+                                                 (car args)))))
+             (set! write-simple
+                   (lambda args
+                     (primitive-write-simple (if (null? args)
+                                                 port
+                                                 (car args)))))
+             (set! display
+                   (lambda args
+                     (primitive-display (if (null? args)
+                                            port
+                                            (car args)))))
+             (set! newline
+                   (lambda args
+                     (primitive-newline (if (null? args)
+                                            port
+                                            (car args)))))
+             (set! write-char
+                   (lambda (ch  . args)
+                     (primitive-write-char ch (if (null? args)
+                                                  port
+                                                  (car args)))))
+             (set! write-string
+                   (lambda args
+                     (primitive-write-string (if (null? args)
+                                                 port
+                                                 (car args)))))
+             (set! write-u8
+                   (lambda (s . args)
+                     (define len (length args))
+                     (primitive-write-u8 (if (= len 0) port (car args))
+                                         (if (< len 2) 0 (cadr args))
+                                         (if (< len 3)
+                                             (string-length s)
+                                             (caddr args)))))
+             (set! write-bytevector
+                   (lambda (bv . args)
+                     (define len (length args))
+                     (primitive-write-bytevector bv
+                                                 (if (= len 0) port (car args))
+                                                 (if (< len 2) 0 (cadr args))
+                                                 (if (< len 3)
+                                                     (bytevector-length s)
+                                                     (caddr args)))))
+             (set! flush-output-port
+                   (lambda args
+                     (primitive-flush-output-port (if (null? args)
+                                                      port
+                                                      (car args)))))
+             (dynamic-wind
+                 (lambda () 'before)
+                 thunk
+                 (lambda ()
+                   (close-port port)
+                   (set! write primitive-write)
+                   (set! write-shared primitive-write-shared)
+                   (set! write-simple primitive-write-simple)
+                   (set! display primitive-display)
+                   (set! newline primitive-newline)
+                   (set! write-char primitive-write-char)
+                   (set! write-string primitive-write-string)
+                   (set! write-u8 primitive-write-u8)
+                   (set! write-bytevector primitive-write-bytevector)
+                   (set! flush-output-port primitive-flush-output-port)))))
+          (error "(with-output-from-file) wrong type argument -- "
+                 (list s thunk)))))
+  
   (define close-input-port
     (lambda (port)
       (if (input-port? port)
           (close-port port)
-          #f)))
+          (error "(close-input-port) wrong type argument -- " (list port)))))
   (define close-output-port
     (lambda (port)
       (if (output-port? port)
           (close-port port)
-          #f)))
+          (error "(close-output-port) wrong type argument -- " (list port)))))
   (define read-line
     (lambda args
       (define iter

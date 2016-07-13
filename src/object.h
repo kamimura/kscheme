@@ -110,3 +110,5 @@ void object_write_shared(FILE *stream, Object obj);
 void object_write_simple(FILE *stream, Object obj);
 
 void object_display(FILE *stream, Object obj);
+
+Object value(Object const obj);

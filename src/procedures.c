@@ -8,14 +8,15 @@ static void error(char const *msg) {
 extern FILE *yyout;
 Object arguments(Object obj, char const *s) {
   fprintf(yyout, "Error: (%s) wrong number of arguments -- ", s);
-  object_write(yyout, obj);
-  fprintf(yyout, "\n");
+  object_write(carref(cur_err).port, obj);
+  fprintf(carref(cur_err).port, "\n");
   return (Object){.type = WRONG_NUMBER_OF_ARGUMENTS};
 }
 Object wrong_type(char const *prog_name, Object obj) {
-  fprintf(yyout, "Error: (%s) wrong type argument -- ", prog_name);
-  object_write(yyout, obj);
-  fprintf(yyout, "\n");
+  fprintf(carref(cur_err).port, "Error: (%s) wrong type argument -- ",
+          prog_name);
+  object_write(carref(cur_err).port, obj);
+  fprintf(carref(cur_err).port, "\n");
   return (Object){.type = WRONG_TYPE_ARGUMENT};
 }
 static size_t args_length(Object const args) {
@@ -24,16 +25,6 @@ static size_t args_length(Object const args) {
     len += 1;
   }
   return len;
-}
-static Object value(Object const obj) {
-  if (obj.type != MULTIPLE) {
-    return obj;
-  }
-  Object o;
-  for (o = carref(obj); o.type != MULTIPLE; o = carref(o)) {
-    ;
-  }
-  return o;
 }
 
 /* Derived expression types */
@@ -1500,6 +1491,118 @@ Object scm_abs(Object const args) {
     return wrong_type("abs", args);
   }
 }
+Object scm_gcd(Object const args) {
+  mpz_set_ui(opz, 0);
+  bool is_exact = true;
+  for (Object obj = args; obj.type != EMPTY; obj = cdrref(obj)) {
+    Object o = value(carref(obj));
+    switch (o.type) {
+    case NUMBERZ: {
+      mpz_gcd(opz, opz, o.numberz);
+      break;
+    }
+    case NUMBERQ: {
+      mpq_canonicalize(o.numberq);
+      if (mpz_cmp_ui(mpq_denref(o.numberq), 0) == 0) {
+        mpz_gcd(opz, opz, mpq_numref(o.numberq));
+        break;
+      }
+      return wrong_type("gcd", args);
+    }
+    case NUMBERR: {
+      mpfr_round(opfr, o.numberr);
+      if (mpfr_equal_p(opfr, o.numberr)) {
+        mpfr_get_z(opz1, o.numberr, MPFR_RNDN);
+        mpz_gcd(opz, opz, opz1);
+        is_exact = false;
+        break;
+      }
+      return wrong_type("gcd", args);
+    }
+    case NUMBERC: {
+      if (mpfr_zero_p(mpc_imagref(o.numberc))) {
+        mpfr_set(opfr, mpc_realref(o.numberc), MPFR_RNDN);
+        mpfr_round(opfr1, opfr);
+        if (mpfr_equal_p(opfr1, opfr)) {
+          mpfr_get_z(opz1, opfr, MPFR_RNDN);
+          mpz_gcd(opz, opz, opz1);
+          is_exact = false;
+          break;
+        }
+      }
+      return wrong_type("gcd", args);
+    }
+    case NONE:
+      error("scm_gcd");
+    default:
+      return wrong_type("gcd", args);
+    }
+  }
+  if (is_exact) {
+    Object out = {.type = NUMBERZ};
+    mpz_init_set(out.numberz, opz);
+    return out;
+  }
+  Object out = {.type = NUMBERR};
+  mpfr_init_set_z(out.numberr, opz, MPFR_RNDN);
+  return out;
+}
+Object scm_lcm(Object const args) {
+  mpz_set_ui(opz, 1);
+  bool is_exact = true;
+  for (Object obj = args; obj.type != EMPTY; obj = cdrref(obj)) {
+    Object o = value(carref(obj));
+    switch (o.type) {
+    case NUMBERZ: {
+      mpz_lcm(opz, opz, o.numberz);
+      break;
+    }
+    case NUMBERQ: {
+      mpq_canonicalize(o.numberq);
+      if (mpz_cmp_ui(mpq_denref(o.numberq), 0) == 0) {
+        mpz_lcm(opz, opz, mpq_numref(o.numberq));
+        break;
+      }
+      return wrong_type("lcm", args);
+    }
+    case NUMBERR: {
+      mpfr_round(opfr, o.numberr);
+      if (mpfr_equal_p(opfr, o.numberr)) {
+        mpfr_get_z(opz1, o.numberr, MPFR_RNDN);
+        mpz_lcm(opz, opz, opz1);
+        is_exact = false;
+        break;
+      }
+      return wrong_type("lcm", args);
+    }
+    case NUMBERC: {
+      if (mpfr_zero_p(mpc_imagref(o.numberc))) {
+        mpfr_set(opfr, mpc_realref(o.numberc), MPFR_RNDN);
+        mpfr_round(opfr1, opfr);
+        if (mpfr_equal_p(opfr1, opfr)) {
+          mpfr_get_z(opz1, opfr, MPFR_RNDN);
+          mpz_lcm(opz, opz, opz1);
+          is_exact = false;
+          break;
+        }
+      }
+      return wrong_type("lcm", args);
+    }
+    case NONE:
+      error("scm_lcm");
+    default:
+      return wrong_type("lcm", args);
+    }
+  }
+  if (is_exact) {
+    Object out = {.type = NUMBERZ};
+    mpz_init_set(out.numberz, opz);
+    return out;
+  }
+  Object out = {.type = NUMBERR};
+  mpfr_init_set_z(out.numberr, opz, MPFR_RNDN);
+  return out;
+}
 Object scm_numerator(Object const args) {
   if (args_length(args) != 1) {
     return arguments(args, "numerator");
@@ -1686,6 +1789,46 @@ Object scm_truncate(Object const args) {
     return wrong_type("truncate", args);
   }
 }
+Object scm_round(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "round");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case NUMBERZ: {
+    Object out = {.type = NUMBERZ};
+    mpz_init_set(out.numberz, obj.numberz);
+    return out;
+  }
+  case NUMBERQ: {
+    Object out = {.type = NUMBERZ};
+    mpz_init(out.numberz);
+    mpfr_set_q(opfr, obj.numberq, MPFR_RNDN);
+    mpfr_get_z(out.numberz, opfr, MPFR_RNDN);
+    return out;
+  }
+  case NUMBERR: {
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_get_z(opz, obj.numberr, MPFR_RNDN);
+    mpfr_set_z(out.numberr, opz, MPFR_RNDN);
+    return out;
+  }
+  case NUMBERC: {
+    if (!mpfr_zero_p(mpc_imagref(obj.numberc))) {
+      return wrong_type("round", args);
+    }
+    Object out = {.type = NUMBERR};
+    mpfr_init(out.numberr);
+    mpfr_get_z(opz, mpc_realref(obj.numberc), MPFR_RNDN);
+    mpfr_set_z(out.numberr, opz, MPFR_RNDN);
+    return out;
+  }
+  default:
+    return wrong_type("round", args);
+  }
+}
+
 Object scm_exp(Object const args) {
   if (args_length(args) != 1) {
     return arguments(args, "exp");
@@ -3213,7 +3356,6 @@ Object scm_make_polar(Object const args) {
       mpfr_mul_z(opfr4, opfr1, obj1.numberz, MPFR_RNDN);
       mpc_init2(out.numberc, MPC_PREC);
       mpc_set_fr_fr(out.numberc, opfr3, opfr4, MPC_RNDNN);
-      mpfr_clears(opfr, opfr1, opfr2, opfr3, opfr4, NULL);
       return out;
     }
     case NUMBERQ: {
@@ -3592,7 +3734,6 @@ Object scm_number_tostring(Object const args) {
       }
     }
     if (!mpfr_zero_p(mpc_realref(obj1.numberc))) {
-      out = string_cons((Object){.type = CHARACTER, .character = 'i'}, out);
       for (size_t i = strlen(str_real) - 1;; i--) {
         if (i == exp_real - 1 + sign_real) {
           out = string_cons((Object){.type = CHARACTER, .character = '.'}, out);
@@ -3615,7 +3756,6 @@ Object scm_number_tostring(Object const args) {
   }
 }
 
-extern FILE *yyin;
 extern void yyrestart(FILE *);
 extern Object kread();
 
@@ -3639,7 +3779,11 @@ Object scm_string_tonumber(Object const args) {
     base = mpz_get_ui(obj2.numberz);
   }
   Object out;
-  char *s = NULL;
+  /* char *s = NULL; */
+  char ch0;
+  char ch1;
+  char ch2;
+  char ch3;
   int n;
   switch (obj1.type) {
   case STRING_EMPTY:
@@ -3665,19 +3809,25 @@ Object scm_string_tonumber(Object const args) {
       o = string_cdrref(o);
     }
     str[str_i] = '\0';
-    FILE *stream = yyin;
+    FILE *stream = carref(cur_in).port;
     n = stringto(str);
     yyrestart(stream);
     out = kread_obj;
-    s = str;
+    ch0 = str[0];
+    ch1 = str[1];
+    ch2 = str[2];
+    ch3 = str[3];
     break;
   }
   case STRING_IMMUTABLE: {
-    FILE *stream = yyin;
+    FILE *stream = carref(cur_in).port;
     n = stringto(obj1.string_immutable);
     yyrestart(stream);
     out = kread_obj;
-    s = obj1.string_immutable;
+    ch0 = obj1.string_immutable[0];
+    ch1 = obj1.string_immutable[1];
+    ch2 = obj1.string_immutable[2];
+    ch3 = obj1.string_immutable[3];
     break;
   }
   case NONE:
@@ -3689,24 +3839,13 @@ Object scm_string_tonumber(Object const args) {
     object_free(&out);
     return false_obj;
   }
-  if (s[0] == '#') {
-    if (s[1] == 'b') {
-      base = 2;
-    } else if (s[1] == 'o') {
-      base = 8;
-    } else if (s[1] == 'd') {
-      base = 10;
-    } else if (s[1] == 'x') {
-      base = 16;
-    } else if (s[1] != '\0' && s[2] == '#') {
-      if (s[3] == 'b') {
-        base = 2;
-      } else if (s[3] == 'o') {
-        base = 8;
-      } else if (s[3] == 'd') {
-        base = 10;
-      } else if (s[3] == 'x') {
-        base = 16;
+  if (ch0 == '#') {
+    if (ch1 == 'b' || ch1 == 'o' || ch1 == 'd' || ch1 == 'x') {
+      return out;
+    }
+    if (ch1 != '\0' && ch2 == '#') {
+      if (ch3 == 'b' || ch3 == 'o' || ch3 == 'd' || ch3 == 'x') {
+        return out;
       }
     }
   }
@@ -3735,7 +3874,7 @@ Object scm_string_tonumber(Object const args) {
     }
     case NUMBERR: {
       mpfr_exp_t exp = 0;
-      mpfr_get_str(str, &exp, 10, 0, out.numberr, MPFR_RNDN);
+      str = mpfr_get_str(str, &exp, 10, 0, out.numberr, MPFR_RNDN);
       size_t len = strlen(str) + 1;
       char str1[len + 2];
       if (str[0] == '-') {
@@ -3933,21 +4072,6 @@ Object scm_cdr(Object const args) {
     return wrong_type("cdr", args);
   }
 }
-Object scm_null_p(Object const args) {
-  if (args_length(args) != 1) {
-    return arguments(args, "cdr");
-  }
-  switch (value(carref(args)).type) {
-  case EMPTY:
-    return true_obj;
-  case NONE:
-    error("scm_null_p");
-  default:
-    return false_obj;
-  }
-}
-Object scm_list(Object const args) { return args; }
-
 Object scm_set_car(Object const args) {
   if (args_length(args) != 2) {
     return arguments(args, "set-car!");
@@ -3982,6 +4106,85 @@ Object scm_set_cdr(Object const args) {
     return wrong_type("set-cdr!", args);
   }
 }
+Object scm_null_p(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "null?");
+  }
+  switch (value(carref(args)).type) {
+  case EMPTY:
+    return true_obj;
+  case NONE:
+    error("scm_null_p");
+  default:
+    return false_obj;
+  }
+}
+Object scm_list_p(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "list?");
+  }
+  Object obj = value(carref(args));
+  if (obj.type == NONE) {
+    error("scm_list_p");
+  }
+  return list_p(value(obj)) ? true_obj : false_obj;
+}
+Object scm_make_list(Object const args) {
+  size_t len = args_length(args);
+  Object obj1;
+  Object obj2;
+  if (len == 1) {
+    obj1 = value(carref(args));
+    obj2 = empty;
+  } else if (len == 2) {
+    obj1 = value(carref(args));
+    obj2 = carref(cdrref(args));
+  } else {
+    return arguments(args, "make-list");
+  }
+  if (obj1.type == NUMBERZ) {
+    mpz_set(opz, obj1.numberz);
+  } else if (obj1.type == NUMBERQ) {
+    mpq_canonicalize(obj1.numberq);
+    if (mpz_cmp_ui(mpq_denref(obj1.numberq), 1) == 0) {
+      mpz_set(opz, mpq_numref(obj1.numberq));
+    }
+    return arguments(args, "make-list");
+  } else {
+    return arguments(args, "make-list");
+  }
+  if (mpz_sgn(opz) < 0) {
+    return arguments(args, "make-list");
+  }
+  Object out = empty;
+  for (; mpz_sgn(opz) != 0;) {
+    out = cons(object_copy(obj2), out);
+    mpz_sub_ui(opz, opz, 1);
+  }
+  return out;
+}
+Object scm_list(Object const args) { return args; }
+Object scm_length(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "length");
+  }
+  Object obj = value(carref(args));
+  if (obj.type == NONE) {
+    error("scm_length");
+  }
+  if (list_p(obj)) {
+    size_t len = 0;
+    for (Object o = obj; o.type != EMPTY;) {
+      len++;
+      o = value(cdrref(o));
+    }
+    Object out = {.type = NUMBERZ};
+    mpz_init_set_ui(out.numberz, len);
+    return out;
+  }
+  return wrong_type("length", args);
+}
+
 /* Pairs and lists and */
 
 /* Symbols */
@@ -4114,7 +4317,7 @@ Object scm_string_tosymbol(Object const args) {
     }
     str[str_i] = '|';
     str[str_i + 1] = '\0';
-    FILE *stream = yyin;
+    FILE *stream = carref(cur_in).port;
     int n = stringto(str);
     yyrestart(stream);
     if (n != 0) {
@@ -5086,6 +5289,23 @@ Object scm_binary_port_p(Object const args) {
     return false_obj;
   }
 }
+Object scm_port_p(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "port?");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case PORT_INPUT_TEXT:
+  case PORT_INPUT_BINARY:
+  case PORT_OUTPUT_TEXT:
+  case PORT_OUTPUT_BINARY:
+    return true_obj;
+  case NONE:
+    error("scm_port_p");
+  default:
+    return false_obj;
+  }
+}
 Object scm_input_port_open_p(Object const args) {
   if (args_length(args) != 1) {
     return arguments(args, "input-port-open?");
@@ -5214,6 +5434,25 @@ Object scm_open_binary_output_file(Object const args) {
     return wrong_type("open-binary-output-file", args);
   }
 }
+Object scm_current_input_port(Object const args) {
+  if (args.type != EMPTY) {
+    return arguments(args, "current-input-port");
+  }
+  return cur_in;
+}
+Object scm_current_output_port(Object const args) {
+  if (args.type != EMPTY) {
+    return arguments(args, "current-output-port");
+  }
+  return cur_out;
+}
+Object scm_current_error_port(Object const args) {
+  if (args.type != EMPTY) {
+    return arguments(args, "current-error-port");
+  }
+  return cur_err;
+}
+
 Object scm_open_input_file(Object const args) {
   if (args_length(args) != 1) {
     return arguments(args, "open-input-file");
@@ -5346,7 +5585,7 @@ Object scm_read(Object const args) {
       return (Object){.type = READ_ERROR, .message = strdup(strerror(errno))};
       ;
     }
-    FILE *stream = yyin;
+    FILE *stream = carref(cur_in).port;
     yyrestart(port_carref(obj).port);
     interactive_mode = 0;
     Object out = kread();
@@ -5363,7 +5602,7 @@ Object scm_read_char(Object const args) {
   case 0: {
     char s[6];
     for (size_t i = 0; i < 6; i++) {
-      char ch = fgetc(yyin);
+      char ch = fgetc(carref(cur_in).port);
       if (ch == EOF) {
         return (Object){.type = EOF_OBJ};
       }

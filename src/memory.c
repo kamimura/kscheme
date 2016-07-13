@@ -13,13 +13,16 @@ static Object oldcr = {.type = NONE};
 static Object new_obj = {.type = NONE};
 
 Object root;
-Object expr, env, val, cont, proc, argl, unev;
+Object expr, env, val, cont, proc, argl, unev, cur_in, cur_out, cur_err;
 Object stack;
 Object global;
 
 static void gc_before(Object obj) {
   puts(";GC");
   root = empty;
+  root = cons(cur_err, root);
+  root = cons(cur_out, root);
+  root = cons(cur_in, root);
   root = cons(unev, root);
   root = cons(argl, root);
   root = cons(proc, root);

@@ -464,12 +464,17 @@ void object_write(FILE *stream, Object obj) {
   }
   case PORT_INPUT_TEXT: {
     fprintf(stream, "#<text-input-port");
-    if (port_carref(obj).port == NULL) {
+    FILE *f = port_carref(obj).port;
+    if (f == NULL) {
       fprintf(stream, "(closed)");
     }
-    fprintf(stream, " ");
-    object_write(stream, port_cdrref(obj));
-    fprintf(stream, ">");
+    if (f == stdin) {
+      fprintf(stream, " (standard input)>");
+    } else {
+      fprintf(stream, " ");
+      object_write(stream, port_cdrref(obj));
+      fprintf(stream, ">");
+    }
     break;
   }
   case PORT_INPUT_BINARY: {
@@ -484,12 +489,19 @@ void object_write(FILE *stream, Object obj) {
   }
   case PORT_OUTPUT_TEXT: {
     fprintf(stream, "#<text-output-port");
-    if (port_carref(obj).port == NULL) {
+    FILE *f = port_carref(obj).port;
+    if (f == NULL) {
       fprintf(stream, "(closed)");
     }
-    fprintf(stream, " ");
-    object_write(stream, port_cdrref(obj));
-    fprintf(stream, ">");
+    if (f == stdout) {
+      fprintf(stream, " (standard output)>");
+    } else if (f == stderr) {
+      fprintf(stream, " (standard error)>");
+    } else {
+      fprintf(stream, " ");
+      object_write(stream, port_cdrref(obj));
+      fprintf(stream, ">");
+    }
     break;
   }
   case PORT_OUTPUT_BINARY: {
@@ -659,4 +671,15 @@ void object_display(FILE *stream, Object obj) {
     object_write(stream, obj);
     break;
   }
+}
+
+Object value(Object const obj) {
+  if (obj.type != MULTIPLE) {
+    return obj;
+  }
+  Object o;
+  for (o = carref(obj); o.type == MULTIPLE; o = carref(o)) {
+    ;
+  }
+  return o;
 }

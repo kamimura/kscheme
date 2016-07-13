@@ -11,9 +11,9 @@ extern Object *cdrs;
 extern Object *new_cars;
 extern Object *new_cdrs;
 
-#define REGISTER_COUNT 10
+#define REGISTER_COUNT 13
 extern Object root;
-extern Object expr, env, val, cont, proc, argl, unev;
+extern Object expr, env, val, cont, proc, argl, unev, cur_in, cur_out, cur_err;
 extern Object global;
 extern Object stack;
 ;

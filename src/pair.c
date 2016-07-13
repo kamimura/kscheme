@@ -218,8 +218,8 @@ bool list_p(Object obj) {
   if (obj.type != PAIR) {
     return false;
   }
-  Object o1 = obj;
-  Object o2 = cdrref(obj);
+  Object o1 = value(obj);
+  Object o2 = value(cdrref(obj));
   while (o2.type != EMPTY) {
     if (o2.type != PAIR) {
       return false;
@@ -227,15 +227,15 @@ bool list_p(Object obj) {
     if (o1.index == o2.index) {
       return false;
     }
-    o1 = cdrref(o1);
-    o2 = cdrref(o2);
+    o1 = value(cdrref(o1));
+    o2 = value(cdrref(o2));
     if (o2.type == EMPTY) {
       return true;
     }
     if (o2.type != PAIR) {
       return false;
     }
-    o2 = cdrref(o2);
+    o2 = value(cdrref(o2));
   }
   return true;
 }

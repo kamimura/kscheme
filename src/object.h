@@ -40,6 +40,8 @@ typedef enum type {
   PORT_INPUT_BINARY,
   PORT_OUTPUT_TEXT,
   PORT_OUTPUT_BINARY,
+  PORT_INPUT_TEXT_STRING,
+  PORT_OUTPUT_TEXT_STRING,
   EOF_OBJ,
   READ_ERROR,
   FILE_ERROR,
@@ -82,6 +84,7 @@ typedef struct Object {
     char *string_immutable_vertical;
     FILE *port;
     char *message;
+    size_t string_port_index;
   };
 } Object;
 

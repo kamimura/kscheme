@@ -463,8 +463,8 @@ void object_write(FILE *stream, Object obj) {
     break;
   }
   case PORT_INPUT_TEXT: {
-    fprintf(stream, "#<text-input-port");
-    FILE *f = port_carref(obj).port;
+    fprintf(stream, "#<textual-input-port");
+    FILE *f = carref(obj).port;
     if (f == NULL) {
       fprintf(stream, "(closed)");
     }
@@ -472,24 +472,24 @@ void object_write(FILE *stream, Object obj) {
       fprintf(stream, " (standard input)>");
     } else {
       fprintf(stream, " ");
-      object_write(stream, port_cdrref(obj));
+      object_write(stream, cdrref(obj));
       fprintf(stream, ">");
     }
     break;
   }
   case PORT_INPUT_BINARY: {
-    fprintf(stream, "#<binary-input-port ");
-    if (port_carref(obj).port == NULL) {
-      fprintf(stream, "(closed) ");
+    fprintf(stream, "#<binary-input-port");
+    if (carref(obj).port == NULL) {
+      fprintf(stream, "(closed)");
     }
     fprintf(stream, " ");
-    object_write(stream, port_cdrref(obj));
+    object_write(stream, cdrref(obj));
     fprintf(stream, ">");
     break;
   }
   case PORT_OUTPUT_TEXT: {
-    fprintf(stream, "#<text-output-port");
-    FILE *f = port_carref(obj).port;
+    fprintf(stream, "#<textual-output-port");
+    FILE *f = carref(obj).port;
     if (f == NULL) {
       fprintf(stream, "(closed)");
     }
@@ -499,19 +499,27 @@ void object_write(FILE *stream, Object obj) {
       fprintf(stream, " (standard error)>");
     } else {
       fprintf(stream, " ");
-      object_write(stream, port_cdrref(obj));
+      object_write(stream, cdrref(obj));
       fprintf(stream, ">");
     }
     break;
   }
   case PORT_OUTPUT_BINARY: {
-    fprintf(stream, "#<binary-output-port ");
-    if (port_carref(obj).port == NULL) {
-      fprintf(stream, "(closed) ");
+    fprintf(stream, "#<binary-output-port");
+    if (carref(obj).port == NULL) {
+      fprintf(stream, "(closed)");
     }
     fprintf(stream, " ");
-    object_write(stream, port_cdrref(obj));
+    object_write(stream, cdrref(obj));
     fprintf(stream, ">");
+    break;
+  }
+  case PORT_INPUT_TEXT_STRING: {
+    fprintf(stream, "#<textual-input-port(string)>");
+    break;
+  }
+  case PORT_OUTPUT_TEXT_STRING: {
+    fprintf(stream, "#<textual-output-port(string)>");
     break;
   }
   case EOF_OBJ:

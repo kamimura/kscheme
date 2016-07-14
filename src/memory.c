@@ -94,6 +94,8 @@ relocate_old_result_in_new:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
+  case PORT_INPUT_TEXT_STRING:
+  case PORT_OUTPUT_TEXT_STRING:
   case MULTIPLE: {
     goto pair;
   }
@@ -162,6 +164,8 @@ Object car(Object obj) {
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
+  case PORT_INPUT_TEXT_STRING:
+  case PORT_OUTPUT_TEXT_STRING:
   case MULTIPLE: {
     return object_copy(cars[obj.index]);
   }
@@ -182,6 +186,8 @@ Object cdr(Object obj) {
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
+  case PORT_INPUT_TEXT_STRING:
+  case PORT_OUTPUT_TEXT_STRING:
   case MULTIPLE: {
     return object_copy(cdrs[obj.index]);
   }
@@ -202,6 +208,8 @@ Object carref(Object obj) {
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
+  case PORT_INPUT_TEXT_STRING:
+  case PORT_OUTPUT_TEXT_STRING:
   case MULTIPLE: {
     return cars[obj.index];
   }
@@ -222,6 +230,8 @@ Object cdrref(Object obj) {
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
+  case PORT_INPUT_TEXT_STRING:
+  case PORT_OUTPUT_TEXT_STRING:
   case MULTIPLE: {
     return cdrs[obj.index];
   }
@@ -336,5 +346,3 @@ Object implementation_defined_object_carref(Object obj) {
 Object implementation_defined_object_cdrref(Object obj) {
   return cdrs[obj.index];
 }
-Object port_carref(Object obj) { return cars[obj.index]; }
-Object port_cdrref(Object obj) { return cdrs[obj.index]; }

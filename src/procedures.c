@@ -164,6 +164,8 @@ Object scm_eqv_p(Object const args) {
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
+  case PORT_INPUT_TEXT_STRING:
+  case PORT_OUTPUT_TEXT_STRING:
     return obj1.type == obj2.type && obj1.index == obj2.index ? true_obj
                                                               : false_obj;
   case EOF_OBJ:
@@ -233,6 +235,8 @@ Object scm_eq_p(Object const args) {
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
+  case PORT_INPUT_TEXT_STRING:
+  case PORT_OUTPUT_TEXT_STRING:
   case PAIR:
     return scm_eqv_p(args);
   case EOF_OBJ:
@@ -5237,6 +5241,7 @@ Object scm_input_port_p(Object const args) {
   switch (obj.type) {
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
+  case PORT_INPUT_TEXT_STRING:
     return true_obj;
   case NONE:
     error("scm_input_port_p");
@@ -5252,6 +5257,7 @@ Object scm_output_port_p(Object const args) {
   switch (obj.type) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
+  case PORT_OUTPUT_TEXT_STRING:
     return true_obj;
   case NONE:
     error("scm_output_port_p'");
@@ -5299,6 +5305,8 @@ Object scm_port_p(Object const args) {
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
+  case PORT_INPUT_TEXT_STRING:
+  case PORT_OUTPUT_TEXT_STRING:
     return true_obj;
   case NONE:
     error("scm_port_p");
@@ -5314,9 +5322,11 @@ Object scm_input_port_open_p(Object const args) {
   switch (obj.type) {
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
-    return port_carref(obj).port != NULL ? true_obj : false_obj;
+  case PORT_INPUT_TEXT_STRING:
+    return carref(obj).port != NULL ? true_obj : false_obj;
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
+  case PORT_OUTPUT_TEXT_STRING:
     return false_obj;
   case NONE:
     error("scm_input_port_open_p");
@@ -5332,9 +5342,11 @@ Object scm_output_port_open_p(Object const args) {
   switch (obj.type) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
-    return port_carref(obj).port != NULL ? true_obj : false_obj;
+  case PORT_OUTPUT_TEXT_STRING:
+    return carref(obj).port != NULL ? true_obj : false_obj;
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
+  case PORT_INPUT_TEXT_STRING:
     return false_obj;
   case NONE:
     error("scm_output_port_open_p");
@@ -5557,7 +5569,12 @@ Object scm_close_port(Object const args) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY: {
-    fclose(port_carref(obj).port);
+    fclose(carref(obj).port);
+    cars[obj.index].port = NULL;
+    return unspecified;
+  }
+  case PORT_INPUT_TEXT_STRING:
+  case PORT_OUTPUT_TEXT_STRING: {
     cars[obj.index].port = NULL;
     return unspecified;
   }
@@ -5565,6 +5582,29 @@ Object scm_close_port(Object const args) {
     error("scm_close_port");
   default:
     return wrong_type("close-port", args);
+  }
+}
+
+FILE *const string_port = (FILE *)1;
+Object scm_open_input_string(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "open-input-string");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case STRING_EMPTY:
+  case STRING:
+  case STRING_IMMUTABLE:
+  case STRING_IMMUTABLE_VERTICAL: {
+    Object out = cons((Object){.string_port_index = 0}, obj);
+    out = cons((Object){.port = string_port}, out);
+    obj.type = PORT_INPUT_TEXT_STRING;
+    return out;
+  }
+  case NONE:
+    error("scm_open_input_string");
+  default:
+    return wrong_type("open-input-string", args);
   }
 }
 int interactive_mode = 1;
@@ -5581,12 +5621,12 @@ Object scm_read(Object const args) {
     if (obj.type != PORT_INPUT_TEXT) {
       return wrong_type("read", args);
     }
-    if (port_carref(obj).port == NULL) {
+    if (carref(obj).port == NULL) {
       return (Object){.type = READ_ERROR, .message = strdup(strerror(errno))};
       ;
     }
     FILE *stream = carref(cur_in).port;
-    yyrestart(port_carref(obj).port);
+    yyrestart(carref(obj).port);
     interactive_mode = 0;
     Object out = kread();
     interactive_mode = 1;
@@ -5619,7 +5659,7 @@ Object scm_read_char(Object const args) {
     if (obj.type != PORT_INPUT_TEXT) {
       return wrong_type("read-char", args);
     }
-    FILE *stream = port_carref(obj).port;
+    FILE *stream = carref(obj).port;
     char s[6];
     for (size_t i = 0; i < 6; i++) {
       char ch = fgetc(stream);
@@ -5663,7 +5703,7 @@ Object scm_write(Object const args) {
     if (obj.type != PORT_OUTPUT_TEXT) {
       exit(1);
     }
-    object_write(port_carref(obj).port, value(carref(cdrref(args))));
+    object_write(carref(obj).port, value(carref(cdrref(args))));
     return unspecified;
   }
   default:
@@ -5682,7 +5722,7 @@ Object scm_write_shared(Object const args) {
     if (obj.type != PORT_OUTPUT_TEXT) {
       return wrong_type("write-shared", args);
     }
-    object_write_shared(port_carref(obj).port, value(carref(cdrref(args))));
+    object_write_shared(carref(obj).port, value(carref(cdrref(args))));
     return unspecified;
   }
   default:
@@ -5701,7 +5741,7 @@ Object scm_write_simple(Object const args) {
     if (obj.type != PORT_OUTPUT_TEXT) {
       return wrong_type("write-simple", args);
     }
-    object_write_simple(port_carref(obj).port, value(carref(cdrref(args))));
+    object_write_simple(carref(obj).port, value(carref(cdrref(args))));
     return unspecified;
   }
   default:
@@ -5720,7 +5760,7 @@ Object scm_display(Object const args) {
     if (obj.type != PORT_OUTPUT_TEXT) {
       return wrong_type("display", args);
     }
-    object_display(port_carref(obj).port, carref(cdrref(args)));
+    object_display(carref(obj).port, carref(cdrref(args)));
     return unspecified;
   }
   default:

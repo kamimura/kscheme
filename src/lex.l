@@ -13,6 +13,8 @@ extern int interactive_mode;
 
 GSList *sym_list = NULL;
 char sign_imag;
+
+static int nested_comment = 0;
 %}
 
 intraline_whitespace [ \t]
@@ -36,6 +38,22 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 
  /* comment */
 ";".*{line_ending} {}
+ /* nested comment (block comment)*/
+"#|" { BEGIN NESTED_COMMENT; nested_comment++;}
+<NESTED_COMMENT>"|#" {
+  nested_comment--;
+  if (nested_comment == 0) {
+    BEGIN INITIAL;
+  }
+}
+<NESTED_COMMENT>"#|" {
+  nested_comment++;
+}
+<NESTED_COMMENT>(.|\n|\r) {}
+ /* comment out */
+"#;" {
+  return TOKEN_SHARP_SEMICOLON;
+}
 
  /* id */
  /* ⟨initial⟩ ⟨subsequent⟩* */

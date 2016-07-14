@@ -40,6 +40,3 @@ Object continuation_cdrref(Object obj);
 
 Object implementation_defined_object_carref(Object obj);
 Object implementation_defined_object_cdrref(Object obj);
-
-Object port_carref(Object obj);
-Object port_cdrref(Object obj);

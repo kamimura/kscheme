@@ -12,6 +12,7 @@ extern int yylex(void);
 %token
                         TOKEN_SHARP_OP
                         TOKEN_SHARP_U_EIGHT_OP
+                        TOKEN_SHARP_SEMICOLON
                         
 %token  <obj>           TOKEN_BOOLEAN
                         TOKEN_IDENTIFIER
@@ -46,6 +47,11 @@ program:        datum
         ;
 datum:          simple_datum
         |       compound_datum
+        |       TOKEN_SHARP_SEMICOLON datum datum
+                {
+                  object_free(&$2);
+                  $$ = $3;
+                }
         ;
 simple_datum:   TOKEN_BOOLEAN
         |       number

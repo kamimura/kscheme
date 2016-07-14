@@ -155,6 +155,7 @@ Object scm_open_binary_input_file(Object const args);
 Object scm_open_output_file(Object const args);
 Object scm_open_binary_output_file(Object const args);
 Object scm_close_port(Object const args);
+Object scm_open_input_string(Object const args);
 Object scm_read(Object const args);
 Object scm_read_char(Object const args);
 Object scm_eof_object_p(Object const args);

@@ -522,6 +522,10 @@ int main() {
   define_variable(identifier_new("close-port"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_close_port},
                   env);
+  define_variable(
+      identifier_new("open-input-string"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_open_input_string},
+      env);
   define_variable(identifier_new("read"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_read}, env);
   define_variable(identifier_new("read-char"),
@@ -619,6 +623,8 @@ eval_dispatch:
   case PORT_INPUT_BINARY:
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
+  case PORT_INPUT_TEXT_STRING:
+  case PORT_OUTPUT_TEXT_STRING:
   case EOF_OBJ:
   case READ_ERROR:
   case FILE_ERROR:

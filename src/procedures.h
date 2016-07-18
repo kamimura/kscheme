@@ -156,6 +156,8 @@ Object scm_open_output_file(Object const args);
 Object scm_open_binary_output_file(Object const args);
 Object scm_close_port(Object const args);
 Object scm_open_input_string(Object const args);
+Object scm_open_output_string(Object const args);
+Object scm_get_output_string(Object const args);
 Object scm_read(Object const args);
 Object scm_read_char(Object const args);
 Object scm_eof_object_p(Object const args);
@@ -164,6 +166,7 @@ Object scm_write(Object const args);
 Object scm_write_shared(Object const args);
 Object scm_write_simple(Object const args);
 Object scm_display(Object const args);
+Object scm_newline(Object const args);
 /* System interface */
 Object scm_file_exists_p(Object const args);
 Object scm_primitive_delete_file(Object const args);

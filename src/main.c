@@ -526,6 +526,14 @@ int main() {
       identifier_new("open-input-string"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_open_input_string},
       env);
+  define_variable(
+      identifier_new("open-output-string"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_open_output_string},
+      env);
+  define_variable(
+      identifier_new("get-output-string"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_get_output_string},
+      env);
   define_variable(identifier_new("read"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_read}, env);
   define_variable(identifier_new("read-char"),
@@ -548,6 +556,9 @@ int main() {
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_write_simple}, env);
   define_variable(identifier_new("display"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_display},
+                  env);
+  define_variable(identifier_new("newline"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_newline},
                   env);
   /* Input and output end */
   /* System interface */
@@ -577,8 +588,8 @@ int main() {
 read_eval_print_loop:
   yylineno = 0;
   stack = empty;
-  fprintf(yyout, "%s ", prompt);
-  ungetc(' ', yyin);
+  fprintf(carref(cur_out).port, "%s ", prompt);
+  /* ungetc(' ', carref(cur_in).port); */
   expr = kread();
   env = global;
   cont.cont = &&print_result;
@@ -926,11 +937,11 @@ compound_apply:
   unev = carref(cdrref(proc));
   env = extend_environment();
   if (env.type == WRONG_NUMBER_OF_ARGUMENTS) {
-    fprintf(yyout, "Error: ");
-    object_write(yyout, proc);
-    fprintf(yyout, " wrong number of arguments -- ");
-    object_write(yyout, argl);
-    fprintf(yyout, "\n");
+    fprintf(carref(cur_err).port, "Error: ");
+    object_write(carref(cur_err).port, proc);
+    fprintf(carref(cur_err).port, " wrong number of arguments -- ");
+    object_write(carref(cur_err).port, argl);
+    fprintf(carref(cur_err).port, "\n");
     goto wrong_number_of_arguments;
   }
   unev = cdrref(cdrref(proc));
@@ -1144,30 +1155,30 @@ ev_delay_force:
   goto *cont.cont;
 print_result:
   printf("=> ");
-  object_write(yyout, val);
-  fprintf(yyout, "\n");
+  object_write(carref(cur_out).port, val);
+  fprintf(carref(cur_out).port, "\n");
   goto read_eval_print_loop;
 
 unknown_expression_type:
   fprintf(yyout, "Error: unknown expression type -- ");
-  object_write(yyout, expr);
-  fprintf(yyout, "\n");
+  object_write(carref(cur_err).port, expr);
+  fprintf(carref(cur_err).port, "\n");
   goto signal_error;
 unknown_procedure_type:
   restore(&cont);
-  fprintf(yyout, "Error: unknown procedure type -- ");
-  object_write(yyout, proc);
-  fprintf(yyout, "\n");
+  fprintf(carref(cur_err).port, "Error: unknown procedure type -- ");
+  object_write(carref(cur_err).port, proc);
+  fprintf(carref(cur_err).port, "\n");
   goto signal_error;
 unbound_variable:
-  fprintf(yyout, "Error: unbound variable -- ");
-  object_write(yyout, expr);
-  fprintf(yyout, "\n");
+  fprintf(carref(cur_err).port, "Error: unbound variable -- ");
+  object_write(carref(cur_err).port, expr);
+  fprintf(carref(cur_err).port, "\n");
   goto signal_error;
 primitive_procedure_raise:
-  fprintf(yyout, "Error: ");
-  object_display(yyout, carref(argl));
-  fprintf(yyout, "\n");
+  fprintf(carref(cur_err).port, "Error: ");
+  object_display(carref(cur_err).port, carref(argl));
+  fprintf(carref(cur_err).port, "\n");
   goto signal_error;
 primitive_procedure_raise_continuable:
   goto signal_error;
@@ -1176,19 +1187,19 @@ wrong_number_of_arguments:
 wrong_type_argument:
   goto signal_error;
 syntax_error:
-  fprintf(yyout, "Error: syntax error - ");
-  object_write(yyout, expr);
-  fprintf(yyout, "\n");
+  fprintf(carref(cur_err).port, "Error: syntax error - ");
+  object_write(carref(cur_err).port, expr);
+  fprintf(carref(cur_err).port, "\n");
   goto signal_error;
 expt_error:
   goto signal_error;
 exact_error:
   goto signal_error;
 read_error:
-  fprintf(yyout, "Error: %s\n", val.message);
+  fprintf(carref(cur_err).port, "Error: %s\n", val.message);
   goto signal_error;
 file_error:
-  fprintf(yyout, "Error: %s\n", val.message);
+  fprintf(carref(cur_err).port, "Error: %s\n", val.message);
   goto signal_error;
 signal_error:;
   goto read_eval_print_loop;

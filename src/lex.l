@@ -2290,8 +2290,8 @@ any_character_other_than_quote_backslash ([\x00-\x7f]{-}[\"\\]|{two}|{three}|{fo
 <<EOF>> {
   if (interactive_mode) {
     exit(0);
-  }
-  yylval.obj = (Object){.type=EOF_OBJ};
+  }  
+  yylval.obj = (Object){.type=EOF_OBJ};  
   return TOKEN_EOF_OBJ;
 }
 . {

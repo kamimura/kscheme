@@ -515,11 +515,20 @@ void object_write(FILE *stream, Object obj) {
     break;
   }
   case PORT_INPUT_TEXT_STRING: {
-    fprintf(stream, "#<textual-input-port(string)>");
+    fprintf(stream, "#<textual-input-port");
+    if (carref(obj).port == NULL) {
+      fprintf(stream, "(closed)");
+    }
+    fprintf(stream, "(string)>");
     break;
   }
   case PORT_OUTPUT_TEXT_STRING: {
-    fprintf(stream, "#<textual-output-port(string)>");
+    fprintf(stream, "#<textual-output-port");
+    if (carref(obj).port == NULL) {
+      fprintf(stream, "(closed)");
+    }
+    fprintf(stream, "(string)");
+    fprintf(stream, ">");
     break;
   }
   case EOF_OBJ:

@@ -5489,7 +5489,6 @@ Object scm_open_input_file(Object const args) {
     FILE *f = fopen(s, "r");
     if (f == NULL) {
       return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
-      ;
     }
     Object out = cons((Object){.port = f}, obj);
     g_free(s);
@@ -5568,13 +5567,10 @@ Object scm_close_port(Object const args) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT:
-  case PORT_INPUT_BINARY: {
-    fclose(carref(obj).port);
-    cars[obj.index].port = NULL;
-    return unspecified;
-  }
+  case PORT_INPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
   case PORT_OUTPUT_TEXT_STRING: {
+    fclose(carref(obj).port);
     cars[obj.index].port = NULL;
     return unspecified;
   }
@@ -5592,13 +5588,27 @@ Object scm_open_input_string(Object const args) {
   }
   Object obj = value(carref(args));
   switch (obj.type) {
-  case STRING_EMPTY:
-  case STRING:
-  case STRING_IMMUTABLE:
+  case STRING_EMPTY: {
+  }
+  case STRING: {
+  }
+  case STRING_IMMUTABLE: {
+    FILE *stream = tmpfile();
+    fprintf(stream, "%s\n", obj.string_immutable);
+    fseek(stream, 0, SEEK_SET);
+    Object out = cons((Object){.port = stream}, empty);
+    out.type = PORT_INPUT_TEXT_STRING;
+    return out;
+  }
   case STRING_IMMUTABLE_VERTICAL: {
-    Object out = cons((Object){.string_port_index = 0}, obj);
-    out = cons((Object){.port = string_port}, out);
-    obj.type = PORT_INPUT_TEXT_STRING;
+    FILE *stream = tmpfile();
+    if (stream == NULL) {
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+    }
+    fprintf(stream, "%s\n", obj.string_immutable_vertical);
+    fseek(stream, 0, SEEK_SET);
+    Object out = cons((Object){.port = stream}, empty);
+    out.type = PORT_INPUT_TEXT_STRING;
     return out;
   }
   case NONE:
@@ -5607,7 +5617,61 @@ Object scm_open_input_string(Object const args) {
     return wrong_type("open-input-string", args);
   }
 }
+Object scm_open_output_string(Object const args) {
+  if (args.type == EMPTY) {
+    FILE *stream = tmpfile();
+    if (stream == NULL) {
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+    }
+    Object out = cons((Object){.port = stream}, empty);
+    out.type = PORT_OUTPUT_TEXT_STRING;
+    return out;
+  }
+  return arguments(args, "open-output-string");
+}
+Object scm_get_output_string(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "get-output-string");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case PORT_OUTPUT_TEXT_STRING: {
+    Object o = empty;
+    FILE *stream = carref(obj).port;
+    fseek(stream, 0, SEEK_SET);
+    char buf[6];
+    size_t i = 0;
+    while (true) {
+      buf[i] = fgetc(stream);
+      if (buf[i] == EOF) {
+        break;
+      }
+      gunichar ch = g_utf8_get_char_validated(buf, i + 1);
+      if (ch == -1) {
+        i++;
+      } else {
+        o = cons((Object){.type = CHARACTER, .character = ch}, o);
+        i = 0;
+      }
+    }
+    fseek(stream, 0, SEEK_END);
+    Object out = {.type = STRING_EMPTY};
+    for (; o.type != EMPTY; o = cdrref(o)) {
+      save(o);
+      out = string_cons(carref(o), out);
+      restore(&o);
+    }
+    return out;
+  }
+  case NONE:
+    error("scm_get_output_string");
+  default:
+    return wrong_type("get-output-string", args);
+  }
+}
+
 int interactive_mode = 1;
+extern FILE *yyin;
 Object scm_read(Object const args) {
   switch (args_length(args)) {
   case 0: {
@@ -5618,20 +5682,28 @@ Object scm_read(Object const args) {
   }
   case 1: {
     Object obj = value(carref(args));
-    if (obj.type != PORT_INPUT_TEXT) {
+    switch (obj.type) {
+    case PORT_INPUT_TEXT:
+    case PORT_INPUT_TEXT_STRING: {
+      if (carref(obj).port == NULL) {
+        return (Object){.type = READ_ERROR, .message = strdup("closed port")};
+      }
+      char ch = fgetc(carref(obj).port);
+      ungetc(ch, carref(obj).port);
+      if (ch == EOF) {
+        return (Object){.type = EOF_OBJ};
+      }
+      FILE *stream = carref(cur_in).port;
+      yyin = carref(obj).port;
+      interactive_mode = 0;
+      Object out = kread();
+      interactive_mode = 1;
+      yyin = stream;
+      return out;
+    }
+    default:
       return wrong_type("read", args);
     }
-    if (carref(obj).port == NULL) {
-      return (Object){.type = READ_ERROR, .message = strdup(strerror(errno))};
-      ;
-    }
-    FILE *stream = carref(cur_in).port;
-    yyrestart(carref(obj).port);
-    interactive_mode = 0;
-    Object out = kread();
-    interactive_mode = 1;
-    yyrestart(stream);
-    return out;
   }
   default:
     return arguments(args, "read");
@@ -5695,21 +5767,27 @@ extern FILE *yyout;
 Object scm_write(Object const args) {
   switch (args_length(args)) {
   case 1: {
-    object_write(yyout, carref(args));
+    object_write(carref(cur_out).port, carref(args));
     return unspecified;
   }
   case 2: {
-    Object obj = value(carref(args));
-    if (obj.type != PORT_OUTPUT_TEXT) {
-      exit(1);
+    Object obj1 = carref(args);
+    Object obj2 = value(carref(cdrref(args)));
+    switch (obj2.type) {
+    case PORT_OUTPUT_TEXT:
+    case PORT_OUTPUT_TEXT_STRING: {
+      object_write(carref(obj2).port, obj1);
+      return unspecified;
     }
-    object_write(carref(obj).port, value(carref(cdrref(args))));
-    return unspecified;
+    case NONE:
+      error("scm_write");
+    default:
+      return wrong_type("write", args);
+    }
   }
   default:
     return arguments(args, "write");
   }
-  exit(1);
 }
 Object scm_write_shared(Object const args) {
   switch (args_length(args)) {
@@ -5718,17 +5796,23 @@ Object scm_write_shared(Object const args) {
     return unspecified;
   }
   case 2: {
-    Object obj = value(carref(args));
-    if (obj.type != PORT_OUTPUT_TEXT) {
+    Object obj1 = carref(args);
+    Object obj2 = value(carref(cdrref(args)));
+    switch (obj2.type) {
+    case PORT_OUTPUT_TEXT:
+    case PORT_OUTPUT_TEXT_STRING: {
+      object_write_shared(carref(obj2).port, obj1);
+      return unspecified;
+    }
+    case NONE:
+      error("scm_write_shared");
+    default:
       return wrong_type("write-shared", args);
     }
-    object_write_shared(carref(obj).port, value(carref(cdrref(args))));
-    return unspecified;
   }
   default:
     return arguments(args, "write-shared");
   }
-  exit(1);
 }
 Object scm_write_simple(Object const args) {
   switch (args_length(args)) {
@@ -5737,37 +5821,62 @@ Object scm_write_simple(Object const args) {
     return unspecified;
   }
   case 2: {
-    Object obj = value(carref(args));
-    if (obj.type != PORT_OUTPUT_TEXT) {
+    Object obj1 = carref(args);
+    Object obj2 = value(carref(cdrref(args)));
+    switch (obj2.type) {
+    case PORT_OUTPUT_TEXT:
+    case PORT_OUTPUT_TEXT_STRING: {
+      object_write_simple(carref(obj2).port, obj1);
+      return unspecified;
+    }
+    case NONE:
+      error("scm_write_simple");
+    default:
       return wrong_type("write-simple", args);
     }
-    object_write_simple(carref(obj).port, value(carref(cdrref(args))));
-    return unspecified;
   }
   default:
     return arguments(args, "write-simple");
   }
-  exit(1);
 }
 Object scm_display(Object const args) {
   switch (args_length(args)) {
   case 1: {
-    object_display(yyout, carref(args));
+    object_display(carref(cur_out).port, carref(args));
     return unspecified;
   }
   case 2: {
-    Object obj = value(carref(args));
-    if (obj.type != PORT_OUTPUT_TEXT) {
+    Object obj1 = carref(args);
+    Object obj2 = value(carref(cdrref(args)));
+    switch (obj2.type) {
+    case PORT_OUTPUT_TEXT:
+    case PORT_OUTPUT_TEXT_STRING: {
+      object_display(carref(obj2).port, obj1);
+      return unspecified;
+    }
+    case NONE:
+      error("scm_display");
+    default:
       return wrong_type("display", args);
     }
-    object_display(carref(obj).port, carref(cdrref(args)));
-    return unspecified;
   }
   default:
     return arguments(args, "display");
   }
-  exit(1);
 }
+Object scm_newline(Object const args) {
+  size_t len = args_length(args);
+  if (len == 0) {
+    fprintf(carref(cur_out).port, "\n");
+  } else if (len == 1) {
+    Object obj = value(carref(args));
+    fprintf(carref(obj).port, "\n");
+  } else {
+    return arguments(args, "newline");
+  }
+  return unspecified;
+}
+
 /* Input and output end */
 /* System interface */
 Object scm_file_exists_p(Object const args) {

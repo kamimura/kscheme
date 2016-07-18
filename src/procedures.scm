@@ -1280,9 +1280,12 @@
   ;; Input and output
   (define call-with-port
     (lambda (proc port)
-      (define v (proc port))
-      (close-port port)
-      v))
+      (if (port? port)
+          ((lambda ()
+             (define v (proc port))
+             (close-port port)
+             v))
+          (error "(call-with-port) wrong type argument -- " (list proc port)))))
 
   (define call-with-input-file
     (lambda (str proc)

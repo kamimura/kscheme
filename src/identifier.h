@@ -3,6 +3,9 @@
 #include "object.h"
 
 extern Object quote_sym;
+extern Object quasiquote_sym;
+extern Object unquote_sym;
+;
 
 Object identifier_new(char const *str);
 Object identifier_vertical_new(char const *str);

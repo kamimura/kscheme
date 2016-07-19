@@ -1490,17 +1490,6 @@
                     (current-input-port)
                     (car args)))))
 
-  (define newline
-    (lambda args
-      (if (null? args)
-          (display #\newline)
-          (display #\newline (car args)))))
-
-  (define write-char
-    (lambda (char . args)
-      (if (null? args)
-          (display char)
-          (display char (car args)))))
   (define write-string
     (lambda (s . args)
       (if (null? args)
@@ -1515,8 +1504,20 @@
                              (if (null? (cddr args))
                                  (string-length s)
                                  (caddr args))))
-             (display (string-copy port)))))))
-
+             (display (string-copys) port))))))
+  (define write-bytevector
+    (lambda (bv . args)
+      (define len (length args))
+      (define port (if (= len 0) (current-input-port) (car args)))
+      (define start (if (< len 2) 0 (cadr args)))
+      (define end (if (< len 3) (bytevector-length bv) (caddr args)))
+      (define iter
+        (lambda (k)
+          (if (< k end)
+              ((lambda ()
+                 (write-u8 (bytevector-u8-ref bv k))
+                 (iter (+ k 1)))))))
+      (iter start)))
   ;; Input and output end
 
   ;; System interface

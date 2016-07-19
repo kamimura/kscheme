@@ -412,6 +412,12 @@ void object_write(FILE *stream, Object obj) {
   case BEGIN_TYPE:
     fprintf(stream, "#<syntax begin>");
     break;
+  case QUASIQUOTE:
+    fprintf(stream, "#<syntax quasiquote>");
+    break;
+  case UNQUOTE:
+    fprintf(stream, "#<syntax unquote>");
+    break;
   case AND:
     fprintf(stream, "#<syntax and>");
     break;

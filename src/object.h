@@ -26,6 +26,8 @@ typedef enum type {
   SET,
   DEFINE,
   BEGIN_TYPE,
+  QUASIQUOTE,
+  UNQUOTE,
   PRIMITIVE_PROCEDURE,
   PROCEDURE,
   PRIMITIVE_PROCEDURE_MAKE_PROMISE,
@@ -59,6 +61,7 @@ typedef enum type {
   MOVED,
   EXPT_ERROR,
   EXACT_ERROR,
+  ERROR
 } Type;
 
 #include <gmp.h>

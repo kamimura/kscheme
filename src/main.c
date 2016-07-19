@@ -73,7 +73,15 @@ bool list_last_list_p(Object obj) {
 extern int yylineno;
 extern FILE *yyin;
 extern FILE *yyout;
+
+#include <string.h> // strerror
+#include <errno.h>  // errno
 int main() {
+  if (gettimeofday(&procedures_tv, NULL)) {
+    fprintf(stderr, "%s\n", strerror(errno));
+    exit(1);
+  }
+  procedures_n = procedures_tv.tv_sec * 1000000 + procedures_tv.tv_usec;
   /* lex, procedures */
   mpz_inits(opz, opz1, NULL);
   mpq_inits(opq, opq1, NULL);
@@ -98,14 +106,18 @@ int main() {
   }
   expr = env = val = cont = proc = argl = unev = (Object){.type = NONE};
   quote_sym = identifier_new("quote");
+  quasiquote_sym = identifier_new("quasiquote");
+  unquote_sym = identifier_new("unquote");
   Object lambda_sym = identifier_new("lambda");
   env = cons(cons(empty, empty), empty);
-  define_variable(identifier_new("quote"), (Object){.type = QUOTE}, env);
+  define_variable(quote_sym, (Object){.type = QUOTE}, env);
   define_variable(identifier_new("lambda"), (Object){.type = LAMBDA}, env);
   define_variable(identifier_new("if"), (Object){.type = IF}, env);
   define_variable(identifier_new("set!"), (Object){.type = SET}, env);
   define_variable(identifier_new("define"), (Object){.type = DEFINE}, env);
   define_variable(identifier_new("begin"), (Object){.type = BEGIN_TYPE}, env);
+  define_variable(quasiquote_sym, (Object){.type = QUASIQUOTE}, env);
+  define_variable(unquote_sym, (Object){.type = UNQUOTE}, env);
   define_variable(identifier_new("and"), (Object){.type = AND}, env);
   define_variable(identifier_new("or"), (Object){.type = OR}, env);
   define_variable(identifier_new("delay"), (Object){.type = DELAY}, env);
@@ -560,6 +572,16 @@ int main() {
   define_variable(identifier_new("newline"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_newline},
                   env);
+  define_variable(identifier_new("write-char"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_write_char},
+                  env);
+  define_variable(identifier_new("write-u8"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_write_u8},
+                  env);
+  define_variable(
+      identifier_new("flush-output-port"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_flush_output_port},
+      env);
   /* Input and output end */
   /* System interface */
   define_variable(
@@ -572,6 +594,24 @@ int main() {
   define_variable(
       identifier_new("emergency-exit"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_emergency_exit}, env);
+  define_variable(identifier_new("get-environment-variable"),
+                  (Object){.type = PRIMITIVE_PROCEDURE,
+                           .proc = scm_get_environment_variable},
+                  env);
+  define_variable(identifier_new("get-environment-variables"),
+                  (Object){.type = PRIMITIVE_PROCEDURE,
+                           .proc = scm_get_environment_variables},
+                  env);
+  define_variable(
+      identifier_new("current-second"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_current_second}, env);
+  define_variable(
+      identifier_new("current-jiffy"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_current_jiffy}, env);
+  define_variable(
+      identifier_new("jiffies-per-second"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_jiffies_per_second},
+      env);
   /* System interface end */
   global = env;
   /* yyin = stdin; */
@@ -615,6 +655,8 @@ eval_dispatch:
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case QUASIQUOTE:
+  case UNQUOTE:
   case AND:
   case OR:
   case DELAY:
@@ -691,6 +733,18 @@ eval_dispatch:
           goto syntax_error;
         }
         goto ev_begin;
+      }
+      case QUASIQUOTE: {
+        if (!list_p(expr) || list_length(expr) != 2) {
+          goto syntax_error;
+        }
+        goto ev_quasiquote;
+      }
+      case UNQUOTE: {
+        if (!list_p(expr) || list_length(expr) != 2) {
+          goto syntax_error;
+        }
+        goto ev_unquote;
       }
       case AND: {
         if (!list_p(expr)) {
@@ -777,6 +831,8 @@ ev_quoted:;
   object_free(&val);
   val = car(cdrref(expr));
   goto *cont.cont;
+ev_quasiquote:;
+ev_unquote:;
 ev_lambda:
   object_free(&val);
   val = cons(env, cdrref(expr));
@@ -927,6 +983,8 @@ primitive_apply:
     goto read_error;
   case FILE_ERROR:
     goto file_error;
+  case ERROR:
+    goto signal_error;
   default:
     break;
   }

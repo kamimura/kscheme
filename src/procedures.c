@@ -65,6 +65,8 @@ Object scm_eqv_p(Object const args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case QUASIQUOTE:
+  case UNQUOTE:
   case AND:
   case OR:
   case DELAY:
@@ -209,6 +211,8 @@ Object scm_eq_p(Object const args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
+  case QUASIQUOTE:
+  case UNQUOTE:
   case AND:
   case OR:
   case DELAY:
@@ -5589,8 +5593,32 @@ Object scm_open_input_string(Object const args) {
   Object obj = value(carref(args));
   switch (obj.type) {
   case STRING_EMPTY: {
+    FILE *stream = tmpfile();
+    if (stream == NULL) {
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+    }
+    fprintf(stream, "");
+    fseek(stream, 0, SEEK_SET);
+    Object out = cons((Object){.port = stream}, empty);
+    out.type = PORT_INPUT_TEXT_STRING;
+    return out;
   }
   case STRING: {
+    FILE *stream = tmpfile();
+    if (stream == NULL) {
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+    }
+    char outbuf[6];
+    for (Object o = obj; o.type != STRING_EMPTY; o = cdrref(o)) {
+      int len = g_unichar_to_utf8(carref(o).character, outbuf);
+      outbuf[len] = '\0';
+      fprintf(stream, "%s", outbuf);
+    }
+    fprintf(stream, "\n");
+    fseek(stream, 0, SEEK_SET);
+    Object out = cons((Object){.port = stream}, empty);
+    out.type = PORT_INPUT_TEXT_STRING;
+    return out;
   }
   case STRING_IMMUTABLE: {
     FILE *stream = tmpfile();
@@ -5870,13 +5898,126 @@ Object scm_newline(Object const args) {
     fprintf(carref(cur_out).port, "\n");
   } else if (len == 1) {
     Object obj = value(carref(args));
-    fprintf(carref(obj).port, "\n");
+    switch (obj.type) {
+    case PORT_OUTPUT_TEXT:
+    case PORT_INPUT_TEXT_STRING:
+      fprintf(carref(obj).port, "\n");
+      break;
+    case NONE:
+      error("scm_newline");
+    default:
+      return wrong_type("newline", args);
+    }
   } else {
     return arguments(args, "newline");
   }
   return unspecified;
 }
-
+Object scm_write_char(Object const args) {
+  size_t len = args_length(args);
+  Object obj1;
+  Object obj2;
+  FILE *stream;
+  if (len == 1) {
+    obj1 = value(carref(args));
+    stream = carref(cur_out).port;
+  } else if (len == 2) {
+    obj1 = value(carref(args));
+    obj2 = value(carref(cdrref(args)));
+    switch (obj2.type) {
+    case PORT_OUTPUT_TEXT:
+    case PORT_INPUT_TEXT_STRING:
+    case NONE:
+      error("scm_write_char");
+    default:
+      return wrong_type("write-char", args);
+    }
+    stream = carref(obj2).port;
+  }
+  if (obj1.type == CHARACTER) {
+    if (stream == NULL) {
+      return (Object){.type = READ_ERROR, .message = strdup("closed port")};
+    }
+    object_display(stream, obj1);
+    return unspecified;
+  }
+  return wrong_type("write-char", args);
+}
+Object scm_write_u8(Object const args) {
+  size_t len = args_length(args);
+  Object obj1;
+  Object obj2;
+  unsigned int b;
+  if (len == 1) {
+    obj1 = value(carref(args));
+    obj2 = cur_out;
+  } else if (len == 2) {
+    obj1 = value(carref(args));
+    obj2 = value(carref(cdrref(args)));
+  }
+  switch (obj1.type) {
+  case NUMBERZ: {
+    if (mpz_sgn(obj1.numberz) >= 0 && mpz_cmp_ui(obj1.numberz, 256) < 0) {
+      b = mpz_get_ui(obj1.numberz);
+      break;
+    }
+  }
+  case NUMBERQ: {
+    mpq_canonicalize(obj1.numberq);
+    if (mpz_cmp_ui(mpq_denref(obj1.numberq), 1) == 0) {
+      if (mpz_sgn(mpq_numref(obj1.numberq)) >= 0 &&
+          mpz_cmp_ui(mpq_numref(obj1.numberq), 256) < 0) {
+        b = mpz_get_ui(mpq_numref(obj1.numberq));
+        break;
+      }
+    }
+    return wrong_type("write-u8", args);
+  }
+  case NONE:
+    error("scm_write_u8");
+  default:
+    return wrong_type("write-u8", args);
+  }
+  switch (obj2.type) {
+  case PORT_OUTPUT_BINARY:
+    break;
+  case NONE:
+    error("scm_write_u8");
+  default:
+    return wrong_type("write-u8", args);
+  }
+  if (carref(obj2).port == NULL) {
+    return (Object){.type = READ_ERROR, .message = strdup("closed port")};
+  }
+  fprintf(carref(obj2).port, "%c", b);
+  return unspecified;
+}
+Object scm_flush_output_port(Object const args) {
+  size_t len = args_length(args);
+  Object obj;
+  if (len == 0) {
+    obj = cur_out;
+  } else if (len == 1) {
+    obj = value(carref(args));
+  } else {
+    return arguments(args, "flush-output-port");
+  }
+  switch (obj.type) {
+  case PORT_OUTPUT_TEXT:
+  case PORT_OUTPUT_BINARY:
+  case PORT_OUTPUT_TEXT_STRING:
+    break;
+  case NONE:
+    error("scm_flush_output_port");
+  default:
+    return wrong_type("flush-output-port", args);
+  }
+  if (carref(obj).port == NULL) {
+    return (Object){.type = READ_ERROR, .message = strdup("closed port")};
+  }
+  fflush(carref(obj).port);
+  return unspecified;
+}
 /* Input and output end */
 /* System interface */
 Object scm_file_exists_p(Object const args) {
@@ -5968,4 +6109,115 @@ Object scm_emergency_exit(Object const args) {
     _exit(1);
   }
   return arguments(args, "emergency-exit");
+}
+Object scm_get_environment_variable(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "get-environment-variable");
+  }
+  Object obj = value(carref(args));
+  char *str;
+  switch (obj.type) {
+  case STRING_EMPTY: {
+    str = getenv("");
+  }
+  case STRING: {
+    size_t uni_len = 0;
+    gint chs_len = 0;
+    for (Object o = obj; o.type != STRING_EMPTY; uni_len++) {
+      chs_len += g_unichar_to_utf8(string_carref(o).character, NULL);
+      o = string_cdrref(o);
+    }
+    char s[chs_len + 1];
+    Object o = obj;
+    size_t uni_i = 0;
+    gint si = 0;
+    for (; si < chs_len; uni_i++) {
+      gchar outbuf[6];
+      gint len = g_unichar_to_utf8(string_carref(o).character, outbuf);
+      for (gint i = 0; i < len; i++) {
+        s[si] = outbuf[i];
+        si++;
+      }
+      o = string_cdrref(o);
+    }
+    s[si] = '\0';
+    str = getenv(s);
+    break;
+  }
+  case STRING_IMMUTABLE: {
+    str = getenv(obj.string_immutable);
+    break;
+  }
+  case STRING_IMMUTABLE_VERTICAL: {
+    str = getenv(obj.string_immutable_vertical);
+    break;
+  }
+  case NONE:
+    error("scm_get_environment_variable");
+  default:
+    return wrong_type("get-environment-variable", args);
+  }
+  if (str == NULL) {
+    return false_obj;
+  }
+  Object o = identifier_new(str);
+  return (Object){.type = STRING_IMMUTABLE, .string_immutable = o.identifier};
+}
+Object scm_get_environment_variables(Object const args) {
+  if (args.type != EMPTY) {
+    return arguments(args, "get-environment-variables");
+  }
+  char **env = environ;
+  Object out = empty;
+  for (; *env != NULL; env++) {
+    char *s = strchr(*env, '=');
+    Object o = identifier_new(s + 1);
+    Object o2 = {.type = STRING_IMMUTABLE, .string_immutable = o.identifier};
+    *s = '\0';
+    o = identifier_new(*env);
+    Object o1 = {.type = STRING_IMMUTABLE, .string_immutable = o.identifier};
+    save(out);
+    Object p = cons(o1, o2);
+    restore(&out);
+    out = cons(p, out);
+  }
+  return out;
+}
+
+Object scm_current_second(Object const args) {
+  if (args.type != EMPTY) {
+    return arguments(args, "current-second");
+  }
+  Object out = {.type = NUMBERR};
+  struct timeval tv;
+  int n = gettimeofday(&tv, NULL);
+  if (n == -1) {
+  }
+  mpfr_init_set_d(out.numberr, tv.tv_sec + tv.tv_usec / 1000000.0, MPFR_RNDN);
+  return out;
+}
+struct timeval procedures_tv;
+unsigned int procedures_n;
+Object scm_current_jiffy(Object const args) {
+  if (args.type != EMPTY) {
+    return arguments(args, "current-jiffy");
+  }
+  Object out = {.type = NUMBERZ};
+  struct timeval tv;
+  int n = gettimeofday(&tv, NULL);
+  if (n == -1) {
+    fprintf(carref(cur_err).port, "Error: %s\n", strerror(errno));
+    return (Object){.type = ERROR};
+  }
+  unsigned int t = tv.tv_sec * 1000000 + tv.tv_usec - procedures_n;
+  mpz_init_set_ui(out.numberz, t);
+  return out;
+}
+Object scm_jiffies_per_second(Object const args) {
+  if (args.type != EMPTY) {
+    return arguments(args, "jiffies-per-second");
+  }
+  Object out = {.type = NUMBERZ};
+  mpz_init_set_ui(out.numberz, 1000000);
+  return out;
 }

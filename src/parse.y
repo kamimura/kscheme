@@ -93,6 +93,14 @@ abbreviation:   '\'' datum
                 {
                   $$ = cons(quote_sym, cons($2, empty));
                 }
+        |       '`' datum
+                {
+                  $$ = cons(quasiquote_sym, cons($2, empty));
+                }
+        |       ',' datum
+                {
+                  $$ = cons(unquote_sym, cons($2, empty));
+                }
         ;
 vector:         ')'
                 {

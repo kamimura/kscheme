@@ -167,7 +167,19 @@ Object scm_write_shared(Object const args);
 Object scm_write_simple(Object const args);
 Object scm_display(Object const args);
 Object scm_newline(Object const args);
+Object scm_write_char(Object const args);
+Object scm_write_u8(Object const args);
+Object scm_flush_output_port(Object const args);
 /* System interface */
 Object scm_file_exists_p(Object const args);
 Object scm_primitive_delete_file(Object const args);
 Object scm_emergency_exit(Object const args);
+Object scm_get_environment_variable(Object const args);
+extern char **environ;
+Object scm_get_environment_variables(Object const args);
+#include <sys/time.h> // gettimeofday
+Object scm_current_second(Object const args);
+extern struct timeval procedures_tv;
+extern unsigned int procedures_n;
+Object scm_current_jiffy(Object const args);
+Object scm_jiffies_per_second(Object const args);

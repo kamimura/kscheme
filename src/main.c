@@ -106,8 +106,6 @@ int main() {
   }
   expr = env = val = cont = proc = argl = unev = (Object){.type = NONE};
   quote_sym = identifier_new("quote");
-  quasiquote_sym = identifier_new("quasiquote");
-  unquote_sym = identifier_new("unquote");
   Object lambda_sym = identifier_new("lambda");
   env = cons(cons(empty, empty), empty);
   define_variable(quote_sym, (Object){.type = QUOTE}, env);
@@ -116,8 +114,6 @@ int main() {
   define_variable(identifier_new("set!"), (Object){.type = SET}, env);
   define_variable(identifier_new("define"), (Object){.type = DEFINE}, env);
   define_variable(identifier_new("begin"), (Object){.type = BEGIN_TYPE}, env);
-  define_variable(quasiquote_sym, (Object){.type = QUASIQUOTE}, env);
-  define_variable(unquote_sym, (Object){.type = UNQUOTE}, env);
   define_variable(identifier_new("and"), (Object){.type = AND}, env);
   define_variable(identifier_new("or"), (Object){.type = OR}, env);
   define_variable(identifier_new("delay"), (Object){.type = DELAY}, env);
@@ -546,16 +542,40 @@ int main() {
       identifier_new("get-output-string"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_get_output_string},
       env);
+  define_variable(
+      identifier_new("open-input-bytevector"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_open_input_bytevector},
+      env);
+  define_variable(
+      identifier_new("open-output-bytevector"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_open_output_bytevector},
+      env);
+  define_variable(
+      identifier_new("get-output-bytevector"),
+      (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_get_output_bytevector},
+      env);
   define_variable(identifier_new("read"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_read}, env);
   define_variable(identifier_new("read-char"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_read_char},
+                  env);
+  define_variable(identifier_new("peek-char"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_peek_char},
                   env);
   define_variable(
       identifier_new("eof-object?"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_eof_object_p}, env);
   define_variable(identifier_new("eof-object"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_eof_object},
+                  env);
+  define_variable(identifier_new("read-u8"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_read_u8},
+                  env);
+  define_variable(identifier_new("peek-u8"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_peek_u8},
+                  env);
+  define_variable(identifier_new("u8-ready?"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_u8_ready_p},
                   env);
   define_variable(identifier_new("write"),
                   (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_write},
@@ -655,8 +675,6 @@ eval_dispatch:
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
-  case QUASIQUOTE:
-  case UNQUOTE:
   case AND:
   case OR:
   case DELAY:
@@ -678,6 +696,8 @@ eval_dispatch:
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
   case EOF_OBJ:
   case READ_ERROR:
   case FILE_ERROR:
@@ -733,18 +753,6 @@ eval_dispatch:
           goto syntax_error;
         }
         goto ev_begin;
-      }
-      case QUASIQUOTE: {
-        if (!list_p(expr) || list_length(expr) != 2) {
-          goto syntax_error;
-        }
-        goto ev_quasiquote;
-      }
-      case UNQUOTE: {
-        if (!list_p(expr) || list_length(expr) != 2) {
-          goto syntax_error;
-        }
-        goto ev_unquote;
       }
       case AND: {
         if (!list_p(expr)) {
@@ -831,8 +839,6 @@ ev_quoted:;
   object_free(&val);
   val = car(cdrref(expr));
   goto *cont.cont;
-ev_quasiquote:;
-ev_unquote:;
 ev_lambda:
   object_free(&val);
   val = cons(env, cdrref(expr));

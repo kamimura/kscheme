@@ -895,7 +895,7 @@
                                   (car args)
                                   (error "(make-vector) wrong type argument -- "
                                          (cons k args)))))
-              (list->vector (make-list k fill))))
+             (list->vector (make-list k fill))))
           (error "(make-vector) wrong type argument -- " (cons k args)))))
   (define vector->list
     (lambda (vect . args)
@@ -1469,27 +1469,87 @@
           (error "(close-output-port) wrong type argument -- " (list port)))))
   (define read-line
     (lambda args
-      (define iter
-        (lambda (result port)
-          ((lambda (char)
-             (if (eof-object? char)
-                 (if (null? result)
-                     (eof-object)
-                     (list->string (reverse result)))
-                 (if (eq? char #\newline)
-                     (list->string (reverse result))
-                     (if (eq? char #\return)
-                         (if (eq? (peek-char port) #\newline)
+      (define port (if (null? args) (current-input-port) (car args)))
+      (if (eof-object? (peek-char port))
+          (eof-object)
+          ((lambda ()
+             (define iter
+               (lambda ()
+                 (define char (read-char port))
+                 (if (eof-object? char)
+                     '()
+                     (if (eq? char #\newline)
+                         '()
+                         (if (eq? char #\return)
                              ((lambda ()
-                                (read-char port)
-                                (list->string (reverse result))))
-                             (list->string (reverse result)))
-                         (iter (cons char result) port)))))
-           (read-char port))))
-      (iter '() (if (null? args)
-                    (current-input-port)
-                    (car args)))))
+                                (if (eq? (peek-char port) #\newline)
+                                    (read-char port))
+                                '()))
+                             (cons char (iter)))))))
+             (list->string (iter)))))))
+  
+  (define read-string
+    (lambda (k . args)
+      (define port (if (null? args) (current-input-port) (car args)))
+      (define iter
+        (lambda (n)
+          (define char (read-char port))
+          (if (or (= n 0) (eof-object? char))
+              '()
+              (cons char
+                    (iter (- n 1))))))
+      (list->string (iter k))))
 
+  (define read-bytevector
+    (lambda (k . args)
+      (define port (if (null? args) (current-input-port) (car args)))
+      (define iter
+        (lambda (n)
+          (define byte (read-u8 port))
+          (if (or (= n 0) (eof-object? byte))
+              '()
+              (cons byte
+                    (iter (- n 1))))))
+      (define byte-list (iter k))
+      (define len (length byte-list))
+      (define bv (make-bytevector len))
+      (define iter1
+        (lambda (i bytes)
+          (if (< i len)
+              ((lambda ()
+                 (bytevector-u8-set! bv i (car bytes))
+                 (iter1 (+ i 1) (cdr bytes)))))))
+      (iter1 0 byte-list)
+      bv))
+
+  (define read-bytevector!
+    (lambda (bv . args)
+      (define len (length args))
+      (define port (if (= len 0) (current-input-port) (car args)))
+      (define start (if (< len 2) 0 (cadr args)))
+      (define end (if (< len 3) #f  (caddr args)))
+      (define bv-len (bytevector-length bv))
+      (define iter
+        (lambda (i)
+          (if end
+              (if (or (= i end) (= i bv-len))
+                  (- i start)
+                  ((lambda ()
+                     (define byte (read-u8 port))
+                     (if (eof-object? byte)
+                         (- i start)
+                         ((lambda ()
+                            (bytevector-u8-set! bv i byte)
+                            (iter (+ i 1))))))))
+              ((lambda ()
+                 (define byte (read-u8 port))
+                 (if (or (eof-object? byte) (= i bv-len))
+                     (- i start)
+                     ((lambda ()
+                        (bytevector-u8-set! bv i byte)
+                        (iter (+ i 1))))))))))
+      (iter start)))
+  
   (define write-string
     (lambda (s . args)
       (if (null? args)

@@ -5,9 +5,9 @@ static void error(char const *msg) {
   fprintf(stderr, "kscheme error: %s\n", msg);
   exit(1);
 }
-extern FILE *yyout;
+
 Object arguments(Object obj, char const *s) {
-  fprintf(yyout, "Error: (%s) wrong number of arguments -- ", s);
+  fprintf(carref(cur_out).port, "Error: (%s) wrong number of arguments -- ", s);
   object_write(carref(cur_err).port, obj);
   fprintf(carref(cur_err).port, "\n");
   return (Object){.type = WRONG_NUMBER_OF_ARGUMENTS};
@@ -65,8 +65,6 @@ Object scm_eqv_p(Object const args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
-  case QUASIQUOTE:
-  case UNQUOTE:
   case AND:
   case OR:
   case DELAY:
@@ -168,6 +166,8 @@ Object scm_eqv_p(Object const args) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
     return obj1.type == obj2.type && obj1.index == obj2.index ? true_obj
                                                               : false_obj;
   case EOF_OBJ:
@@ -211,8 +211,6 @@ Object scm_eq_p(Object const args) {
   case SET:
   case DEFINE:
   case BEGIN_TYPE:
-  case QUASIQUOTE:
-  case UNQUOTE:
   case AND:
   case OR:
   case DELAY:
@@ -241,6 +239,8 @@ Object scm_eq_p(Object const args) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
   case PAIR:
     return scm_eqv_p(args);
   case EOF_OBJ:
@@ -2743,11 +2743,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberz_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       mpfr_set_z(opfr, obj1.numberz, MPFR_RNDN);
@@ -2777,11 +2777,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberz_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERC};
@@ -2800,11 +2800,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERC};
@@ -2824,11 +2824,11 @@ Object scm_expt(Object const args) {
         if (sign2_real > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       mpc_set_z(opc, obj1.numberz, MPC_RNDNN);
@@ -2855,11 +2855,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberz_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERQ};
@@ -2889,11 +2889,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberz_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERC};
@@ -2912,11 +2912,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERC};
@@ -2935,11 +2935,11 @@ Object scm_expt(Object const args) {
         if (sign2_real > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERC};
@@ -2966,11 +2966,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERR};
@@ -2987,11 +2987,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERC};
@@ -3010,11 +3010,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERC};
@@ -3033,11 +3033,11 @@ Object scm_expt(Object const args) {
         if (sign2_real > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERC};
@@ -3065,11 +3065,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERC};
@@ -3086,11 +3086,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       mpfr_init_set_q(opfr, obj2.numberq, MPFR_RNDN);
@@ -3108,11 +3108,11 @@ Object scm_expt(Object const args) {
         if (sign2 > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERC};
@@ -3130,11 +3130,11 @@ Object scm_expt(Object const args) {
         if (sign2_real > 0) {
           return numberr_new("0", 10);
         }
-        fprintf(yyout, "Error -- (expt ");
-        object_write(yyout, obj1);
-        fprintf(yyout, " ");
-        object_write(yyout, obj2);
-        fprintf(yyout, ")\n");
+        fprintf(carref(cur_out).port, "Error -- (expt ");
+        object_write(carref(cur_out).port, obj1);
+        fprintf(carref(cur_out).port, " ");
+        object_write(carref(cur_out).port, obj2);
+        fprintf(carref(cur_out).port, ")\n");
         return (Object){.type = EXPT_ERROR};
       }
       Object out = {.type = NUMBERC};
@@ -3636,9 +3636,9 @@ Object scm_exact(Object const args) {
     return out;
   }
   case NUMBERC: {
-    fprintf(yyout, "Error -- (exact ");
-    object_write(yyout, obj);
-    fprintf(yyout, ")\n");
+    fprintf(carref(cur_out).port, "Error -- (exact ");
+    object_write(carref(cur_out).port, obj);
+    fprintf(carref(cur_out).port, ")\n");
     return (Object){.type = EXACT_ERROR};
   }
   case NONE:
@@ -5246,6 +5246,7 @@ Object scm_input_port_p(Object const args) {
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
     return true_obj;
   case NONE:
     error("scm_input_port_p");
@@ -5262,6 +5263,7 @@ Object scm_output_port_p(Object const args) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
     return true_obj;
   case NONE:
     error("scm_output_port_p'");
@@ -5290,8 +5292,10 @@ Object scm_binary_port_p(Object const args) {
   }
   Object obj = value(carref(args));
   switch (obj.type) {
-  case PORT_OUTPUT_BINARY:
   case PORT_INPUT_BINARY:
+  case PORT_OUTPUT_BINARY:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
     return true_obj;
   case NONE:
     error("scm_binary_port_p");
@@ -5311,6 +5315,8 @@ Object scm_port_p(Object const args) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
     return true_obj;
   case NONE:
     error("scm_port_p");
@@ -5327,10 +5333,12 @@ Object scm_input_port_open_p(Object const args) {
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
     return carref(obj).port != NULL ? true_obj : false_obj;
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
     return false_obj;
   case NONE:
     error("scm_input_port_open_p");
@@ -5347,10 +5355,12 @@ Object scm_output_port_open_p(Object const args) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
     return carref(obj).port != NULL ? true_obj : false_obj;
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
     return false_obj;
   case NONE:
     error("scm_output_port_open_p");
@@ -5573,7 +5583,9 @@ Object scm_close_port(Object const args) {
   case PORT_INPUT_TEXT:
   case PORT_INPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
-  case PORT_OUTPUT_TEXT_STRING: {
+  case PORT_OUTPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR: {
     fclose(carref(obj).port);
     cars[obj.index].port = NULL;
     return unspecified;
@@ -5697,6 +5709,79 @@ Object scm_get_output_string(Object const args) {
     return wrong_type("get-output-string", args);
   }
 }
+Object scm_open_input_bytevector(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "open-input-bytevector");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case BYTEVECTOR: {
+    FILE *stream = tmpfile();
+    if (stream == NULL) {
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+    }
+    size_t len = cdrref(obj).bytevector_length;
+    for (size_t i = obj.index; i < len; i++) {
+      uint8_t b = mpz_get_ui(cars[i].numberz);
+      fprintf(stream, "%c", b);
+    }
+    fseek(stream, 0, SEEK_SET);
+    Object out = cons((Object){.port = stream}, empty);
+    out.type = PORT_INPUT_BINARY_BYTEVECTOR;
+    return out;
+  }
+  case NONE:
+    error("scm_open_input_bytevector");
+  default:
+    return wrong_type("open-input-bytevector", args);
+  }
+}
+Object scm_open_output_bytevector(Object const args) {
+  if (args.type == EMPTY) {
+    FILE *stream = tmpfile();
+    if (stream == NULL) {
+      return (Object){.type = FILE_ERROR, .message = strdup(strerror(errno))};
+    }
+    Object out = cons((Object){.port = stream}, empty);
+    out.type = PORT_OUTPUT_BINARY_BYTEVECTOR;
+    return out;
+  }
+  return arguments(args, "open-output-bytevector");
+}
+Object scm_get_output_bytevector(Object const args) {
+  if (args_length(args) != 1) {
+    return arguments(args, "get-output-bytevector");
+  }
+  Object obj = value(carref(args));
+  switch (obj.type) {
+  case PORT_OUTPUT_BINARY_BYTEVECTOR: {
+    Object o = empty;
+    FILE *stream = carref(obj).port;
+    fseek(stream, 0, SEEK_SET);
+    while (true) {
+      char ch = fgetc(stream);
+      if (ch == EOF) {
+        break;
+      }
+      Object t = {.type = NUMBERZ};
+      mpz_init_set_ui(t.numberz, (uint8_t)ch);
+      o = cons(t, o);
+    }
+    fseek(stream, 0, SEEK_END);
+    Object o1 = empty;
+    for (; o.type != EMPTY; o = cdrref(o)) {
+      save(o);
+      o1 = cons(carref(o), o1);
+      restore(&o);
+    }
+    return list2bytevector(o1);
+  }
+  case NONE:
+    error("scm_get_output_bytevector");
+  default:
+    return wrong_type("get-output-bytevector", args);
+  }
+}
 
 int interactive_mode = 1;
 extern FILE *yyin;
@@ -5779,6 +5864,50 @@ Object scm_read_char(Object const args) {
   }
   exit(1);
 }
+Object scm_peek_char(Object const args) {
+  size_t len = args_length(args);
+  Object obj;
+  if (len == 0) {
+    obj = cur_in;
+  } else if (len == 1) {
+    obj = value(carref(args));
+    switch (obj.type) {
+    case PORT_INPUT_TEXT:
+    case PORT_INPUT_TEXT_STRING:
+      break;
+    case NONE:
+      error("scm_peek_char");
+    default:
+      return wrong_type("peek-char", args);
+    }
+  } else {
+    return arguments(args, "peek-char");
+  }
+  FILE *stream = carref(obj).port;
+  if (stream == NULL) {
+    return (Object){.type = FILE_ERROR, .message = strdup("closed port")};
+  }
+  char buf[6];
+  size_t i = 0;
+  gunichar ch;
+  for (;;) {
+    buf[i] = fgetc(stream);
+    if (buf[i] == EOF) {
+      return (Object){.type = EOF_OBJ};
+    }
+    ch = g_utf8_get_char_validated(buf, i + 1);
+    if (ch == -1) {
+      i++;
+    } else {
+      break;
+    }
+  }
+  ungetc(buf[i], stream);
+  for (; i != 0; i--) {
+    ungetc(buf[i - 1], stream);
+  }
+  return (Object){.type = CHARACTER, .character = ch};
+}
 Object scm_eof_object_p(Object const args) {
   if (args_length(args) != 1) {
     return arguments(args, "eof-object?");
@@ -5791,7 +5920,73 @@ Object scm_eof_object(Object const args) {
   }
   return (Object){.type = EOF_OBJ};
 }
-extern FILE *yyout;
+Object scm_read_u8(Object const args) {
+  size_t len = args_length(args);
+  Object obj;
+  if (len == 0) {
+    obj = cur_in;
+  } else if (len == 1) {
+    obj = value(carref(args));
+  } else {
+    return arguments(args, "read-u8");
+  }
+  if (obj.type == PORT_INPUT_BINARY) {
+    FILE *stream = carref(obj).port;
+    if (stream == NULL) {
+      return (Object){.type = READ_ERROR, .message = strdup("closed port")};
+    }
+    char ch = fgetc(stream);
+    if (ch == EOF) {
+      return (Object){.type = EOF_OBJ};
+    }
+    Object out = {.type = NUMBERZ};
+    mpz_init_set_ui(out.numberz, (uint8_t)ch);
+    return out;
+  }
+  return wrong_type("read-u8", args);
+}
+Object scm_peek_u8(Object const args) {
+  size_t len = args_length(args);
+  Object obj;
+  if (len == 0) {
+    obj = cur_in;
+  } else if (len == 1) {
+    obj = value(carref(args));
+  } else {
+    return arguments(args, "peek-u8");
+  }
+  if (obj.type == PORT_INPUT_BINARY) {
+    FILE *stream = carref(obj).port;
+    if (stream == NULL) {
+      return (Object){.type = READ_ERROR, .message = strdup("closed port")};
+    }
+    char ch = fgetc(stream);
+    if (ch == EOF) {
+      return (Object){.type = EOF_OBJ};
+    }
+    Object out = {.type = NUMBERZ};
+    mpz_init_set_ui(out.numberz, (uint8_t)ch);
+    ungetc(ch, stream);
+    return out;
+  }
+  return wrong_type("peek-u8", args);
+}
+Object scm_u8_ready_p(Object const args) {
+  size_t len = args_length(args);
+  Object obj;
+  if (len == 0) {
+    obj = cur_in;
+  } else if (len == 1) {
+    obj = value(carref(args));
+  } else {
+    return arguments(args, "u8-ready?");
+  }
+  if (obj.type == PORT_INPUT_BINARY) {
+    FILE *stream = carref(obj).port;
+    return stream == NULL ? false_obj : true_obj;
+  }
+  return wrong_type("u8-ready?", args);
+}
 Object scm_write(Object const args) {
   switch (args_length(args)) {
   case 1: {
@@ -5820,7 +6015,7 @@ Object scm_write(Object const args) {
 Object scm_write_shared(Object const args) {
   switch (args_length(args)) {
   case 1: {
-    object_write_shared(yyout, carref(args));
+    object_write_shared(carref(cur_out).port, carref(args));
     return unspecified;
   }
   case 2: {
@@ -5845,7 +6040,7 @@ Object scm_write_shared(Object const args) {
 Object scm_write_simple(Object const args) {
   switch (args_length(args)) {
   case 1: {
-    object_write_simple(yyout, carref(args));
+    object_write_simple(carref(cur_out).port, carref(args));
     return unspecified;
   }
   case 2: {
@@ -5980,6 +6175,7 @@ Object scm_write_u8(Object const args) {
   }
   switch (obj2.type) {
   case PORT_OUTPUT_BINARY:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
     break;
   case NONE:
     error("scm_write_u8");
@@ -6006,6 +6202,7 @@ Object scm_flush_output_port(Object const args) {
   case PORT_OUTPUT_TEXT:
   case PORT_OUTPUT_BINARY:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
     break;
   case NONE:
     error("scm_flush_output_port");
@@ -6094,7 +6291,7 @@ Object scm_primitive_delete_file(Object const args) {
   }
 }
 #include <unistd.h>
-extern FILE *yyout;
+
 Object scm_emergency_exit(Object const args) {
   if (args_length(args) == 0) {
     _exit(0);
@@ -6103,9 +6300,9 @@ Object scm_emergency_exit(Object const args) {
     if (value(carref(args)).type == TRUE_TYPE) {
       _exit(0);
     }
-    fprintf(yyout, "emergency-exit value ");
-    object_write(yyout, carref(args));
-    fprintf(yyout, "\n");
+    fprintf(carref(cur_out).port, "emergency-exit value ");
+    object_write(carref(cur_out).port, carref(args));
+    fprintf(carref(cur_out).port, "\n");
     _exit(1);
   }
   return arguments(args, "emergency-exit");

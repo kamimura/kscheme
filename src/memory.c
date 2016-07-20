@@ -96,6 +96,8 @@ relocate_old_result_in_new:
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
   case MULTIPLE: {
     goto pair;
   }
@@ -166,6 +168,8 @@ Object car(Object obj) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
   case MULTIPLE: {
     return object_copy(cars[obj.index]);
   }
@@ -188,6 +192,8 @@ Object cdr(Object obj) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
   case MULTIPLE: {
     return object_copy(cdrs[obj.index]);
   }
@@ -210,6 +216,8 @@ Object carref(Object obj) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
   case MULTIPLE: {
     return cars[obj.index];
   }
@@ -232,6 +240,8 @@ Object cdrref(Object obj) {
   case PORT_OUTPUT_BINARY:
   case PORT_INPUT_TEXT_STRING:
   case PORT_OUTPUT_TEXT_STRING:
+  case PORT_INPUT_BINARY_BYTEVECTOR:
+  case PORT_OUTPUT_BINARY_BYTEVECTOR:
   case MULTIPLE: {
     return cdrs[obj.index];
   }

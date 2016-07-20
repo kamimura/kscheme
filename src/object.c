@@ -412,12 +412,6 @@ void object_write(FILE *stream, Object obj) {
   case BEGIN_TYPE:
     fprintf(stream, "#<syntax begin>");
     break;
-  case QUASIQUOTE:
-    fprintf(stream, "#<syntax quasiquote>");
-    break;
-  case UNQUOTE:
-    fprintf(stream, "#<syntax unquote>");
-    break;
   case AND:
     fprintf(stream, "#<syntax and>");
     break;
@@ -534,6 +528,24 @@ void object_write(FILE *stream, Object obj) {
       fprintf(stream, "(closed)");
     }
     fprintf(stream, "(string)");
+    fprintf(stream, ">");
+    break;
+  }
+  case PORT_INPUT_BINARY_BYTEVECTOR: {
+    fprintf(stream, "#<binary-input-port");
+    if (carref(obj).port == NULL) {
+      fprintf(stream, "(closed)");
+    }
+    fprintf(stream, "(bytevector)");
+    fprintf(stream, ">");
+    break;
+  }
+  case PORT_OUTPUT_BINARY_BYTEVECTOR: {
+    fprintf(stream, "#<binary-output-port");
+    if (carref(obj).port == NULL) {
+      fprintf(stream, "(closed)");
+    }
+    fprintf(stream, "(bytevector)");
     fprintf(stream, ">");
     break;
   }

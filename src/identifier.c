@@ -4,8 +4,6 @@
 #include <string.h>
 
 Object quote_sym;
-Object quasiquote_sym;
-Object unquote_sym;
 
 static GHashTable *symtab = NULL;
 Object identifier_new(char const *str) {

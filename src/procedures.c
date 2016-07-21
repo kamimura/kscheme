@@ -55,6 +55,7 @@ Object scm_eqv_p(Object const args) {
   case FALSE_TYPE:
   case PRIMITIVE_PROCEDURE_FORCE:
   case PRIMITIVE_PROCEDURE_APPLY:
+  case PRIMITIVE_PROCEDURE_EVAL:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
@@ -201,6 +202,7 @@ Object scm_eq_p(Object const args) {
   case FALSE_TYPE:
   case PRIMITIVE_PROCEDURE_FORCE:
   case PRIMITIVE_PROCEDURE_APPLY:
+  case PRIMITIVE_PROCEDURE_EVAL:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
@@ -5158,6 +5160,7 @@ Object scm_procedure_p(Object const args) {
   case PROCEDURE:
   case PRIMITIVE_PROCEDURE_FORCE:
   case PRIMITIVE_PROCEDURE_APPLY:
+  case PRIMITIVE_PROCEDURE_EVAL:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
@@ -5236,6 +5239,14 @@ Object scm_file_error_p(Object const args) {
   return value(carref(args)).type == FILE_ERROR ? true_obj : false_obj;
 }
 /* Exceptions end */
+/* Environments and evaluation */
+Object scm_interaction_environment(Object const args) {
+  if (args.type == EMPTY) {
+    return env;
+  }
+  return arguments(args, "interaction-environment");
+}
+/* Environments and evaluation end */
 /* Input and output */
 Object scm_input_port_p(Object const args) {
   if (args_length(args) != 1) {
@@ -6417,4 +6428,46 @@ Object scm_jiffies_per_second(Object const args) {
   Object out = {.type = NUMBERZ};
   mpz_init_set_ui(out.numberz, 1000000);
   return out;
+}
+
+gmp_randstate_t scm_random_state;
+Object scm_random(Object const args) {
+  size_t len = args_length(args);
+  if (len == 1) {
+    Object obj = value(carref(args));
+    if (obj.type == NUMBERZ) {
+      Object out = {.type = NUMBERZ};
+      mpz_init(out.numberz);
+      mpz_urandomm(out.numberz, scm_random_state, obj.numberz);
+      return out;
+    }
+    if (obj.type == NUMBERQ) {
+      mpq_canonicalize(obj.numberq);
+      if (mpz_cmp_ui(mpq_denref(obj.numberq), 1) == 0) {
+        Object out = {.type = NUMBERZ};
+        mpz_init(out.numberz);
+        mpz_urandomm(out.numberz, scm_random_state, mpq_numref(obj.numberq));
+        return out;
+      }
+    }
+    if (obj.type == NUMBERR) {
+      mpfr_urandomb(opfr, scm_random_state);
+      Object out = {.type = NUMBERR};
+      mpfr_init(out.numberr);
+      mpfr_mul(out.numberr, opfr, obj.numberr, MPFR_RNDN);
+      return out;
+    }
+    if (obj.type == NUMBERC) {
+      mpc_urandom(opc, scm_random_state);
+      Object out = {.type = NUMBERC};
+      mpc_init2(out.numberc, MPC_PREC);
+      mpc_mul(out.numberc, opc, obj.numberc, MPC_RNDNN);
+      return out;
+    }
+    if (obj.type == NONE) {
+      error("scm_random");
+    }
+    return wrong_type("random", args);
+  }
+  return arguments(args, "random");
 }

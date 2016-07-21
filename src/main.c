@@ -477,6 +477,14 @@ int main() {
       identifier_new("file-error?"),
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_file_error_p}, env);
   /* Exceptions end */
+  /* Environments and evaluation */
+  define_variable(identifier_new("interaction-environment"),
+                  (Object){.type = PRIMITIVE_PROCEDURE,
+                           .proc = scm_interaction_environment},
+                  env);
+  define_variable(identifier_new("eval"),
+                  (Object){.type = PRIMITIVE_PROCEDURE_EVAL}, env);
+  /* Environments and evaluation end */
   /* Input and output */
   define_variable(
       identifier_new("input-port?"),
@@ -633,6 +641,13 @@ int main() {
       (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_jiffies_per_second},
       env);
   /* System interface end */
+
+  /* others */
+  gmp_randinit_default(scm_random_state);
+  define_variable(identifier_new("random"),
+                  (Object){.type = PRIMITIVE_PROCEDURE, .proc = scm_random},
+                  env);
+  /* others end */
   global = env;
   /* yyin = stdin; */
   yyrestart(stdin);
@@ -685,6 +700,7 @@ eval_dispatch:
   case PRIMITIVE_PROCEDURE_MAKE_PROMISE:
   case PRIMITIVE_PROCEDURE_FORCE:
   case PRIMITIVE_PROCEDURE_APPLY:
+  case PRIMITIVE_PROCEDURE_EVAL:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case CONTINUATION:
   case PRIMITIVE_PROCEDURE_RAISE:
@@ -783,6 +799,7 @@ eval_dispatch:
       case PRIMITIVE_PROCEDURE_MAKE_PROMISE:
       case PRIMITIVE_PROCEDURE_FORCE:
       case PRIMITIVE_PROCEDURE_APPLY:
+      case PRIMITIVE_PROCEDURE_EVAL:
       case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
       case CONTINUATION:
       case PRIMITIVE_PROCEDURE_RAISE:
@@ -801,6 +818,7 @@ eval_dispatch:
     case PRIMITIVE_PROCEDURE_MAKE_PROMISE:
     case PRIMITIVE_PROCEDURE_FORCE:
     case PRIMITIVE_PROCEDURE_APPLY:
+    case PRIMITIVE_PROCEDURE_EVAL:
     case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
     case CONTINUATION:
     case PRIMITIVE_PROCEDURE_RAISE:
@@ -937,6 +955,15 @@ apply_dispatch:
     cont.cont = &&ev_did_apply_proc;
     goto eval_dispatch;
   }
+  case PRIMITIVE_PROCEDURE_EVAL: {
+    if (list_length(argl) != 2) {
+      fprintf(carref(cur_err).port,
+              "Error: (eval) wrong numberc of arguments -- ");
+      object_write(carref(cur_err).port, argl);
+      goto wrong_number_of_arguments;
+    }
+    goto ev_primitive_procedure_eval;
+  }
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC: {
     restore(&cont);
     Object obj = reverse(stack);
@@ -1045,6 +1072,16 @@ ev_make_promise:
   val = cons(car(argl), env);
   val = cons(false_obj, val);
   val.type = PROMISE;
+  restore(&cont);
+  goto *cont.cont;
+ev_primitive_procedure_eval:
+  save(env);
+  expr = car(argl);
+  env = car(cdrref(argl));
+  cont.cont = &&ev_primitive_procedure_eval_1;
+  goto eval_dispatch;
+ev_primitive_procedure_eval_1:
+  restore(&env);
   restore(&cont);
   goto *cont.cont;
 ev_begin:

@@ -385,7 +385,11 @@ void object_write(FILE *stream, Object obj) {
     fprintf(stream, "()");
     break;
   case PAIR: {
-    pair_write(stream, obj);
+    if (env.index == obj.index) {
+      fprintf(stream, "#<environment interaction-environment>");
+    } else {
+      pair_write(stream, obj);
+    }
     break;
   }
   case TRUE_TYPE:
@@ -439,6 +443,7 @@ void object_write(FILE *stream, Object obj) {
   case PRIMITIVE_PROCEDURE_MAKE_PROMISE:
   case PRIMITIVE_PROCEDURE_FORCE:
   case PRIMITIVE_PROCEDURE_APPLY:
+  case PRIMITIVE_PROCEDURE_EVAL:
   case PRIMITIVE_PROCEDURE_CALL_WITH_CC:
   case PRIMITIVE_PROCEDURE_RAISE:
   case PRIMITIVE_PROCEDURE_RAISE_CONTINUABLE:

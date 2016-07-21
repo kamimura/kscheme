@@ -139,6 +139,9 @@ Object scm_error_object_message(Object const args);
 Object scm_error_object_irritants(Object const args);
 Object scm_read_error_p(Object const args);
 Object scm_file_error_p(Object const args);
+/* Environments and evaluation */
+Object scm_interaction_environment(Object const args);
+/* Environments and evaluation end */
 /* Input and output */
 Object scm_input_port_p(Object const args);
 Object scm_output_port_p(Object const args);
@@ -190,3 +193,8 @@ extern struct timeval procedures_tv;
 extern unsigned int procedures_n;
 Object scm_current_jiffy(Object const args);
 Object scm_jiffies_per_second(Object const args);
+
+/* others */
+extern gmp_randstate_t scm_random_state;
+Object scm_random(Object const args);
+/* others end */

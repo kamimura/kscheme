@@ -5242,7 +5242,7 @@ Object scm_file_error_p(Object const args) {
 /* Environments and evaluation */
 Object scm_interaction_environment(Object const args) {
   if (args.type == EMPTY) {
-    return env;
+    return global;
   }
   return arguments(args, "interaction-environment");
 }
@@ -5794,14 +5794,14 @@ Object scm_get_output_bytevector(Object const args) {
   }
 }
 
-int interactive_mode = 1;
+bool interactive_mode = true;
 extern FILE *yyin;
 Object scm_read(Object const args) {
   switch (args_length(args)) {
   case 0: {
-    interactive_mode = 0;
+    interactive_mode = false;
     Object out = kread();
-    interactive_mode = 1;
+    interactive_mode = true;
     return out;
   }
   case 1: {

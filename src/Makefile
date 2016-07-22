@@ -30,7 +30,7 @@ LEX = flex
 YACC = bison -dv
 
 default: $(P)
-	cat procedures.scm | pbcopy && ./ksi
+	./ksi
 
 $(P): $(OBJECTS) main.c
 	$(CC) $(CFLAGS) $(LDLIBS) $(OBJECTS) main.c -o $@

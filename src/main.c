@@ -660,11 +660,31 @@ int main() {
   cur_err.type = PORT_OUTPUT_TEXT;
   char *prompt = "ksi>";
   Object tmp;
+
+  /* preload: */
+  FILE *fh = fopen("procedures.scm", "r");
+  if (fh == NULL) {
+    fprintf(carref(cur_err).port, "%s\n", strerror(errno));
+    goto read_eval_print_loop;
+  }
+  yyrestart(fh);
+  yylineno = 0;
+  stack = empty;
+  expr = kread();
+  env = global;
+  cont.cont = &&read_eval_print_loop;
+  save(cont);
+  cont.cont = &&preloaded;
+  goto eval_dispatch;
+preloaded:
+  fclose(fh);
+  restore(&cont);
+  yyrestart(carref(cur_in).port);
+  goto *cont.cont;
 read_eval_print_loop:
   yylineno = 0;
   stack = empty;
   fprintf(carref(cur_out).port, "%s ", prompt);
-  /* ungetc(' ', carref(cur_in).port); */
   expr = kread();
   env = global;
   cont.cont = &&print_result;
@@ -1255,9 +1275,11 @@ ev_delay_force:
   val.type = PROMISE;
   goto *cont.cont;
 print_result:
-  printf("=> ");
-  object_write(carref(cur_out).port, val);
-  fprintf(carref(cur_out).port, "\n");
+  if (interactive_mode) {
+    printf("=> ");
+    object_write(carref(cur_out).port, val);
+    fprintf(carref(cur_out).port, "\n");
+  }
   goto read_eval_print_loop;
 
 unknown_expression_type:

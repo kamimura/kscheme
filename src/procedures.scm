@@ -1289,10 +1289,10 @@
 
   (define call-with-input-file
     (lambda (str proc)
-      (call-with-port proc (open-input-port str))))
+      (call-with-port proc (open-input-file str))))
   (define call-with-output-file
     (lambda (str proc)
-      (call-with-port proc (open-output-port str))))
+      (call-with-port proc (open-output-file str))))
 
   (define with-input-from-file
     (lambda (s thunk)
@@ -1487,7 +1487,12 @@
                                 '()))
                              (cons char (iter)))))))
              (list->string (iter)))))))
-  
+  (define char-ready?
+    (lambda args
+      (define port (if (null? args) (current-input-port) (car args)))
+      (if (eof-object? (pekk-char port))
+          #f
+          #t)))
   (define read-string
     (lambda (k . args)
       (define port (if (null? args) (current-input-port) (car args)))
@@ -1581,6 +1586,21 @@
   ;; Input and output end
 
   ;; System interface
+  (define load
+    (lambda (filename)
+      (with-input-from-file filename
+        (lambda ()
+          (define iter
+            (lambda (obj)
+              (if (eof-object? obj)
+                  '()
+                  (cons obj (iter (read))))))
+          (define exp (iter (read)))
+          (eval (if (null? exp)
+                    '()
+                    (cons 'begin exp))
+                (interaction-environment))))))
+        
   (define delete-file
     (lambda (filename)
       (if (string? filename)

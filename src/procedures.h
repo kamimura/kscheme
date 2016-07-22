@@ -164,6 +164,7 @@ Object scm_get_output_string(Object const args);
 Object scm_open_input_bytevector(Object const args);
 Object scm_open_output_bytevector(Object const args);
 Object scm_get_output_bytevector(Object const args);
+extern bool interactive_mode;
 Object scm_read(Object const args);
 Object scm_read_char(Object const args);
 Object scm_peek_char(Object const args);

@@ -101,8 +101,11 @@ relocate_old_result_in_new:
   case MULTIPLE: {
     goto pair;
   }
-  case VECTOR:
+  case VECTOR: {
+    goto vector;
+  }
   case BYTEVECTOR: {
+    goto bytevector;
   }
   default: {
     new_obj = old_obj;
@@ -123,11 +126,49 @@ pair:
   new_cdrs[new_obj.index] = cdrs[old_obj.index];
   cdrs[old_obj.index] = new_obj;
   goto *relocate_continue;
-
+vector:
+  oldcr = cars[old_obj.index];
+  if (oldcr.type == MOVED) {
+    goto already_moved;
+  }
+  cars[old_obj.index].type = MOVED;
+  new_obj = (Object){.type = old_obj.type, .index = free_index};
+  free_index++;
+  object_free(&new_cars[new_obj.index]);
+  new_cars[new_obj.index] = oldcr;
+  object_free(&new_cdrs[new_obj.index]);
+  new_cdrs[new_obj.index] = cdrs[old_obj.index];
+  cdrs[old_obj.index] = new_obj;
+  size_t len = new_cdrs[new_obj.index].vector_length;
+  for (size_t i = 1; i < len; i++) {
+    object_free(&new_cars[free_index]);
+    new_cars[free_index] = cars[old_obj.index + i];
+    free_index++;
+  }
+  goto *relocate_continue;
+bytevector:
+  oldcr = cars[old_obj.index];
+  if (oldcr.type == MOVED) {
+    goto already_moved;
+  }
+  cars[old_obj.index].type = MOVED;
+  new_obj = (Object){.type = old_obj.type, .index = free_index};
+  free_index++;
+  object_free(&new_cars[new_obj.index]);
+  new_cars[new_obj.index] = oldcr;
+  object_free(&new_cdrs[new_obj.index]);
+  new_cdrs[new_obj.index] = cdrs[old_obj.index];
+  cdrs[old_obj.index] = new_obj;
+  size_t bv_len = new_cdrs[new_obj.index].bytevector_length;
+  for (size_t i = 1; i < bv_len; i++) {
+    object_free(&new_cars[free_index]);
+    new_cars[free_index] = cars[old_obj.index + i];
+    free_index++;
+  }
+  goto *relocate_continue;
 already_moved:
   new_obj = cdrs[old_obj.index];
   goto *relocate_continue;
-
 gc_flip:;
   if (free_index == (MEMORY_SIZE - REGISTER_COUNT)) {
     fprintf(stderr, "Insufficient memory.\n");

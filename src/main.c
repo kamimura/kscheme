@@ -1283,7 +1283,7 @@ print_result:
   goto read_eval_print_loop;
 
 unknown_expression_type:
-  fprintf(yyout, "Error: unknown expression type -- ");
+  fprintf(carref(cur_err).port, "Error: unknown expression type -- ");
   object_write(carref(cur_err).port, expr);
   fprintf(carref(cur_err).port, "\n");
   goto signal_error;
